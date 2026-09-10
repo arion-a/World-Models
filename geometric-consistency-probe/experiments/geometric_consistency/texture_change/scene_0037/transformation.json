@@ -1,0 +1,29 @@
+{
+  "color_deltas": [
+    [
+      0.12207743246570402,
+      0.030663358302190025,
+      0.11129264136509709
+    ]
+  ],
+  "transform_matrix": null,
+  "changed_variables": [
+    "objects[0].color"
+  ],
+  "fixed_variables": [
+    "camera.position",
+    "camera.rotation_euler",
+    "camera.lens_mm",
+    "camera.sensor_width_mm",
+    "objects[0].position",
+    "objects[0].rotation_euler",
+    "objects[0].scale",
+    "objects[0].shape",
+    "light.position",
+    "light.energy",
+    "light.color",
+    "floor_color"
+  ],
+  "transform_name": "texture_change",
+  "type": "texture_change"
+}

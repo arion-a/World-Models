@@ -1,0 +1,29 @@
+{
+  "energy_scale": 1.9042097286875739,
+  "azimuth_delta_deg": 90.01362827092765,
+  "transform_matrix": null,
+  "changed_variables": [
+    "light.energy",
+    "light.position"
+  ],
+  "fixed_variables": [
+    "camera.position",
+    "camera.rotation_euler",
+    "camera.lens_mm",
+    "camera.sensor_width_mm",
+    "objects[0].position",
+    "objects[0].rotation_euler",
+    "objects[0].scale",
+    "objects[0].color",
+    "objects[0].shape",
+    "objects[1].position",
+    "objects[1].rotation_euler",
+    "objects[1].scale",
+    "objects[1].color",
+    "objects[1].shape",
+    "light.color",
+    "floor_color"
+  ],
+  "transform_name": "lighting_change",
+  "type": "lighting_change"
+}

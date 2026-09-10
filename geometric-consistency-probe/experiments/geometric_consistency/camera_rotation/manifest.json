@@ -1,0 +1,239 @@
+{
+  "transform": "camera_rotation",
+  "num_scenes": 40,
+  "base_seed": 0,
+  "train_fraction": 0.8,
+  "transform_config": {
+    "camera_translation_range": [
+      0.5,
+      1.5
+    ],
+    "camera_rotation_azimuth_deg_range": [
+      10.0,
+      35.0
+    ],
+    "camera_rotation_elevation_deg_range": [
+      -10.0,
+      10.0
+    ],
+    "object_translation_range": [
+      0.4,
+      1.0
+    ],
+    "object_rotation_deg_range": [
+      30.0,
+      150.0
+    ],
+    "light_energy_scale_range": [
+      0.3,
+      2.5
+    ],
+    "light_azimuth_deg_range": [
+      60.0,
+      180.0
+    ],
+    "texture_color_jitter": 0.6
+  },
+  "scenes": [
+    {
+      "scene_id": "scene_0000",
+      "seed": 0,
+      "split": "train"
+    },
+    {
+      "scene_id": "scene_0001",
+      "seed": 1,
+      "split": "train"
+    },
+    {
+      "scene_id": "scene_0002",
+      "seed": 2,
+      "split": "train"
+    },
+    {
+      "scene_id": "scene_0003",
+      "seed": 3,
+      "split": "train"
+    },
+    {
+      "scene_id": "scene_0004",
+      "seed": 4,
+      "split": "train"
+    },
+    {
+      "scene_id": "scene_0005",
+      "seed": 5,
+      "split": "test"
+    },
+    {
+      "scene_id": "scene_0006",
+      "seed": 6,
+      "split": "train"
+    },
+    {
+      "scene_id": "scene_0007",
+      "seed": 7,
+      "split": "test"
+    },
+    {
+      "scene_id": "scene_0008",
+      "seed": 8,
+      "split": "train"
+    },
+    {
+      "scene_id": "scene_0009",
+      "seed": 9,
+      "split": "train"
+    },
+    {
+      "scene_id": "scene_0010",
+      "seed": 10,
+      "split": "train"
+    },
+    {
+      "scene_id": "scene_0011",
+      "seed": 11,
+      "split": "train"
+    },
+    {
+      "scene_id": "scene_0012",
+      "seed": 12,
+      "split": "train"
+    },
+    {
+      "scene_id": "scene_0013",
+      "seed": 13,
+      "split": "train"
+    },
+    {
+      "scene_id": "scene_0014",
+      "seed": 14,
+      "split": "test"
+    },
+    {
+      "scene_id": "scene_0015",
+      "seed": 15,
+      "split": "test"
+    },
+    {
+      "scene_id": "scene_0016",
+      "seed": 16,
+      "split": "train"
+    },
+    {
+      "scene_id": "scene_0017",
+      "seed": 17,
+      "split": "train"
+    },
+    {
+      "scene_id": "scene_0018",
+      "seed": 18,
+      "split": "train"
+    },
+    {
+      "scene_id": "scene_0019",
+      "seed": 19,
+      "split": "train"
+    },
+    {
+      "scene_id": "scene_0020",
+      "seed": 20,
+      "split": "train"
+    },
+    {
+      "scene_id": "scene_0021",
+      "seed": 21,
+      "split": "train"
+    },
+    {
+      "scene_id": "scene_0022",
+      "seed": 22,
+      "split": "train"
+    },
+    {
+      "scene_id": "scene_0023",
+      "seed": 23,
+      "split": "train"
+    },
+    {
+      "scene_id": "scene_0024",
+      "seed": 24,
+      "split": "train"
+    },
+    {
+      "scene_id": "scene_0025",
+      "seed": 25,
+      "split": "train"
+    },
+    {
+      "scene_id": "scene_0026",
+      "seed": 26,
+      "split": "train"
+    },
+    {
+      "scene_id": "scene_0027",
+      "seed": 27,
+      "split": "train"
+    },
+    {
+      "scene_id": "scene_0028",
+      "seed": 28,
+      "split": "train"
+    },
+    {
+      "scene_id": "scene_0029",
+      "seed": 29,
+      "split": "test"
+    },
+    {
+      "scene_id": "scene_0030",
+      "seed": 30,
+      "split": "train"
+    },
+    {
+      "scene_id": "scene_0031",
+      "seed": 31,
+      "split": "test"
+    },
+    {
+      "scene_id": "scene_0032",
+      "seed": 32,
+      "split": "train"
+    },
+    {
+      "scene_id": "scene_0033",
+      "seed": 33,
+      "split": "test"
+    },
+    {
+      "scene_id": "scene_0034",
+      "seed": 34,
+      "split": "train"
+    },
+    {
+      "scene_id": "scene_0035",
+      "seed": 35,
+      "split": "train"
+    },
+    {
+      "scene_id": "scene_0036",
+      "seed": 36,
+      "split": "train"
+    },
+    {
+      "scene_id": "scene_0037",
+      "seed": 37,
+      "split": "train"
+    },
+    {
+      "scene_id": "scene_0038",
+      "seed": 38,
+      "split": "train"
+    },
+    {
+      "scene_id": "scene_0039",
+      "seed": 39,
+      "split": "test"
+    }
+  ]
+}

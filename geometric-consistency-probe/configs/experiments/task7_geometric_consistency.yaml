@@ -1,0 +1,35 @@
+# Task 7 config: multiple geometric transformations + appearance controls.
+#
+# Reuses Task 6's exact scene-sampling convention (>=40 scenes, base_seed
+# 0, 1-3 objects/scene) so the sampled scene set -- and hence the
+# scene-level train/test split -- is identical to Task 6's. Runs all
+# four GEOMETRIC_TRANSFORMS plus both CONTROL_TRANSFORMS through the
+# identical protocol, using TransformConfig()'s default magnitude RANGES
+# uniformly for every transform (not Task 6's fixed 30-degree azimuth --
+# see experiments/task7_geometric_consistency.py's transform_config_for()
+# docstring and this run's "protocol_notes" result field for why). Same
+# real pretrained V-JEPA 2 ViT-L/16 encoder as Task 6; falls back to a
+# seeded random-weight model (and honestly records encoder.pretrained:
+# false) if Hugging Face Hub is unreachable at run time.
+
+num_scenes: 40
+train_fraction: 0.8
+base_seed: 0
+output_dir: experiments/geometric_consistency
+result_path: state/task_07_result.json
+task6_result_path: state/task_06_result.json
+
+resolution: 128
+num_frames: 4
+fps: 4.0
+
+ridge_alpha: 10.0
+shuffled_pairing_seed: 0
+
+num_objects_min: 1
+num_objects_max: 3
+
+pretrained: true
+checkpoint: facebook/vjepa2-vitl-fpc64-256
+device: null
+fallback_seed: 0

@@ -1,0 +1,54 @@
+{
+  "azimuth_deg": 17.38641942378563,
+  "elevation_deg": 5.915780708034015,
+  "pivot": [
+    0.0,
+    0.0,
+    0.0
+  ],
+  "transform_matrix": [
+    [
+      0.9539613079715019,
+      -0.29953181547773305,
+      0.015443911742639017,
+      0.0
+    ],
+    [
+      0.2965060463220305,
+      0.9495788411937668,
+      0.10190284025276733,
+      0.0
+    ],
+    [
+      -0.045188354559322776,
+      -0.09263215356298467,
+      0.9946744677222314,
+      0.0
+    ],
+    [
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ]
+  ],
+  "changed_variables": [
+    "camera.position",
+    "camera.rotation_euler"
+  ],
+  "fixed_variables": [
+    "camera.lens_mm",
+    "camera.sensor_width_mm",
+    "objects[0].position",
+    "objects[0].rotation_euler",
+    "objects[0].scale",
+    "objects[0].color",
+    "objects[0].shape",
+    "light.position",
+    "light.energy",
+    "light.color",
+    "floor_color"
+  ],
+  "transform_name": "camera_rotation",
+  "type": "camera_rotation"
+}

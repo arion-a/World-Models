@@ -1,0 +1,1925 @@
+{
+  "task": 7,
+  "implementation_status": "COMPLETE",
+  "scientific_result": "Across the four geometric transforms (camera_rotation, camera_translation, object_rotation, object_translation) and two appearance-only controls (lighting_change, texture_change), evaluated under the identical scene set, scene-level train/test split, encoder, pooling, fitting method, and three required controls: 0/4 geometric transforms showed the learned W_T exceeding the best of the three baselines on held-out test scenes (none), and 0/2 appearance-only controls did the same (none). This does NOT show a clean separation between geometric transforms and appearance-only controls under this protocol -- a meaningful negative/mixed finding (weak evidence that Z is not cleanly distinguishing geometry from any change), reported plainly rather than adjusted until a cleaner-looking separation appears (tasks/07_geometric_consistency.md's interpretation limits).\n\nPer-transform detail:\n- camera_translation (geometric): learned W_T R^2=0.198 did not exceed best control R^2=0.638\n- camera_rotation (geometric): learned W_T R^2=-0.176 did not exceed best control R^2=0.079\n- object_translation (geometric): learned W_T R^2=0.381 did not exceed best control R^2=0.807\n- object_rotation (geometric): learned W_T R^2=-0.195 did not exceed best control R^2=0.385\n- lighting_change (control): learned W_T R^2=0.070 did not exceed best control R^2=0.467\n- texture_change (control): learned W_T R^2=0.426 did not exceed best control R^2=0.870",
+  "transforms_evaluated": [
+    "camera_translation",
+    "camera_rotation",
+    "object_translation",
+    "object_rotation",
+    "lighting_change",
+    "texture_change"
+  ],
+  "dataset": {
+    "num_scenes": 40,
+    "train_scene_ids": [
+      "scene_0000",
+      "scene_0001",
+      "scene_0002",
+      "scene_0003",
+      "scene_0004",
+      "scene_0006",
+      "scene_0008",
+      "scene_0009",
+      "scene_0010",
+      "scene_0011",
+      "scene_0012",
+      "scene_0013",
+      "scene_0016",
+      "scene_0017",
+      "scene_0018",
+      "scene_0019",
+      "scene_0020",
+      "scene_0021",
+      "scene_0022",
+      "scene_0023",
+      "scene_0024",
+      "scene_0025",
+      "scene_0026",
+      "scene_0027",
+      "scene_0028",
+      "scene_0030",
+      "scene_0032",
+      "scene_0034",
+      "scene_0035",
+      "scene_0036",
+      "scene_0037",
+      "scene_0038"
+    ],
+    "test_scene_ids": [
+      "scene_0005",
+      "scene_0007",
+      "scene_0014",
+      "scene_0015",
+      "scene_0029",
+      "scene_0031",
+      "scene_0033",
+      "scene_0039"
+    ],
+    "train_fraction": 0.8,
+    "base_seed": 0,
+    "reused_task6_scene_sampling_convention": true
+  },
+  "encoder": {
+    "name": "VJEPAEncoder",
+    "checkpoint": "facebook/vjepa2-vitl-fpc64-256",
+    "pretrained": true,
+    "frozen": true,
+    "pooling": "mean_pool"
+  },
+  "fitting": {
+    "method": "ridge",
+    "alpha": 10.0
+  },
+  "results": {
+    "camera_translation": {
+      "transform_name": "camera_translation",
+      "is_geometric": true,
+      "train_scene_ids": [
+        "scene_0000",
+        "scene_0001",
+        "scene_0002",
+        "scene_0003",
+        "scene_0004",
+        "scene_0006",
+        "scene_0008",
+        "scene_0009",
+        "scene_0010",
+        "scene_0011",
+        "scene_0012",
+        "scene_0013",
+        "scene_0016",
+        "scene_0017",
+        "scene_0018",
+        "scene_0019",
+        "scene_0020",
+        "scene_0021",
+        "scene_0022",
+        "scene_0023",
+        "scene_0024",
+        "scene_0025",
+        "scene_0026",
+        "scene_0027",
+        "scene_0028",
+        "scene_0030",
+        "scene_0032",
+        "scene_0034",
+        "scene_0035",
+        "scene_0036",
+        "scene_0037",
+        "scene_0038"
+      ],
+      "test_scene_ids": [
+        "scene_0005",
+        "scene_0007",
+        "scene_0014",
+        "scene_0015",
+        "scene_0029",
+        "scene_0031",
+        "scene_0033",
+        "scene_0039"
+      ],
+      "n_train": 32,
+      "n_test": 8,
+      "transform_config": {
+        "camera_translation_range": [
+          0.5,
+          1.5
+        ],
+        "camera_rotation_azimuth_deg_range": [
+          10.0,
+          35.0
+        ],
+        "camera_rotation_elevation_deg_range": [
+          -10.0,
+          10.0
+        ],
+        "object_translation_range": [
+          0.4,
+          1.0
+        ],
+        "object_rotation_deg_range": [
+          30.0,
+          150.0
+        ],
+        "light_energy_scale_range": [
+          0.3,
+          2.5
+        ],
+        "light_azimuth_deg_range": [
+          60.0,
+          180.0
+        ],
+        "texture_color_jitter": 0.6
+      },
+      "learned_W_T": {
+        "r2": 0.19755029678344727,
+        "mean_cosine_similarity": 0.9584792256355286,
+        "mean_relative_l2_error": 0.2795242369174957
+      },
+      "persistence_baseline": {
+        "r2": 0.6377502679824829,
+        "mean_cosine_similarity": 0.9811273217201233,
+        "mean_relative_l2_error": 0.18854403495788574
+      },
+      "mean_baseline": {
+        "r2": -0.16444337368011475,
+        "mean_cosine_similarity": 0.9378401041030884,
+        "mean_relative_l2_error": 0.34157779812812805
+      },
+      "random_pair_control": {
+        "r2": -1.0099210739135742,
+        "mean_cosine_similarity": 0.8993494510650635,
+        "mean_relative_l2_error": 0.44764581322669983
+      },
+      "visual_confound": {
+        "mean_abs_pixel_diff": 9.213075764973958,
+        "std_abs_pixel_diff": 5.8073092956817085,
+        "per_scene_mean_abs_pixel_diff": [
+          9.1153564453125,
+          13.384562174479166,
+          3.3484293619791665,
+          11.656229654947916,
+          12.74114990234375,
+          17.102315266927082,
+          10.90325927734375,
+          15.711344401041666,
+          10.496073404947916,
+          6.561055501302083,
+          32.4794921875,
+          4.083658854166667,
+          4.907307942708333,
+          12.3582763671875,
+          5.625040690104167,
+          11.232991536458334,
+          5.653564453125,
+          4.942240397135417,
+          12.72406005859375,
+          2.31463623046875,
+          9.72467041015625,
+          1.3707682291666667,
+          7.63031005859375,
+          6.010965983072917,
+          3.57403564453125,
+          11.115437825520834,
+          10.678812662760416,
+          4.635782877604167,
+          17.887776692708332,
+          5.1533203125,
+          4.67449951171875,
+          1.4262491861979167,
+          9.96392822265625,
+          11.7220458984375,
+          5.464803059895833,
+          7.978515625,
+          7.935791015625,
+          19.563680013020832,
+          4.627543131510417,
+          10.043050130208334
+        ]
+      },
+      "manifest_path": "experiments/geometric_consistency/camera_translation/manifest.json"
+    },
+    "camera_rotation": {
+      "transform_name": "camera_rotation",
+      "is_geometric": true,
+      "train_scene_ids": [
+        "scene_0000",
+        "scene_0001",
+        "scene_0002",
+        "scene_0003",
+        "scene_0004",
+        "scene_0006",
+        "scene_0008",
+        "scene_0009",
+        "scene_0010",
+        "scene_0011",
+        "scene_0012",
+        "scene_0013",
+        "scene_0016",
+        "scene_0017",
+        "scene_0018",
+        "scene_0019",
+        "scene_0020",
+        "scene_0021",
+        "scene_0022",
+        "scene_0023",
+        "scene_0024",
+        "scene_0025",
+        "scene_0026",
+        "scene_0027",
+        "scene_0028",
+        "scene_0030",
+        "scene_0032",
+        "scene_0034",
+        "scene_0035",
+        "scene_0036",
+        "scene_0037",
+        "scene_0038"
+      ],
+      "test_scene_ids": [
+        "scene_0005",
+        "scene_0007",
+        "scene_0014",
+        "scene_0015",
+        "scene_0029",
+        "scene_0031",
+        "scene_0033",
+        "scene_0039"
+      ],
+      "n_train": 32,
+      "n_test": 8,
+      "transform_config": {
+        "camera_translation_range": [
+          0.5,
+          1.5
+        ],
+        "camera_rotation_azimuth_deg_range": [
+          10.0,
+          35.0
+        ],
+        "camera_rotation_elevation_deg_range": [
+          -10.0,
+          10.0
+        ],
+        "object_translation_range": [
+          0.4,
+          1.0
+        ],
+        "object_rotation_deg_range": [
+          30.0,
+          150.0
+        ],
+        "light_energy_scale_range": [
+          0.3,
+          2.5
+        ],
+        "light_azimuth_deg_range": [
+          60.0,
+          180.0
+        ],
+        "texture_color_jitter": 0.6
+      },
+      "learned_W_T": {
+        "r2": -0.1757209300994873,
+        "mean_cosine_similarity": 0.9292762875556946,
+        "mean_relative_l2_error": 0.36760464310646057
+      },
+      "persistence_baseline": {
+        "r2": 0.07888507843017578,
+        "mean_cosine_similarity": 0.9445741176605225,
+        "mean_relative_l2_error": 0.3181622326374054
+      },
+      "mean_baseline": {
+        "r2": -0.22539830207824707,
+        "mean_cosine_similarity": 0.92397540807724,
+        "mean_relative_l2_error": 0.38119441270828247
+      },
+      "random_pair_control": {
+        "r2": -0.8977000713348389,
+        "mean_cosine_similarity": 0.8874539732933044,
+        "mean_relative_l2_error": 0.4728347063064575
+      },
+      "visual_confound": {
+        "mean_abs_pixel_diff": 10.276651509602866,
+        "std_abs_pixel_diff": 7.115879955054778,
+        "per_scene_mean_abs_pixel_diff": [
+          12.215616861979166,
+          8.95867919921875,
+          2.9569905598958335,
+          9.273111979166666,
+          21.281656901041668,
+          22.75250244140625,
+          3.93218994140625,
+          22.227396647135418,
+          10.847005208333334,
+          4.723164876302083,
+          31.740966796875,
+          3.9233601888020835,
+          4.0894775390625,
+          11.603617350260416,
+          6.087890625,
+          8.587198893229166,
+          11.369181315104166,
+          12.23541259765625,
+          10.226908365885416,
+          1.20465087890625,
+          11.841796875,
+          1.370849609375,
+          10.27587890625,
+          7.681986490885417,
+          3.3253987630208335,
+          14.636617024739584,
+          25.633158365885418,
+          3.7651163736979165,
+          14.884541829427084,
+          3.2942911783854165,
+          11.85565185546875,
+          6.924641927083333,
+          11.033976236979166,
+          20.30145263671875,
+          4.754597981770833,
+          4.277933756510417,
+          4.571370442708333,
+          17.926737467447918,
+          3.3671671549479165,
+          9.105916341145834
+        ]
+      },
+      "manifest_path": "experiments/geometric_consistency/camera_rotation/manifest.json"
+    },
+    "object_translation": {
+      "transform_name": "object_translation",
+      "is_geometric": true,
+      "train_scene_ids": [
+        "scene_0000",
+        "scene_0001",
+        "scene_0002",
+        "scene_0003",
+        "scene_0004",
+        "scene_0006",
+        "scene_0008",
+        "scene_0009",
+        "scene_0010",
+        "scene_0011",
+        "scene_0012",
+        "scene_0013",
+        "scene_0016",
+        "scene_0017",
+        "scene_0018",
+        "scene_0019",
+        "scene_0020",
+        "scene_0021",
+        "scene_0022",
+        "scene_0023",
+        "scene_0024",
+        "scene_0025",
+        "scene_0026",
+        "scene_0027",
+        "scene_0028",
+        "scene_0030",
+        "scene_0032",
+        "scene_0034",
+        "scene_0035",
+        "scene_0036",
+        "scene_0037",
+        "scene_0038"
+      ],
+      "test_scene_ids": [
+        "scene_0005",
+        "scene_0007",
+        "scene_0014",
+        "scene_0015",
+        "scene_0029",
+        "scene_0031",
+        "scene_0033",
+        "scene_0039"
+      ],
+      "n_train": 32,
+      "n_test": 8,
+      "transform_config": {
+        "camera_translation_range": [
+          0.5,
+          1.5
+        ],
+        "camera_rotation_azimuth_deg_range": [
+          10.0,
+          35.0
+        ],
+        "camera_rotation_elevation_deg_range": [
+          -10.0,
+          10.0
+        ],
+        "object_translation_range": [
+          0.4,
+          1.0
+        ],
+        "object_rotation_deg_range": [
+          30.0,
+          150.0
+        ],
+        "light_energy_scale_range": [
+          0.3,
+          2.5
+        ],
+        "light_azimuth_deg_range": [
+          60.0,
+          180.0
+        ],
+        "texture_color_jitter": 0.6
+      },
+      "learned_W_T": {
+        "r2": 0.381194531917572,
+        "mean_cosine_similarity": 0.9654080271720886,
+        "mean_relative_l2_error": 0.25917330384254456
+      },
+      "persistence_baseline": {
+        "r2": 0.8065166920423508,
+        "mean_cosine_similarity": 0.9892630577087402,
+        "mean_relative_l2_error": 0.13934680819511414
+      },
+      "mean_baseline": {
+        "r2": -0.12436115741729736,
+        "mean_cosine_similarity": 0.9358382225036621,
+        "mean_relative_l2_error": 0.34876760840415955
+      },
+      "random_pair_control": {
+        "r2": -0.9250136613845825,
+        "mean_cosine_similarity": 0.8969770073890686,
+        "mean_relative_l2_error": 0.45230141282081604
+      },
+      "visual_confound": {
+        "mean_abs_pixel_diff": 3.265522257486979,
+        "std_abs_pixel_diff": 2.6372326446331473,
+        "per_scene_mean_abs_pixel_diff": [
+          3.7435099283854165,
+          2.9771728515625,
+          0.4532267252604167,
+          2.5420939127604165,
+          0.6633097330729166,
+          8.1339111328125,
+          2.63006591796875,
+          2.8433634440104165,
+          1.4878133138020833,
+          1.8185221354166667,
+          8.515034993489584,
+          4.218668619791667,
+          1.1642252604166667,
+          2.780517578125,
+          2.5920613606770835,
+          5.20166015625,
+          3.6165771484375,
+          0.8408406575520834,
+          2.6077677408854165,
+          0.5619303385416666,
+          1.106689453125,
+          1.0457763671875,
+          2.36138916015625,
+          0.8753662109375,
+          0.5567830403645834,
+          9.60772705078125,
+          5.348836263020833,
+          4.77642822265625,
+          6.5057373046875,
+          1.6420491536458333,
+          7.08447265625,
+          1.1593017578125,
+          2.4590657552083335,
+          2.3340047200520835,
+          2.5510457356770835,
+          5.439107259114583,
+          0.6752115885416666,
+          10.934855143229166,
+          4.08319091796875,
+          0.68157958984375
+        ]
+      },
+      "manifest_path": "experiments/geometric_consistency/object_translation/manifest.json"
+    },
+    "object_rotation": {
+      "transform_name": "object_rotation",
+      "is_geometric": true,
+      "train_scene_ids": [
+        "scene_0000",
+        "scene_0001",
+        "scene_0002",
+        "scene_0003",
+        "scene_0004",
+        "scene_0006",
+        "scene_0008",
+        "scene_0009",
+        "scene_0010",
+        "scene_0011",
+        "scene_0012",
+        "scene_0013",
+        "scene_0016",
+        "scene_0017",
+        "scene_0018",
+        "scene_0019",
+        "scene_0020",
+        "scene_0021",
+        "scene_0022",
+        "scene_0023",
+        "scene_0024",
+        "scene_0025",
+        "scene_0026",
+        "scene_0027",
+        "scene_0028",
+        "scene_0030",
+        "scene_0032",
+        "scene_0034",
+        "scene_0035",
+        "scene_0036",
+        "scene_0037",
+        "scene_0038"
+      ],
+      "test_scene_ids": [
+        "scene_0005",
+        "scene_0007",
+        "scene_0014",
+        "scene_0015",
+        "scene_0029",
+        "scene_0031",
+        "scene_0033",
+        "scene_0039"
+      ],
+      "n_train": 32,
+      "n_test": 8,
+      "transform_config": {
+        "camera_translation_range": [
+          0.5,
+          1.5
+        ],
+        "camera_rotation_azimuth_deg_range": [
+          10.0,
+          35.0
+        ],
+        "camera_rotation_elevation_deg_range": [
+          -10.0,
+          10.0
+        ],
+        "object_translation_range": [
+          0.4,
+          1.0
+        ],
+        "object_rotation_deg_range": [
+          30.0,
+          150.0
+        ],
+        "light_energy_scale_range": [
+          0.3,
+          2.5
+        ],
+        "light_azimuth_deg_range": [
+          60.0,
+          180.0
+        ],
+        "texture_color_jitter": 0.6
+      },
+      "learned_W_T": {
+        "r2": -0.19475507736206055,
+        "mean_cosine_similarity": 0.9469591379165649,
+        "mean_relative_l2_error": 0.31635618209838867
+      },
+      "persistence_baseline": {
+        "r2": 0.38524967432022095,
+        "mean_cosine_similarity": 0.973089337348938,
+        "mean_relative_l2_error": 0.21310535073280334
+      },
+      "mean_baseline": {
+        "r2": -0.21838760375976562,
+        "mean_cosine_similarity": 0.9452271461486816,
+        "mean_relative_l2_error": 0.32422131299972534
+      },
+      "random_pair_control": {
+        "r2": -0.9807968139648438,
+        "mean_cosine_similarity": 0.9151662588119507,
+        "mean_relative_l2_error": 0.411626935005188
+      },
+      "visual_confound": {
+        "mean_abs_pixel_diff": 1.3625223795572918,
+        "std_abs_pixel_diff": 1.5655566540828862,
+        "per_scene_mean_abs_pixel_diff": [
+          1.22906494140625,
+          1.1409912109375,
+          0.6290079752604166,
+          0.8795369466145834,
+          0.19854736328125,
+          0.725341796875,
+          1.11065673828125,
+          2.1918741861979165,
+          0.3463541666666667,
+          3.4570109049479165,
+          3.2882283528645835,
+          1.06988525390625,
+          1.81988525390625,
+          1.00714111328125,
+          1.0787150065104167,
+          2.0471394856770835,
+          0.4704996744791667,
+          0.43414306640625,
+          0.43426513671875,
+          0.4591878255208333,
+          1.39019775390625,
+          0.2874552408854167,
+          2.0282185872395835,
+          0.3702799479166667,
+          0.14774576822916666,
+          9.323486328125,
+          0.4211222330729167,
+          1.14202880859375,
+          0.3224690755208333,
+          0.784912109375,
+          2.8859456380208335,
+          0.3538614908854167,
+          1.8533121744791667,
+          0.5030924479166666,
+          1.0660807291666667,
+          3.10577392578125,
+          0.22267659505208334,
+          2.5897013346354165,
+          1.42449951171875,
+          0.26055908203125
+        ]
+      },
+      "manifest_path": "experiments/geometric_consistency/object_rotation/manifest.json"
+    },
+    "lighting_change": {
+      "transform_name": "lighting_change",
+      "is_geometric": false,
+      "train_scene_ids": [
+        "scene_0000",
+        "scene_0001",
+        "scene_0002",
+        "scene_0003",
+        "scene_0004",
+        "scene_0006",
+        "scene_0008",
+        "scene_0009",
+        "scene_0010",
+        "scene_0011",
+        "scene_0012",
+        "scene_0013",
+        "scene_0016",
+        "scene_0017",
+        "scene_0018",
+        "scene_0019",
+        "scene_0020",
+        "scene_0021",
+        "scene_0022",
+        "scene_0023",
+        "scene_0024",
+        "scene_0025",
+        "scene_0026",
+        "scene_0027",
+        "scene_0028",
+        "scene_0030",
+        "scene_0032",
+        "scene_0034",
+        "scene_0035",
+        "scene_0036",
+        "scene_0037",
+        "scene_0038"
+      ],
+      "test_scene_ids": [
+        "scene_0005",
+        "scene_0007",
+        "scene_0014",
+        "scene_0015",
+        "scene_0029",
+        "scene_0031",
+        "scene_0033",
+        "scene_0039"
+      ],
+      "n_train": 32,
+      "n_test": 8,
+      "transform_config": {
+        "camera_translation_range": [
+          0.5,
+          1.5
+        ],
+        "camera_rotation_azimuth_deg_range": [
+          10.0,
+          35.0
+        ],
+        "camera_rotation_elevation_deg_range": [
+          -10.0,
+          10.0
+        ],
+        "object_translation_range": [
+          0.4,
+          1.0
+        ],
+        "object_rotation_deg_range": [
+          30.0,
+          150.0
+        ],
+        "light_energy_scale_range": [
+          0.3,
+          2.5
+        ],
+        "light_azimuth_deg_range": [
+          60.0,
+          180.0
+        ],
+        "texture_color_jitter": 0.6
+      },
+      "learned_W_T": {
+        "r2": 0.06997692584991455,
+        "mean_cosine_similarity": 0.953987181186676,
+        "mean_relative_l2_error": 0.3004664182662964
+      },
+      "persistence_baseline": {
+        "r2": 0.4666025638580322,
+        "mean_cosine_similarity": 0.9742307662963867,
+        "mean_relative_l2_error": 0.21801826357841492
+      },
+      "mean_baseline": {
+        "r2": -0.1608123779296875,
+        "mean_cosine_similarity": 0.9416624307632446,
+        "mean_relative_l2_error": 0.33313921093940735
+      },
+      "random_pair_control": {
+        "r2": -1.1923909187316895,
+        "mean_cosine_similarity": 0.8964130878448486,
+        "mean_relative_l2_error": 0.45316386222839355
+      },
+      "visual_confound": {
+        "mean_abs_pixel_diff": 23.958328755696616,
+        "std_abs_pixel_diff": 9.641537462968548,
+        "per_scene_mean_abs_pixel_diff": [
+          32.1856689453125,
+          14.29315185546875,
+          27.391316731770832,
+          14.90203857421875,
+          21.84326171875,
+          19.458292643229168,
+          10.073262532552084,
+          21.55975341796875,
+          17.05145263671875,
+          28.7974853515625,
+          40.665852864583336,
+          24.47894287109375,
+          17.6082763671875,
+          26.649271647135418,
+          9.405721028645834,
+          42.942179361979164,
+          23.357462565104168,
+          31.13421630859375,
+          43.108561197916664,
+          33.34930419921875,
+          24.3104248046875,
+          31.45257568359375,
+          31.11383056640625,
+          11.982950846354166,
+          34.60601806640625,
+          26.40765380859375,
+          16.5531005859375,
+          26.55780029296875,
+          14.403035481770834,
+          19.238932291666668,
+          49.88818359375,
+          19.555704752604168,
+          21.691609700520832,
+          16.295166015625,
+          19.183756510416668,
+          13.5413818359375,
+          23.547220865885418,
+          10.849568684895834,
+          32.345174153645836,
+          14.5535888671875
+        ]
+      },
+      "manifest_path": "experiments/geometric_consistency/lighting_change/manifest.json"
+    },
+    "texture_change": {
+      "transform_name": "texture_change",
+      "is_geometric": false,
+      "train_scene_ids": [
+        "scene_0000",
+        "scene_0001",
+        "scene_0002",
+        "scene_0003",
+        "scene_0004",
+        "scene_0006",
+        "scene_0008",
+        "scene_0009",
+        "scene_0010",
+        "scene_0011",
+        "scene_0012",
+        "scene_0013",
+        "scene_0016",
+        "scene_0017",
+        "scene_0018",
+        "scene_0019",
+        "scene_0020",
+        "scene_0021",
+        "scene_0022",
+        "scene_0023",
+        "scene_0024",
+        "scene_0025",
+        "scene_0026",
+        "scene_0027",
+        "scene_0028",
+        "scene_0030",
+        "scene_0032",
+        "scene_0034",
+        "scene_0035",
+        "scene_0036",
+        "scene_0037",
+        "scene_0038"
+      ],
+      "test_scene_ids": [
+        "scene_0005",
+        "scene_0007",
+        "scene_0014",
+        "scene_0015",
+        "scene_0029",
+        "scene_0031",
+        "scene_0033",
+        "scene_0039"
+      ],
+      "n_train": 32,
+      "n_test": 8,
+      "transform_config": {
+        "camera_translation_range": [
+          0.5,
+          1.5
+        ],
+        "camera_rotation_azimuth_deg_range": [
+          10.0,
+          35.0
+        ],
+        "camera_rotation_elevation_deg_range": [
+          -10.0,
+          10.0
+        ],
+        "object_translation_range": [
+          0.4,
+          1.0
+        ],
+        "object_rotation_deg_range": [
+          30.0,
+          150.0
+        ],
+        "light_energy_scale_range": [
+          0.3,
+          2.5
+        ],
+        "light_azimuth_deg_range": [
+          60.0,
+          180.0
+        ],
+        "texture_color_jitter": 0.6
+      },
+      "learned_W_T": {
+        "r2": 0.42588913440704346,
+        "mean_cosine_similarity": 0.9691794514656067,
+        "mean_relative_l2_error": 0.24409997463226318
+      },
+      "persistence_baseline": {
+        "r2": 0.8699676096439362,
+        "mean_cosine_similarity": 0.9930896162986755,
+        "mean_relative_l2_error": 0.11428184807300568
+      },
+      "mean_baseline": {
+        "r2": -0.14221417903900146,
+        "mean_cosine_similarity": 0.9377384781837463,
+        "mean_relative_l2_error": 0.3446153700351715
+      },
+      "random_pair_control": {
+        "r2": -0.8333108425140381,
+        "mean_cosine_similarity": 0.9061062335968018,
+        "mean_relative_l2_error": 0.43513911962509155
+      },
+      "visual_confound": {
+        "mean_abs_pixel_diff": 1.177092997233073,
+        "std_abs_pixel_diff": 0.8289066069759733,
+        "per_scene_mean_abs_pixel_diff": [
+          0.6537679036458334,
+          1.0153401692708333,
+          1.5185546875,
+          1.3868001302083333,
+          0.7113850911458334,
+          1.5284220377604167,
+          0.90631103515625,
+          1.16278076171875,
+          1.9892374674479167,
+          3.2012125651041665,
+          2.60693359375,
+          0.2935384114583333,
+          0.5900675455729166,
+          1.1605224609375,
+          0.22163899739583334,
+          3.2295125325520835,
+          2.21514892578125,
+          0.8546346028645834,
+          2.70318603515625,
+          0.6014200846354166,
+          0.3951009114583333,
+          0.11159261067708333,
+          1.0206705729166667,
+          0.3081461588541667,
+          0.2635091145833333,
+          0.9944051106770834,
+          2.5589192708333335,
+          0.517578125,
+          0.4640909830729167,
+          1.3318684895833333,
+          1.3152058919270833,
+          0.587646484375,
+          1.7057902018229167,
+          1.5060831705729167,
+          0.92645263671875,
+          0.22768147786458334,
+          1.5576375325520833,
+          0.3823649088541667,
+          0.4903767903645833,
+          1.8681844075520833
+        ]
+      },
+      "manifest_path": "experiments/geometric_consistency/texture_change/manifest.json"
+    }
+  },
+  "metrics": {
+    "camera_translation": {
+      "transform_name": "camera_translation",
+      "is_geometric": true,
+      "train_scene_ids": [
+        "scene_0000",
+        "scene_0001",
+        "scene_0002",
+        "scene_0003",
+        "scene_0004",
+        "scene_0006",
+        "scene_0008",
+        "scene_0009",
+        "scene_0010",
+        "scene_0011",
+        "scene_0012",
+        "scene_0013",
+        "scene_0016",
+        "scene_0017",
+        "scene_0018",
+        "scene_0019",
+        "scene_0020",
+        "scene_0021",
+        "scene_0022",
+        "scene_0023",
+        "scene_0024",
+        "scene_0025",
+        "scene_0026",
+        "scene_0027",
+        "scene_0028",
+        "scene_0030",
+        "scene_0032",
+        "scene_0034",
+        "scene_0035",
+        "scene_0036",
+        "scene_0037",
+        "scene_0038"
+      ],
+      "test_scene_ids": [
+        "scene_0005",
+        "scene_0007",
+        "scene_0014",
+        "scene_0015",
+        "scene_0029",
+        "scene_0031",
+        "scene_0033",
+        "scene_0039"
+      ],
+      "n_train": 32,
+      "n_test": 8,
+      "transform_config": {
+        "camera_translation_range": [
+          0.5,
+          1.5
+        ],
+        "camera_rotation_azimuth_deg_range": [
+          10.0,
+          35.0
+        ],
+        "camera_rotation_elevation_deg_range": [
+          -10.0,
+          10.0
+        ],
+        "object_translation_range": [
+          0.4,
+          1.0
+        ],
+        "object_rotation_deg_range": [
+          30.0,
+          150.0
+        ],
+        "light_energy_scale_range": [
+          0.3,
+          2.5
+        ],
+        "light_azimuth_deg_range": [
+          60.0,
+          180.0
+        ],
+        "texture_color_jitter": 0.6
+      },
+      "learned_W_T": {
+        "r2": 0.19755029678344727,
+        "mean_cosine_similarity": 0.9584792256355286,
+        "mean_relative_l2_error": 0.2795242369174957
+      },
+      "persistence_baseline": {
+        "r2": 0.6377502679824829,
+        "mean_cosine_similarity": 0.9811273217201233,
+        "mean_relative_l2_error": 0.18854403495788574
+      },
+      "mean_baseline": {
+        "r2": -0.16444337368011475,
+        "mean_cosine_similarity": 0.9378401041030884,
+        "mean_relative_l2_error": 0.34157779812812805
+      },
+      "random_pair_control": {
+        "r2": -1.0099210739135742,
+        "mean_cosine_similarity": 0.8993494510650635,
+        "mean_relative_l2_error": 0.44764581322669983
+      },
+      "visual_confound": {
+        "mean_abs_pixel_diff": 9.213075764973958,
+        "std_abs_pixel_diff": 5.8073092956817085,
+        "per_scene_mean_abs_pixel_diff": [
+          9.1153564453125,
+          13.384562174479166,
+          3.3484293619791665,
+          11.656229654947916,
+          12.74114990234375,
+          17.102315266927082,
+          10.90325927734375,
+          15.711344401041666,
+          10.496073404947916,
+          6.561055501302083,
+          32.4794921875,
+          4.083658854166667,
+          4.907307942708333,
+          12.3582763671875,
+          5.625040690104167,
+          11.232991536458334,
+          5.653564453125,
+          4.942240397135417,
+          12.72406005859375,
+          2.31463623046875,
+          9.72467041015625,
+          1.3707682291666667,
+          7.63031005859375,
+          6.010965983072917,
+          3.57403564453125,
+          11.115437825520834,
+          10.678812662760416,
+          4.635782877604167,
+          17.887776692708332,
+          5.1533203125,
+          4.67449951171875,
+          1.4262491861979167,
+          9.96392822265625,
+          11.7220458984375,
+          5.464803059895833,
+          7.978515625,
+          7.935791015625,
+          19.563680013020832,
+          4.627543131510417,
+          10.043050130208334
+        ]
+      },
+      "manifest_path": "experiments/geometric_consistency/camera_translation/manifest.json"
+    },
+    "camera_rotation": {
+      "transform_name": "camera_rotation",
+      "is_geometric": true,
+      "train_scene_ids": [
+        "scene_0000",
+        "scene_0001",
+        "scene_0002",
+        "scene_0003",
+        "scene_0004",
+        "scene_0006",
+        "scene_0008",
+        "scene_0009",
+        "scene_0010",
+        "scene_0011",
+        "scene_0012",
+        "scene_0013",
+        "scene_0016",
+        "scene_0017",
+        "scene_0018",
+        "scene_0019",
+        "scene_0020",
+        "scene_0021",
+        "scene_0022",
+        "scene_0023",
+        "scene_0024",
+        "scene_0025",
+        "scene_0026",
+        "scene_0027",
+        "scene_0028",
+        "scene_0030",
+        "scene_0032",
+        "scene_0034",
+        "scene_0035",
+        "scene_0036",
+        "scene_0037",
+        "scene_0038"
+      ],
+      "test_scene_ids": [
+        "scene_0005",
+        "scene_0007",
+        "scene_0014",
+        "scene_0015",
+        "scene_0029",
+        "scene_0031",
+        "scene_0033",
+        "scene_0039"
+      ],
+      "n_train": 32,
+      "n_test": 8,
+      "transform_config": {
+        "camera_translation_range": [
+          0.5,
+          1.5
+        ],
+        "camera_rotation_azimuth_deg_range": [
+          10.0,
+          35.0
+        ],
+        "camera_rotation_elevation_deg_range": [
+          -10.0,
+          10.0
+        ],
+        "object_translation_range": [
+          0.4,
+          1.0
+        ],
+        "object_rotation_deg_range": [
+          30.0,
+          150.0
+        ],
+        "light_energy_scale_range": [
+          0.3,
+          2.5
+        ],
+        "light_azimuth_deg_range": [
+          60.0,
+          180.0
+        ],
+        "texture_color_jitter": 0.6
+      },
+      "learned_W_T": {
+        "r2": -0.1757209300994873,
+        "mean_cosine_similarity": 0.9292762875556946,
+        "mean_relative_l2_error": 0.36760464310646057
+      },
+      "persistence_baseline": {
+        "r2": 0.07888507843017578,
+        "mean_cosine_similarity": 0.9445741176605225,
+        "mean_relative_l2_error": 0.3181622326374054
+      },
+      "mean_baseline": {
+        "r2": -0.22539830207824707,
+        "mean_cosine_similarity": 0.92397540807724,
+        "mean_relative_l2_error": 0.38119441270828247
+      },
+      "random_pair_control": {
+        "r2": -0.8977000713348389,
+        "mean_cosine_similarity": 0.8874539732933044,
+        "mean_relative_l2_error": 0.4728347063064575
+      },
+      "visual_confound": {
+        "mean_abs_pixel_diff": 10.276651509602866,
+        "std_abs_pixel_diff": 7.115879955054778,
+        "per_scene_mean_abs_pixel_diff": [
+          12.215616861979166,
+          8.95867919921875,
+          2.9569905598958335,
+          9.273111979166666,
+          21.281656901041668,
+          22.75250244140625,
+          3.93218994140625,
+          22.227396647135418,
+          10.847005208333334,
+          4.723164876302083,
+          31.740966796875,
+          3.9233601888020835,
+          4.0894775390625,
+          11.603617350260416,
+          6.087890625,
+          8.587198893229166,
+          11.369181315104166,
+          12.23541259765625,
+          10.226908365885416,
+          1.20465087890625,
+          11.841796875,
+          1.370849609375,
+          10.27587890625,
+          7.681986490885417,
+          3.3253987630208335,
+          14.636617024739584,
+          25.633158365885418,
+          3.7651163736979165,
+          14.884541829427084,
+          3.2942911783854165,
+          11.85565185546875,
+          6.924641927083333,
+          11.033976236979166,
+          20.30145263671875,
+          4.754597981770833,
+          4.277933756510417,
+          4.571370442708333,
+          17.926737467447918,
+          3.3671671549479165,
+          9.105916341145834
+        ]
+      },
+      "manifest_path": "experiments/geometric_consistency/camera_rotation/manifest.json"
+    },
+    "object_translation": {
+      "transform_name": "object_translation",
+      "is_geometric": true,
+      "train_scene_ids": [
+        "scene_0000",
+        "scene_0001",
+        "scene_0002",
+        "scene_0003",
+        "scene_0004",
+        "scene_0006",
+        "scene_0008",
+        "scene_0009",
+        "scene_0010",
+        "scene_0011",
+        "scene_0012",
+        "scene_0013",
+        "scene_0016",
+        "scene_0017",
+        "scene_0018",
+        "scene_0019",
+        "scene_0020",
+        "scene_0021",
+        "scene_0022",
+        "scene_0023",
+        "scene_0024",
+        "scene_0025",
+        "scene_0026",
+        "scene_0027",
+        "scene_0028",
+        "scene_0030",
+        "scene_0032",
+        "scene_0034",
+        "scene_0035",
+        "scene_0036",
+        "scene_0037",
+        "scene_0038"
+      ],
+      "test_scene_ids": [
+        "scene_0005",
+        "scene_0007",
+        "scene_0014",
+        "scene_0015",
+        "scene_0029",
+        "scene_0031",
+        "scene_0033",
+        "scene_0039"
+      ],
+      "n_train": 32,
+      "n_test": 8,
+      "transform_config": {
+        "camera_translation_range": [
+          0.5,
+          1.5
+        ],
+        "camera_rotation_azimuth_deg_range": [
+          10.0,
+          35.0
+        ],
+        "camera_rotation_elevation_deg_range": [
+          -10.0,
+          10.0
+        ],
+        "object_translation_range": [
+          0.4,
+          1.0
+        ],
+        "object_rotation_deg_range": [
+          30.0,
+          150.0
+        ],
+        "light_energy_scale_range": [
+          0.3,
+          2.5
+        ],
+        "light_azimuth_deg_range": [
+          60.0,
+          180.0
+        ],
+        "texture_color_jitter": 0.6
+      },
+      "learned_W_T": {
+        "r2": 0.381194531917572,
+        "mean_cosine_similarity": 0.9654080271720886,
+        "mean_relative_l2_error": 0.25917330384254456
+      },
+      "persistence_baseline": {
+        "r2": 0.8065166920423508,
+        "mean_cosine_similarity": 0.9892630577087402,
+        "mean_relative_l2_error": 0.13934680819511414
+      },
+      "mean_baseline": {
+        "r2": -0.12436115741729736,
+        "mean_cosine_similarity": 0.9358382225036621,
+        "mean_relative_l2_error": 0.34876760840415955
+      },
+      "random_pair_control": {
+        "r2": -0.9250136613845825,
+        "mean_cosine_similarity": 0.8969770073890686,
+        "mean_relative_l2_error": 0.45230141282081604
+      },
+      "visual_confound": {
+        "mean_abs_pixel_diff": 3.265522257486979,
+        "std_abs_pixel_diff": 2.6372326446331473,
+        "per_scene_mean_abs_pixel_diff": [
+          3.7435099283854165,
+          2.9771728515625,
+          0.4532267252604167,
+          2.5420939127604165,
+          0.6633097330729166,
+          8.1339111328125,
+          2.63006591796875,
+          2.8433634440104165,
+          1.4878133138020833,
+          1.8185221354166667,
+          8.515034993489584,
+          4.218668619791667,
+          1.1642252604166667,
+          2.780517578125,
+          2.5920613606770835,
+          5.20166015625,
+          3.6165771484375,
+          0.8408406575520834,
+          2.6077677408854165,
+          0.5619303385416666,
+          1.106689453125,
+          1.0457763671875,
+          2.36138916015625,
+          0.8753662109375,
+          0.5567830403645834,
+          9.60772705078125,
+          5.348836263020833,
+          4.77642822265625,
+          6.5057373046875,
+          1.6420491536458333,
+          7.08447265625,
+          1.1593017578125,
+          2.4590657552083335,
+          2.3340047200520835,
+          2.5510457356770835,
+          5.439107259114583,
+          0.6752115885416666,
+          10.934855143229166,
+          4.08319091796875,
+          0.68157958984375
+        ]
+      },
+      "manifest_path": "experiments/geometric_consistency/object_translation/manifest.json"
+    },
+    "object_rotation": {
+      "transform_name": "object_rotation",
+      "is_geometric": true,
+      "train_scene_ids": [
+        "scene_0000",
+        "scene_0001",
+        "scene_0002",
+        "scene_0003",
+        "scene_0004",
+        "scene_0006",
+        "scene_0008",
+        "scene_0009",
+        "scene_0010",
+        "scene_0011",
+        "scene_0012",
+        "scene_0013",
+        "scene_0016",
+        "scene_0017",
+        "scene_0018",
+        "scene_0019",
+        "scene_0020",
+        "scene_0021",
+        "scene_0022",
+        "scene_0023",
+        "scene_0024",
+        "scene_0025",
+        "scene_0026",
+        "scene_0027",
+        "scene_0028",
+        "scene_0030",
+        "scene_0032",
+        "scene_0034",
+        "scene_0035",
+        "scene_0036",
+        "scene_0037",
+        "scene_0038"
+      ],
+      "test_scene_ids": [
+        "scene_0005",
+        "scene_0007",
+        "scene_0014",
+        "scene_0015",
+        "scene_0029",
+        "scene_0031",
+        "scene_0033",
+        "scene_0039"
+      ],
+      "n_train": 32,
+      "n_test": 8,
+      "transform_config": {
+        "camera_translation_range": [
+          0.5,
+          1.5
+        ],
+        "camera_rotation_azimuth_deg_range": [
+          10.0,
+          35.0
+        ],
+        "camera_rotation_elevation_deg_range": [
+          -10.0,
+          10.0
+        ],
+        "object_translation_range": [
+          0.4,
+          1.0
+        ],
+        "object_rotation_deg_range": [
+          30.0,
+          150.0
+        ],
+        "light_energy_scale_range": [
+          0.3,
+          2.5
+        ],
+        "light_azimuth_deg_range": [
+          60.0,
+          180.0
+        ],
+        "texture_color_jitter": 0.6
+      },
+      "learned_W_T": {
+        "r2": -0.19475507736206055,
+        "mean_cosine_similarity": 0.9469591379165649,
+        "mean_relative_l2_error": 0.31635618209838867
+      },
+      "persistence_baseline": {
+        "r2": 0.38524967432022095,
+        "mean_cosine_similarity": 0.973089337348938,
+        "mean_relative_l2_error": 0.21310535073280334
+      },
+      "mean_baseline": {
+        "r2": -0.21838760375976562,
+        "mean_cosine_similarity": 0.9452271461486816,
+        "mean_relative_l2_error": 0.32422131299972534
+      },
+      "random_pair_control": {
+        "r2": -0.9807968139648438,
+        "mean_cosine_similarity": 0.9151662588119507,
+        "mean_relative_l2_error": 0.411626935005188
+      },
+      "visual_confound": {
+        "mean_abs_pixel_diff": 1.3625223795572918,
+        "std_abs_pixel_diff": 1.5655566540828862,
+        "per_scene_mean_abs_pixel_diff": [
+          1.22906494140625,
+          1.1409912109375,
+          0.6290079752604166,
+          0.8795369466145834,
+          0.19854736328125,
+          0.725341796875,
+          1.11065673828125,
+          2.1918741861979165,
+          0.3463541666666667,
+          3.4570109049479165,
+          3.2882283528645835,
+          1.06988525390625,
+          1.81988525390625,
+          1.00714111328125,
+          1.0787150065104167,
+          2.0471394856770835,
+          0.4704996744791667,
+          0.43414306640625,
+          0.43426513671875,
+          0.4591878255208333,
+          1.39019775390625,
+          0.2874552408854167,
+          2.0282185872395835,
+          0.3702799479166667,
+          0.14774576822916666,
+          9.323486328125,
+          0.4211222330729167,
+          1.14202880859375,
+          0.3224690755208333,
+          0.784912109375,
+          2.8859456380208335,
+          0.3538614908854167,
+          1.8533121744791667,
+          0.5030924479166666,
+          1.0660807291666667,
+          3.10577392578125,
+          0.22267659505208334,
+          2.5897013346354165,
+          1.42449951171875,
+          0.26055908203125
+        ]
+      },
+      "manifest_path": "experiments/geometric_consistency/object_rotation/manifest.json"
+    },
+    "lighting_change": {
+      "transform_name": "lighting_change",
+      "is_geometric": false,
+      "train_scene_ids": [
+        "scene_0000",
+        "scene_0001",
+        "scene_0002",
+        "scene_0003",
+        "scene_0004",
+        "scene_0006",
+        "scene_0008",
+        "scene_0009",
+        "scene_0010",
+        "scene_0011",
+        "scene_0012",
+        "scene_0013",
+        "scene_0016",
+        "scene_0017",
+        "scene_0018",
+        "scene_0019",
+        "scene_0020",
+        "scene_0021",
+        "scene_0022",
+        "scene_0023",
+        "scene_0024",
+        "scene_0025",
+        "scene_0026",
+        "scene_0027",
+        "scene_0028",
+        "scene_0030",
+        "scene_0032",
+        "scene_0034",
+        "scene_0035",
+        "scene_0036",
+        "scene_0037",
+        "scene_0038"
+      ],
+      "test_scene_ids": [
+        "scene_0005",
+        "scene_0007",
+        "scene_0014",
+        "scene_0015",
+        "scene_0029",
+        "scene_0031",
+        "scene_0033",
+        "scene_0039"
+      ],
+      "n_train": 32,
+      "n_test": 8,
+      "transform_config": {
+        "camera_translation_range": [
+          0.5,
+          1.5
+        ],
+        "camera_rotation_azimuth_deg_range": [
+          10.0,
+          35.0
+        ],
+        "camera_rotation_elevation_deg_range": [
+          -10.0,
+          10.0
+        ],
+        "object_translation_range": [
+          0.4,
+          1.0
+        ],
+        "object_rotation_deg_range": [
+          30.0,
+          150.0
+        ],
+        "light_energy_scale_range": [
+          0.3,
+          2.5
+        ],
+        "light_azimuth_deg_range": [
+          60.0,
+          180.0
+        ],
+        "texture_color_jitter": 0.6
+      },
+      "learned_W_T": {
+        "r2": 0.06997692584991455,
+        "mean_cosine_similarity": 0.953987181186676,
+        "mean_relative_l2_error": 0.3004664182662964
+      },
+      "persistence_baseline": {
+        "r2": 0.4666025638580322,
+        "mean_cosine_similarity": 0.9742307662963867,
+        "mean_relative_l2_error": 0.21801826357841492
+      },
+      "mean_baseline": {
+        "r2": -0.1608123779296875,
+        "mean_cosine_similarity": 0.9416624307632446,
+        "mean_relative_l2_error": 0.33313921093940735
+      },
+      "random_pair_control": {
+        "r2": -1.1923909187316895,
+        "mean_cosine_similarity": 0.8964130878448486,
+        "mean_relative_l2_error": 0.45316386222839355
+      },
+      "visual_confound": {
+        "mean_abs_pixel_diff": 23.958328755696616,
+        "std_abs_pixel_diff": 9.641537462968548,
+        "per_scene_mean_abs_pixel_diff": [
+          32.1856689453125,
+          14.29315185546875,
+          27.391316731770832,
+          14.90203857421875,
+          21.84326171875,
+          19.458292643229168,
+          10.073262532552084,
+          21.55975341796875,
+          17.05145263671875,
+          28.7974853515625,
+          40.665852864583336,
+          24.47894287109375,
+          17.6082763671875,
+          26.649271647135418,
+          9.405721028645834,
+          42.942179361979164,
+          23.357462565104168,
+          31.13421630859375,
+          43.108561197916664,
+          33.34930419921875,
+          24.3104248046875,
+          31.45257568359375,
+          31.11383056640625,
+          11.982950846354166,
+          34.60601806640625,
+          26.40765380859375,
+          16.5531005859375,
+          26.55780029296875,
+          14.403035481770834,
+          19.238932291666668,
+          49.88818359375,
+          19.555704752604168,
+          21.691609700520832,
+          16.295166015625,
+          19.183756510416668,
+          13.5413818359375,
+          23.547220865885418,
+          10.849568684895834,
+          32.345174153645836,
+          14.5535888671875
+        ]
+      },
+      "manifest_path": "experiments/geometric_consistency/lighting_change/manifest.json"
+    },
+    "texture_change": {
+      "transform_name": "texture_change",
+      "is_geometric": false,
+      "train_scene_ids": [
+        "scene_0000",
+        "scene_0001",
+        "scene_0002",
+        "scene_0003",
+        "scene_0004",
+        "scene_0006",
+        "scene_0008",
+        "scene_0009",
+        "scene_0010",
+        "scene_0011",
+        "scene_0012",
+        "scene_0013",
+        "scene_0016",
+        "scene_0017",
+        "scene_0018",
+        "scene_0019",
+        "scene_0020",
+        "scene_0021",
+        "scene_0022",
+        "scene_0023",
+        "scene_0024",
+        "scene_0025",
+        "scene_0026",
+        "scene_0027",
+        "scene_0028",
+        "scene_0030",
+        "scene_0032",
+        "scene_0034",
+        "scene_0035",
+        "scene_0036",
+        "scene_0037",
+        "scene_0038"
+      ],
+      "test_scene_ids": [
+        "scene_0005",
+        "scene_0007",
+        "scene_0014",
+        "scene_0015",
+        "scene_0029",
+        "scene_0031",
+        "scene_0033",
+        "scene_0039"
+      ],
+      "n_train": 32,
+      "n_test": 8,
+      "transform_config": {
+        "camera_translation_range": [
+          0.5,
+          1.5
+        ],
+        "camera_rotation_azimuth_deg_range": [
+          10.0,
+          35.0
+        ],
+        "camera_rotation_elevation_deg_range": [
+          -10.0,
+          10.0
+        ],
+        "object_translation_range": [
+          0.4,
+          1.0
+        ],
+        "object_rotation_deg_range": [
+          30.0,
+          150.0
+        ],
+        "light_energy_scale_range": [
+          0.3,
+          2.5
+        ],
+        "light_azimuth_deg_range": [
+          60.0,
+          180.0
+        ],
+        "texture_color_jitter": 0.6
+      },
+      "learned_W_T": {
+        "r2": 0.42588913440704346,
+        "mean_cosine_similarity": 0.9691794514656067,
+        "mean_relative_l2_error": 0.24409997463226318
+      },
+      "persistence_baseline": {
+        "r2": 0.8699676096439362,
+        "mean_cosine_similarity": 0.9930896162986755,
+        "mean_relative_l2_error": 0.11428184807300568
+      },
+      "mean_baseline": {
+        "r2": -0.14221417903900146,
+        "mean_cosine_similarity": 0.9377384781837463,
+        "mean_relative_l2_error": 0.3446153700351715
+      },
+      "random_pair_control": {
+        "r2": -0.8333108425140381,
+        "mean_cosine_similarity": 0.9061062335968018,
+        "mean_relative_l2_error": 0.43513911962509155
+      },
+      "visual_confound": {
+        "mean_abs_pixel_diff": 1.177092997233073,
+        "std_abs_pixel_diff": 0.8289066069759733,
+        "per_scene_mean_abs_pixel_diff": [
+          0.6537679036458334,
+          1.0153401692708333,
+          1.5185546875,
+          1.3868001302083333,
+          0.7113850911458334,
+          1.5284220377604167,
+          0.90631103515625,
+          1.16278076171875,
+          1.9892374674479167,
+          3.2012125651041665,
+          2.60693359375,
+          0.2935384114583333,
+          0.5900675455729166,
+          1.1605224609375,
+          0.22163899739583334,
+          3.2295125325520835,
+          2.21514892578125,
+          0.8546346028645834,
+          2.70318603515625,
+          0.6014200846354166,
+          0.3951009114583333,
+          0.11159261067708333,
+          1.0206705729166667,
+          0.3081461588541667,
+          0.2635091145833333,
+          0.9944051106770834,
+          2.5589192708333335,
+          0.517578125,
+          0.4640909830729167,
+          1.3318684895833333,
+          1.3152058919270833,
+          0.587646484375,
+          1.7057902018229167,
+          1.5060831705729167,
+          0.92645263671875,
+          0.22768147786458334,
+          1.5576375325520833,
+          0.3823649088541667,
+          0.4903767903645833,
+          1.8681844075520833
+        ]
+      },
+      "manifest_path": "experiments/geometric_consistency/texture_change/manifest.json"
+    }
+  },
+  "comparison_table_markdown": "| transform | kind | learned W_T R^2 | persistence R^2 | mean R^2 | random-pair R^2 |\n|---|---|---|---|---|---|\n| camera_translation | geometric | 0.1976 | 0.6378 | -0.1644 | -1.0099 |\n| camera_rotation | geometric | -0.1757 | 0.0789 | -0.2254 | -0.8977 |\n| object_translation | geometric | 0.3812 | 0.8065 | -0.1244 | -0.9250 |\n| object_rotation | geometric | -0.1948 | 0.3852 | -0.2184 | -0.9808 |\n| lighting_change | control | 0.0700 | 0.4666 | -0.1608 | -1.1924 |\n| texture_change | control | 0.4259 | 0.8700 | -0.1422 | -0.8333 |\n",
+  "confound_analysis": {
+    "pixel_diff_by_transform": {
+      "camera_translation": 9.213075764973958,
+      "camera_rotation": 10.276651509602866,
+      "object_translation": 3.265522257486979,
+      "object_rotation": 1.3625223795572918,
+      "lighting_change": 23.958328755696616,
+      "texture_change": 1.177092997233073
+    },
+    "learned_w_t_r2_by_transform": {
+      "camera_translation": 0.19755029678344727,
+      "camera_rotation": -0.1757209300994873,
+      "object_translation": 0.381194531917572,
+      "object_rotation": -0.19475507736206055,
+      "lighting_change": 0.06997692584991455,
+      "texture_change": 0.42588913440704346
+    },
+    "pearson_correlation_pixel_diff_vs_learned_r2": -0.2258007342479408,
+    "note": "Pearson correlation, across the six transforms, between each transform's mean absolute per-pixel RGB change (computed directly from rendered clips, not from Z) and its learned W_T test R^2. A strong positive correlation here would mean that differences in R^2 across transforms could plausibly be explained by which transform simply perturbs more pixels, rather than by anything specific to geometry -- reported honestly regardless of sign or magnitude, per tasks/07_geometric_consistency.md's required scientific-QA step; not treated as a target to explain away."
+  },
+  "task6_reproduction_check": {
+    "task6_result_found": true,
+    "task6_camera_rotation_r2": -0.31295549869537354,
+    "task7_camera_rotation_r2": -0.1757209300994873,
+    "difference": 0.13723456859588623,
+    "identical_scene_split_as_task6": true,
+    "note": "A numeric difference here is EXPECTED and intentional -- see this result's 'protocol_notes' field and transform_config_for()'s docstring (Task 7 uses camera_rotation's default azimuth RANGE for cross-transform comparability, not Task 6's fixed 30-degree magnitude). Task 6's own state/task_06_result.json is left unmodified on disk."
+  },
+  "protocol_notes": [
+    "Task 6 fixed camera_rotation's azimuth magnitude at exactly 30 degrees (configs/experiments/task6_camera_rotation.yaml). Task 7 instead uses TransformConfig()'s default azimuth RANGE (10-35 degrees) for camera_rotation, uniformly with every other transform's default range, so that no single transform among the six is privileged with a fixed magnitude while the others are not -- see transform_config_for()'s docstring. As a direct consequence, this task's camera_rotation numbers are NOT expected to numerically reproduce state/task_06_result.json's recorded camera_rotation numbers exactly, even though the same >=40 scenes and the same scene-level train/test split are reused verbatim. This is an intentional, recorded protocol difference (Global Invariant 27), not a silent contradiction of Task 6's own result, which is left untouched on disk."
+  ],
+  "tests": {
+    "passed": 364,
+    "failed": 0,
+    "returncode": 0
+  },
+  "artifacts": [
+    "experiments/geometric_consistency/report.md",
+    "experiments/geometric_consistency/camera_translation/manifest.json",
+    "experiments/geometric_consistency/camera_rotation/manifest.json",
+    "experiments/geometric_consistency/object_translation/manifest.json",
+    "experiments/geometric_consistency/object_rotation/manifest.json",
+    "experiments/geometric_consistency/lighting_change/manifest.json",
+    "experiments/geometric_consistency/texture_change/manifest.json"
+  ],
+  "config": {
+    "num_scenes": 40,
+    "train_fraction": 0.8,
+    "base_seed": 0,
+    "output_dir": "experiments/geometric_consistency",
+    "result_path": "state/task_07_result.json",
+    "task6_result_path": "state/task_06_result.json",
+    "resolution": 128,
+    "num_frames": 4,
+    "fps": 4.0,
+    "ridge_alpha": 10.0,
+    "shuffled_pairing_seed": 0,
+    "num_objects_min": 1,
+    "num_objects_max": 3,
+    "pretrained": true,
+    "checkpoint": "facebook/vjepa2-vitl-fpc64-256",
+    "device": null,
+    "fallback_seed": 0
+  },
+  "seed": 0,
+  "software_versions": {
+    "python": "3.11.15",
+    "torch": "2.14.0+cu130",
+    "transformers": "5.17.0"
+  }
+}

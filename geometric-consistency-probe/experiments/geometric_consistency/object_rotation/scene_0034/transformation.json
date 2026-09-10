@@ -1,0 +1,59 @@
+{
+  "object_index": 0,
+  "angle_degrees": 48.9959841273631,
+  "axis": [
+    0.0,
+    0.0,
+    1.0
+  ],
+  "pivot": [
+    1.1909661256657356,
+    -0.8232243596658745,
+    0.8255306489308426
+  ],
+  "transform_matrix": [
+    [
+      0.6561119251242844,
+      -0.7546635950605445,
+      0.0,
+      -0.21169840660948402
+    ],
+    [
+      0.7546635950605445,
+      0.6561119251242844,
+      0.0,
+      -1.1818758182265234
+    ],
+    [
+      0.0,
+      0.0,
+      1.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ]
+  ],
+  "changed_variables": [
+    "objects[0].rotation_euler"
+  ],
+  "fixed_variables": [
+    "camera.position",
+    "camera.rotation_euler",
+    "camera.lens_mm",
+    "camera.sensor_width_mm",
+    "objects[0].position",
+    "objects[0].scale",
+    "objects[0].color",
+    "objects[0].shape",
+    "light.position",
+    "light.energy",
+    "light.color",
+    "floor_color"
+  ],
+  "transform_name": "object_rotation",
+  "type": "object_rotation"
+}

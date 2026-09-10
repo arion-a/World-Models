@@ -21,26 +21,29 @@ module implements verbatim -- nothing here invents a new protocol):
 This module deliberately does not modify generation/, transforms/, or
 encoders/ -- it only calls their existing public functions, per Task 6's
 "Relationship to previous tasks" section.
+
+As of Task 7 ("Multiple geometric transformations"), the actual
+sampling / splitting / rendering+verification / encoding / array /
+fit+evaluate logic lives in `experiments/geometric_consistency_lib.py`
+(a shared library, generalized to any of the six transforms) and this
+module calls into it -- Task 7's "Task 6's script must be refactored
+into a per-transform function if it was not already, rather than
+copy-pasted per transform." The public names below are kept stable so
+this module's own behavior and `tests/test_task6_camera_rotation.py`
+are unaffected by the refactor.
 """
 
 from __future__ import annotations
 
 import argparse
 import json
-import platform
 from dataclasses import asdict, dataclass, fields
 from pathlib import Path
 
-import numpy as np
 import yaml
 
-from baselines.identity_baseline import evaluate_identity_baseline
-from baselines.mean_baseline import evaluate_mean_baseline
-from baselines.shuffled_pairing_baseline import evaluate_shuffled_pairing_baseline
+import experiments.geometric_consistency_lib as gclib
 from generation.scene import SceneState
-from generation.scene_sampler import SceneSamplerConfig, sample_scene
-from metrics.equivariance import evaluate_equivariance
-from transforms.pairs import generate_pair, load_pair
 from transforms.scene_transform import TransformConfig
 
 TRANSFORM_NAME = "camera_rotation"
@@ -96,67 +99,41 @@ def load_task6_config(path: str | Path | None) -> Task6Config:
 
 
 def sample_scenes(cfg: Task6Config) -> list[SceneState]:
-    """>=40 scenes, one distinct seed each -- see generate_dataset() in
-    generation/generate.py for the same base_seed*1_000_003 + i convention,
-    reused here so Task 6 scene ids/seeds are derived the same documented
-    way as Task 2's.
+    """>=40 scenes, one distinct seed each -- delegates to
+    experiments.geometric_consistency_lib.sample_scenes (shared with
+    Task 7) using the same base_seed*1_000_003 + i convention Task 2
+    uses, so the same (num_scenes, base_seed, num_objects_*) reproduces
+    exactly the same scene set here as it would there.
     """
-    sampler_cfg = SceneSamplerConfig(num_objects_min=cfg.num_objects_min, num_objects_max=cfg.num_objects_max)
-    scenes = []
-    for i in range(cfg.num_scenes):
-        scene_id = f"scene_{i:04d}"
-        seed = cfg.base_seed * 1_000_003 + i
-        scenes.append(sample_scene(scene_id, seed, sampler_cfg))
-    return scenes
+    return gclib.sample_scenes(cfg.num_scenes, cfg.base_seed, cfg.num_objects_min, cfg.num_objects_max)
 
 
 def assign_split(scene_ids: list[str], train_fraction: float, base_seed: int) -> dict[str, str]:
-    """Scene-level train/test split, decided before any rendering.
-
-    A permutation seeded by `base_seed` (not scene order) decides which
-    scenes are train vs. test; every variant of one scene_id (there is
-    exactly one here -- original + camera_rotation-transformed) shares
-    the resulting label by construction, since callers key everything by
-    scene_id, never by (scene_id, variant).
-    """
-    if not 0.0 < train_fraction < 1.0:
-        raise ValueError(f"train_fraction must be in (0, 1), got {train_fraction}")
-    rng = np.random.default_rng(base_seed)
-    order = rng.permutation(len(scene_ids))
-    num_train = int(round(len(scene_ids) * train_fraction))
-    split: dict[str, str] = {}
-    for rank, idx in enumerate(order):
-        split[scene_ids[idx]] = "train" if rank < num_train else "test"
-    return split
+    """Scene-level train/test split, decided before any rendering --
+    delegates to experiments.geometric_consistency_lib.assign_split
+    (shared with Task 7, so the identical split is reproduced given the
+    identical (scene_ids, train_fraction, base_seed))."""
+    return gclib.assign_split(scene_ids, train_fraction, base_seed)
 
 
 # --- 3. rendering (needs bpy) ------------------------------------------------
 
 
 def render_all_pairs(scenes: list[SceneState], split: dict[str, str], cfg: Task6Config) -> Path:
-    """Render the original/camera_rotation pair for every scene via
-    transforms.pairs.generate_pair (Task 3's renderer, reused unmodified)
-    and write a top-level manifest.json recording the scene-level split
-    decided in assign_split() -- BEFORE this function is ever called.
+    """Render the original/camera_rotation pair for every scene (delegates
+    to experiments.geometric_consistency_lib.render_transform_pairs,
+    shared with Task 7, which also runs _verify_transform_ground_truth's
+    generic equivalent per pair) and write a top-level manifest.json
+    recording the scene-level split decided in assign_split() -- BEFORE
+    this function is ever called.
     """
     out_dir = Path(cfg.output_dir)
-    out_dir.mkdir(parents=True, exist_ok=True)
     transform_cfg = TransformConfig(
         camera_rotation_azimuth_deg_range=(cfg.camera_rotation_azimuth_deg, cfg.camera_rotation_azimuth_deg)
     )
-
-    for scene in scenes:
-        pair_dir = out_dir / scene.scene_id
-        generate_pair(
-            scene,
-            TRANSFORM_NAME,
-            pair_dir,
-            transform_cfg=transform_cfg,
-            num_frames=cfg.num_frames,
-            fps=cfg.fps,
-            resolution=cfg.resolution,
-        )
-        _verify_transform_ground_truth(pair_dir)
+    gclib.render_transform_pairs(
+        scenes, TRANSFORM_NAME, transform_cfg, out_dir, cfg.num_frames, cfg.fps, cfg.resolution
+    )
 
     manifest = {
         "transform": TRANSFORM_NAME,
@@ -176,30 +153,20 @@ def _verify_transform_ground_truth(pair_dir: Path) -> None:
     show EXACTLY a camera rotation (camera.position + camera.rotation_euler
     changed, a real 4x4 matrix, nothing else touched) -- guards against a
     future refactor of transforms/scene_transform.py silently changing
-    what camera_rotation does out from under this experiment.
+    what camera_rotation does out from under this experiment. Thin
+    camera_rotation-specific wrapper around
+    experiments.geometric_consistency_lib.verify_transform_ground_truth
+    (num_objects is irrelevant to camera_rotation's expected variable
+    set, so it is passed as 0).
     """
-    transformation = json.loads((pair_dir / "transformation.json").read_text())
-    if transformation.get("type") != TRANSFORM_NAME or transformation.get("transform_name") != TRANSFORM_NAME:
-        raise ValueError(f"{pair_dir}: expected transform '{TRANSFORM_NAME}', got {transformation.get('type')!r}")
-    if transformation.get("transform_matrix") is None:
-        raise ValueError(f"{pair_dir}: camera_rotation must be a rigid transform with a real SE(3) matrix")
-    changed = set(transformation.get("changed_variables", []))
-    if changed != {"camera.position", "camera.rotation_euler"}:
-        raise ValueError(f"{pair_dir}: camera_rotation changed unexpected variables: {sorted(changed)}")
+    gclib.verify_transform_ground_truth(pair_dir, TRANSFORM_NAME, num_objects=0)
 
 
 # --- 4. encoding (needs torch/transformers, real weights when pretrained) ---
 
 
 def build_encoder(cfg: Task6Config):
-    from encoders.vjepa import DEFAULT_CHECKPOINT, VJEPAEncoder
-
-    return VJEPAEncoder(
-        checkpoint=cfg.checkpoint or DEFAULT_CHECKPOINT,
-        pretrained=cfg.pretrained,
-        device=cfg.device,
-        fallback_seed=cfg.fallback_seed,
-    )
+    return gclib.build_encoder(cfg.pretrained, cfg.checkpoint, cfg.device, cfg.fallback_seed)
 
 
 def encode_all_pairs(scenes: list[SceneState], out_dir: Path, encoder) -> dict[str, dict[str, np.ndarray]]:
@@ -209,19 +176,11 @@ def encode_all_pairs(scenes: list[SceneState], out_dir: Path, encoder) -> dict[s
     ground-truth pose/rotation-matrix data is passed in (research/
     RESEARCH_INVARIANTS.md invariant 7); those live only in
     transformation.json / metadata.json, read here only for provenance
-    bookkeeping elsewhere, never for encoding.
+    bookkeeping elsewhere, never for encoding. Delegates to
+    experiments.geometric_consistency_lib.encode_all_pairs (shared with
+    Task 7).
     """
-    from encoders.vjepa import mean_pool
-
-    reps: dict[str, dict[str, np.ndarray]] = {}
-    for scene in scenes:
-        loaded = load_pair(out_dir / scene.scene_id)
-        _, orig_rgb, _, _ = loaded["original"]
-        _, trans_rgb, _, _ = loaded["transformed"]
-        z = mean_pool(encoder.encode(orig_rgb))
-        z_prime = mean_pool(encoder.encode(trans_rgb))
-        reps[scene.scene_id] = {"Z": z, "Z_prime": z_prime}
-    return reps
+    return gclib.encode_all_pairs(scenes, out_dir, encoder)
 
 
 # --- assemble train/test arrays, enforcing scene-level disjointness --------
@@ -230,40 +189,19 @@ def encode_all_pairs(scenes: list[SceneState], out_dir: Path, encoder) -> dict[s
 def build_arrays(
     scenes: list[SceneState], split: dict[str, str], reps: dict[str, dict[str, np.ndarray]]
 ) -> tuple[list[str], list[str], np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-    train_ids = [s.scene_id for s in scenes if split[s.scene_id] == "train"]
-    test_ids = [s.scene_id for s in scenes if split[s.scene_id] == "test"]
-    if not set(train_ids).isdisjoint(test_ids):
-        raise ValueError("train/test scene leakage detected")
-
-    Z_train = np.stack([reps[sid]["Z"] for sid in train_ids])
-    Zp_train = np.stack([reps[sid]["Z_prime"] for sid in train_ids])
-    Z_test = np.stack([reps[sid]["Z"] for sid in test_ids])
-    Zp_test = np.stack([reps[sid]["Z_prime"] for sid in test_ids])
-    return train_ids, test_ids, Z_train, Zp_train, Z_test, Zp_test
+    return gclib.build_arrays(scenes, split, reps)
 
 
 def _software_versions() -> dict:
-    import torch
-    import transformers
-
-    return {
-        "python": platform.python_version(),
-        "torch": torch.__version__,
-        "transformers": transformers.__version__,
-    }
+    return gclib.software_versions()
 
 
 def _snapshot_params(model) -> list:
-    return [p.detach().clone() for p in model.parameters()]
+    return gclib.snapshot_params(model)
 
 
 def _params_unchanged(before: list, model) -> bool:
-    import torch
-
-    after = list(model.parameters())
-    if len(before) != len(after):
-        return False
-    return all(torch.equal(b, a) for b, a in zip(before, after))
+    return gclib.params_unchanged(before, model)
 
 
 def _scientific_result_text(learned: dict, persistence: dict, mean_b: dict, random_pair: dict) -> str:
@@ -312,35 +250,13 @@ def run_experiment(cfg: Task6Config) -> dict:
 
     train_ids, test_ids, Z_train, Zp_train, Z_test, Zp_test = build_arrays(scenes, split, reps)
 
-    equiv_result, _rho = evaluate_equivariance(
-        TRANSFORM_NAME, Z_train, Zp_train, Z_test, Zp_test, alpha=cfg.ridge_alpha
+    metrics_block = gclib.evaluate_transform(
+        TRANSFORM_NAME, Z_train, Zp_train, Z_test, Zp_test, cfg.ridge_alpha, cfg.shuffled_pairing_seed
     )
-    persistence_result = evaluate_identity_baseline(TRANSFORM_NAME, Z_test, Zp_test)
-    mean_result = evaluate_mean_baseline(TRANSFORM_NAME, Zp_train, Zp_test)
-    random_pair_result = evaluate_shuffled_pairing_baseline(
-        TRANSFORM_NAME, Z_train, Zp_train, Z_test, Zp_test, alpha=cfg.ridge_alpha, seed=cfg.shuffled_pairing_seed
-    )
-
-    learned = {
-        "r2": equiv_result.r2,
-        "mean_cosine_similarity": equiv_result.mean_cosine_similarity,
-        "mean_relative_l2_error": equiv_result.mean_relative_l2_error,
-    }
-    persistence = {
-        "r2": persistence_result.r2,
-        "mean_cosine_similarity": persistence_result.mean_cosine_similarity,
-        "mean_relative_l2_error": persistence_result.mean_relative_l2_error,
-    }
-    mean_b = {
-        "r2": mean_result.r2,
-        "mean_cosine_similarity": mean_result.mean_cosine_similarity,
-        "mean_relative_l2_error": mean_result.mean_relative_l2_error,
-    }
-    random_pair = {
-        "r2": random_pair_result.r2,
-        "mean_cosine_similarity": random_pair_result.mean_cosine_similarity,
-        "mean_relative_l2_error": random_pair_result.mean_relative_l2_error,
-    }
+    learned = metrics_block["learned_W_T"]
+    persistence = metrics_block["persistence_baseline"]
+    mean_b = metrics_block["mean_baseline"]
+    random_pair = metrics_block["random_pair_control"]
 
     report_path = out_dir / "report.md"
     report_path.write_text(
@@ -398,24 +314,10 @@ def run_experiment(cfg: Task6Config) -> dict:
 
 
 def _parse_pytest_summary(output: str) -> tuple[int, int]:
-    """Parse pytest -q's final summary line ('12 passed in 0.34s',
-    '3 failed, 9 passed in 1.02s', 'no tests ran in 0.00s') into
-    (passed, failed) counts. Returns (0, 0) if no recognizable summary
-    line is found, rather than guessing.
-    """
-    import re
-
-    passed = failed = 0
-    for line in reversed(output.splitlines()):
-        m_passed = re.search(r"(\d+) passed", line)
-        m_failed = re.search(r"(\d+) failed", line)
-        if m_passed or m_failed:
-            if m_passed:
-                passed = int(m_passed.group(1))
-            if m_failed:
-                failed = int(m_failed.group(1))
-            break
-    return passed, failed
+    """Parse pytest -q's final summary line -- delegates to
+    experiments.geometric_consistency_lib.parse_pytest_summary (shared
+    with Task 7)."""
+    return gclib.parse_pytest_summary(output)
 
 
 def run_existing_test_suite(repo_root: str | Path) -> dict:
@@ -423,24 +325,11 @@ def run_existing_test_suite(repo_root: str | Path) -> dict:
     pass/fail counts -- required by this task's own instructions, though
     (per those same instructions) an independent process re-runs this
     after Claude finishes and is the actual basis for acceptance, not
-    this self-report.
+    this self-report. Delegates to
+    experiments.geometric_consistency_lib.run_existing_test_suite
+    (shared with Task 7).
     """
-    import subprocess
-
-    try:
-        proc = subprocess.run(
-            ["pytest", "-m", "not slow", "-q"],
-            cwd=str(repo_root),
-            capture_output=True,
-            text=True,
-            timeout=1800,
-        )
-    except (OSError, subprocess.SubprocessError) as exc:
-        return {"passed": 0, "failed": 0, "error": f"could not run test suite: {exc!r}"}
-
-    output = proc.stdout + proc.stderr
-    passed, failed = _parse_pytest_summary(output)
-    return {"passed": passed, "failed": failed, "returncode": proc.returncode}
+    return gclib.run_existing_test_suite(repo_root)
 
 
 def main():

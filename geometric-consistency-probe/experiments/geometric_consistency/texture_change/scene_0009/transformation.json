@@ -1,0 +1,39 @@
+{
+  "color_deltas": [
+    [
+      -0.5840313467947961,
+      0.032058495903227846,
+      0.45326834078895584
+    ],
+    [
+      -0.5351212522018197,
+      -0.14108403021947125,
+      0.591542221456871
+    ]
+  ],
+  "transform_matrix": null,
+  "changed_variables": [
+    "objects[0].color",
+    "objects[1].color"
+  ],
+  "fixed_variables": [
+    "camera.position",
+    "camera.rotation_euler",
+    "camera.lens_mm",
+    "camera.sensor_width_mm",
+    "objects[0].position",
+    "objects[0].rotation_euler",
+    "objects[0].scale",
+    "objects[0].shape",
+    "objects[1].position",
+    "objects[1].rotation_euler",
+    "objects[1].scale",
+    "objects[1].shape",
+    "light.position",
+    "light.energy",
+    "light.color",
+    "floor_color"
+  ],
+  "transform_name": "texture_change",
+  "type": "texture_change"
+}
