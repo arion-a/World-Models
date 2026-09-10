@@ -6,12 +6,19 @@
         transformation.json -- transform type, parameters, SE(3) matrix (where
                                 applicable), and which variables changed/were fixed
 
-Each side is rendered as a short *static* clip (a zero-motion
+By default each side is rendered as a short *static* clip (a zero-motion
 `Trajectory`, reusing Task 2's `generate_trajectory`/`render_trajectory`)
 rather than a single frame, so a pair carries the same RGB + depth +
 segmentation ground truth Task 2 produces, not just an RGB frame -- S and
 S' each still describe one static instant (see DESIGN.md's "Static-clip
-videos" note in IMPLEMENTATION_NOTES.md), Task 3 does not add motion.
+videos" note in IMPLEMENTATION_NOTES.md), Task 3 does not add motion by
+default. Passing `object_motions`/`camera_motion` (Task 2's
+`generation.motion.ObjectMotion`/`CameraMotion`) renders each side as a
+genuine multi-frame video instead: `T` is still applied exactly once, to
+the starting state at frame 0, and the *same* motion parameters then
+carry both `original` and `transformed` forward identically, so the two
+videos differ only by `T`'s one-time effect on the starting state, not
+by having different motion.
 """
 
 from __future__ import annotations
@@ -21,7 +28,7 @@ from pathlib import Path
 
 from generation.bpy_renderer import render_trajectory
 from generation.ground_truth import save_ground_truth
-from generation.motion import generate_trajectory
+from generation.motion import CameraMotion, ObjectMotion, generate_trajectory
 from generation.scene import SceneState
 from transforms.scene_transform import TransformConfig, apply_transform
 
@@ -34,14 +41,21 @@ def generate_pair(
     num_frames: int = 4,
     fps: float = 4.0,
     resolution: int = 128,
+    object_motions: dict[int, ObjectMotion] | None = None,
+    camera_motion: CameraMotion | None = None,
 ) -> Path:
     """Render one original/transformed pair for `transform_name` applied to `scene`.
 
-    Deterministic given `(scene, transform_name, transform_cfg)`: the
-    transform's own randomness is seeded from `scene.seed` (see
-    transforms/scene_transform.py:_rng_for), and both renders are exactly
-    reproducible Blender/Cycles output (see
+    Deterministic given `(scene, transform_name, transform_cfg,
+    object_motions, camera_motion)`: the transform's own randomness is
+    seeded from `scene.seed` (see transforms/scene_transform.py:_rng_for),
+    and both renders are exactly reproducible Blender/Cycles output (see
     tests/test_bpy_renderer.py::test_render_trajectory_is_reproducible).
+
+    `object_motions` is keyed by `instance_id`, which `T` never changes
+    (see transforms/scene_transform.py), so the same dict is valid and
+    meaningful for both `scene` and its transformed copy -- "the same
+    object keeps the same velocity in both videos."
     """
     new_scene, transform_record = apply_transform(scene, transform_name, transform_cfg)
 
@@ -49,7 +63,9 @@ def generate_pair(
     pair_dir.mkdir(parents=True, exist_ok=True)
 
     for dir_name, s in [("original", scene), ("transformed", new_scene)]:
-        trajectory = generate_trajectory(s, num_frames=num_frames, fps=fps)  # static: no object/camera motion
+        trajectory = generate_trajectory(
+            s, object_motions=object_motions, camera_motion=camera_motion, num_frames=num_frames, fps=fps
+        )
         clip = render_trajectory(s, trajectory, resolution=resolution)
         save_ground_truth(s, trajectory, clip, pair_dir, resolution, dir_name=dir_name)
 

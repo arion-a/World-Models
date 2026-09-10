@@ -10,6 +10,7 @@ import pytest
 
 bpy = pytest.importorskip("bpy")
 
+from generation.motion import CameraMotion, ObjectMotion
 from generation.scene_sampler import SceneSamplerConfig, generate_scene
 from transforms.pairs import generate_pair, load_pair
 from transforms.scene_transform import TRANSFORM_NAMES
@@ -86,6 +87,34 @@ def test_pair_generation_is_reproducible(scene, tmp_path):
         rgb1 = np.load(pair1 / side / "rgb.npy")
         rgb2 = np.load(pair2 / side / "rgb.npy")
         assert np.array_equal(rgb1, rgb2)
+
+
+@pytest.mark.slow
+def test_pair_with_motion_produces_varying_frames_on_both_sides(scene, tmp_path):
+    """Passing object_motions/camera_motion must make BOTH sides genuine
+    multi-frame videos (frames differ within a clip), not just a
+    transform applied to an otherwise-static pair -- and the two sides
+    must share the same motion, differing only by what T did at frame 0."""
+    object_motions = {scene.objects[0].instance_id: ObjectMotion(linear_velocity=(0.3, 0.1, 0.0))}
+    camera_motion = CameraMotion(mode="static")
+
+    pair_dir = generate_pair(
+        scene, "object_rotation", tmp_path / "pair",
+        num_frames=4, fps=4.0, resolution=RES,
+        object_motions=object_motions, camera_motion=camera_motion,
+    )
+    for side in ("original", "transformed"):
+        rgb = np.load(pair_dir / side / "rgb.npy")
+        assert rgb.shape[0] == 4
+        assert not np.array_equal(rgb[0], rgb[-1])  # real motion within the clip
+
+    orig_meta = json.loads((pair_dir / "original" / "metadata.json").read_text())
+    trans_meta = json.loads((pair_dir / "transformed" / "metadata.json").read_text())
+    moved_id = scene.objects[0].instance_id
+    orig_obj = next(o for o in orig_meta["objects"] if o["instance_id"] == moved_id)
+    trans_obj = next(o for o in trans_meta["objects"] if o["instance_id"] == moved_id)
+    # same velocity recorded on both sides -- the motion itself was not altered by T
+    assert orig_obj["per_frame_pose"][0]["linear_velocity"] == trans_obj["per_frame_pose"][0]["linear_velocity"]
 
 
 @pytest.mark.slow
