@@ -244,6 +244,91 @@ Per the project brief, this repo must not claim a representation
   in isolation, and every report must state which encoder weights
   (pretrained vs. randomly initialized) were used to produce it.
 
+## Task 2: the Blender 5.0 compositor API is not the one documented online
+
+Task 2 needs depth and instance-segmentation ground truth, produced via
+Blender's compositor (a `Depth` and an `Object Index` render pass,
+routed to file outputs). Most Blender-scripting references online
+describe the pre-4.x compositor API (`scene.use_nodes`,
+`scene.node_tree`, a `CompositorNodeComposite` node, `file_slots`,
+`CompositorNodeMapRange`, `file_output.base_path`). **None of that
+exists in the installed Blender 5.0/bpy 5.0.1** -- it was redesigned
+into a generic node-group system shared with geometry nodes. The
+working API, verified empirically (`generation/bpy_renderer.py:
+_setup_ground_truth_compositor`) rather than assumed from
+documentation:
+
+- `scene.node_tree` is gone. Create the compositor as
+  `bpy.data.node_groups.new(name, 'CompositorNodeTree')` and assign it
+  with `scene.compositing_node_group = group`.
+- There is no `CompositorNodeComposite` node anymore, and none is
+  needed: the normal RGB image still saves via `scene.render.filepath`
+  regardless of what the compositor graph does, as long as nothing
+  reroutes `Render Layers -> Image` away from it.
+- `CompositorNodeMapRange` no longer exists in the compositor node set;
+  `ShaderNodeMapRange` works fine inside a `CompositorNodeTree` (the
+  node-group unification lets shader nodes be used here) and is what
+  this project uses to normalize the raw `Depth`/`Object Index` passes
+  into `[0, 1]` before writing 16-bit PNGs (writing raw un-normalized
+  float values directly to a `PNG` file slot silently clips/saturates
+  them at 1.0 -- this cost real debugging time before the fix).
+- The Object Index pass output socket on the Render Layers node is
+  named `"Object Index"`, not the older `"IndexOB"`.
+- `CompositorNodeOutputFile` no longer has `base_path`/`file_slots`;
+  use `.directory`, `.file_name` (a filename *prefix*, not a
+  frame-numbered template -- set it explicitly before each render call
+  to control per-frame filenames yourself), and
+  `.file_output_items.new(socket_type, name)` where `socket_type` is a
+  bare enum string (`'FLOAT'`, not `'NodeSocketFloat'`).
+- Each `file_output_items` entry needs `override_node_format = True`
+  and, critically, **`item.format.media_type = 'IMAGE'`** set *before*
+  `item.format.file_format = 'PNG'` -- the node (and each item) defaults
+  to `media_type = 'MULTI_LAYER_IMAGE'`, under which `file_format` only
+  accepts `'OPEN_EXR_MULTILAYER'` and silently writing everything into
+  one combined `.exr` instead of separate per-item PNGs is the failure
+  mode if this is missed. `save_as_render = False` on each item is also
+  required to get raw, non-color-managed float values for depth/
+  segmentation instead of a Filmic/view-transformed image.
+
+## Task 2: depth-pass semantics were verified empirically, not assumed
+
+Blender's `Depth` render pass could plausibly mean either the Euclidean
+distance from the camera to each point, or the camera-space Z
+(perpendicular distance to the image plane) -- these differ for any
+point off the camera's optical axis, and getting this backwards would
+silently corrupt every depth-based probe built on top of it. It was
+resolved by rendering a large flat plane face-on to a camera looking
+straight down: camera-space Z predicts a spatially *uniform* depth value
+across the whole frame (including off-center pixels viewed at an oblique
+angle), while Euclidean ray distance would increase toward the frame
+edges. The measured result was exactly uniform (`generation/scene.py`'s
+camera at height 5 above the plane -> depth 5.0 at both the center and
+the corners of the frame, to float precision) -- confirming camera-space
+Z. See `generation/COORDINATE_SYSTEM.md` for the documented conclusion
+and `tests/test_bpy_renderer.py::test_depth_pass_is_planar_not_euclidean`
+for the automated version of this exact check.
+
+## Task 2: additive SceneState changes, kept backward compatible with V0
+
+`ObjectState.instance_id` and `CameraState.sensor_width_mm` were added
+as new fields with defaults (`0` and `32.0` respectively) rather than
+by renaming or restructuring anything, specifically so V0's existing
+transform/experiment pipeline (`transforms/scene_transform.py`,
+`experiments/run.py`, `representations/`) keeps working unchanged --
+Task 2 explicitly does not touch transformation experiments, so nothing
+there should have needed to change to support it, and after this
+addition the full V0 pipeline and test suite were re-run to confirm
+that. `generation/scene_sampler.sample_scene` now assigns each object a
+1-indexed `instance_id`, and `generate_scene` is an alias for
+`sample_scene` (Task 2's spec names it `generate_scene()`; V0 code
+already imports it as `sample_scene`, so both names exist rather than
+picking one and breaking the other). The look-at-orientation math that
+`sample_scene`, `transforms/scene_transform.apply_camera_rotation`, and
+`generation/motion.py`'s camera-orbit trajectory all need was
+consolidated into `transforms/se3.look_at_euler` during this task
+(previously duplicated in the first two places) rather than written a
+third time.
+
 ## Deferred to later versions
 
 Explicitly out of scope until V0's core loop is validated with real

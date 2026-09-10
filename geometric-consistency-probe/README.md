@@ -76,7 +76,9 @@ with Hugging Face Hub access** -- no code changes needed, just
 
 ```
 configs/          YAML configs (+ a small dataclass-based loader)
-generation/       SceneState, random scene sampling, the Blender/Cycles renderer
+generation/       SceneState, trajectories, the Blender/Cycles renderer,
+                  and Task 2's controlled-scene-generation entry point
+                  (see generation/COORDINATE_SYSTEM.md)
 transforms/       The 6 physical transforms T, and SE(3) math helpers
 encoders/         Frozen encoder interface; V-JEPA 2 wrapper; pixel-statistics baseline
 representations/  Extract & cache Z = E(V); assemble train/test splits
@@ -125,6 +127,27 @@ development and CI-style smoke testing.
 To try the non-learned pixel-statistics baseline encoder instead, set
 `encoder.name: pixel_baseline` in a config (see
 `encoders/pixel_baseline.py`).
+
+## Task 2: controlled 3D scene generation with complete ground truth
+
+A separate, independently-runnable generator (no transforms `T`
+involved -- see DESIGN.md §5 for where those come back in a later
+task):
+
+```bash
+python -m generation.generate --config configs/generation.yaml
+```
+
+Produces ~10 scenes (per `configs/generation.yaml`), each with a
+constant-velocity object/camera trajectory, under
+`data/generation_v0/{scene_id}/`: `rgb.npy`, `depth.npy`,
+`segmentation.npy`, and a `metadata.json` with camera intrinsics and
+every frame's camera/object pose and velocity. **Read
+`generation/COORDINATE_SYSTEM.md` before consuming any of this** --
+it documents, with the empirical checks behind each claim, exactly what
+world frame, camera convention, depth encoding, and segmentation
+encoding are used, several of which differ from common
+computer-vision defaults (e.g. depth is *not* Euclidean ray distance).
 
 ## Tests
 

@@ -50,6 +50,27 @@ def rotation_about_axis(axis: np.ndarray, angle_rad: float) -> np.ndarray:
     )
 
 
+def look_at_euler(camera_pos: np.ndarray, target: np.ndarray) -> tuple[float, float, float]:
+    """Blender-convention XYZ Euler angles for a camera at `camera_pos` looking at `target`.
+
+    Blender's camera looks down its local -Z axis with local +Y "up".
+    world_up is world +Z, except when the view direction is itself
+    (near-)vertical, in which case world +Y is used instead to avoid a
+    degenerate (zero-length) cross product.
+    """
+    direction = target - camera_pos
+    direction = direction / np.linalg.norm(direction)
+    forward = -direction
+    world_up = np.array([0.0, 0.0, 1.0])
+    if abs(np.dot(forward, world_up)) > 0.999:
+        world_up = np.array([0.0, 1.0, 0.0])
+    right = np.cross(world_up, forward)
+    right = right / np.linalg.norm(right)
+    up = np.cross(forward, right)
+    rot = np.stack([right, up, forward], axis=1)  # world = rot @ local
+    return matrix_to_euler(rot)
+
+
 def orbit_position(position: np.ndarray, pivot: np.ndarray, azimuth_delta_rad: float, elevation_delta_rad: float) -> np.ndarray:
     """Move `position` around `pivot` by a change in azimuth/elevation on a sphere.
 

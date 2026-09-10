@@ -22,7 +22,7 @@ from dataclasses import dataclass, replace as _replace
 import numpy as np
 
 from generation.scene import SceneState
-from transforms.se3 import euler_to_matrix, matrix_to_euler, orbit_position, rotation_about_axis
+from transforms.se3 import euler_to_matrix, look_at_euler, matrix_to_euler, orbit_position, rotation_about_axis
 
 TRANSFORM_NAMES = (
     "camera_translation",
@@ -86,17 +86,7 @@ def apply_camera_rotation(scene: SceneState, cfg: TransformConfig) -> tuple[Scen
     # Recompute orientation so the camera keeps looking at the pivot
     # (an orbit, not a translation): this isolates "viewpoint rotation"
     # from "viewpoint translation".
-    direction = pivot - new_pos
-    direction /= np.linalg.norm(direction)
-    forward = -direction
-    world_up = np.array([0.0, 0.0, 1.0])
-    if abs(np.dot(forward, world_up)) > 0.999:
-        world_up = np.array([0.0, 1.0, 0.0])
-    right = np.cross(world_up, forward)
-    right /= np.linalg.norm(right)
-    up = np.cross(forward, right)
-    rot = np.stack([right, up, forward], axis=1)
-    new_euler = matrix_to_euler(rot)
+    new_euler = look_at_euler(new_pos, pivot)
 
     new_camera = _replace(scene.camera, position=tuple(new_pos.tolist()), rotation_euler=new_euler)
     new_scene = scene.replace(camera=new_camera)

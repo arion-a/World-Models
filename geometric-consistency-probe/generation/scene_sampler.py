@@ -12,6 +12,7 @@ from dataclasses import dataclass
 import numpy as np
 
 from generation.scene import CameraState, LightState, ObjectState, SceneState, SHAPES
+from transforms.se3 import look_at_euler
 
 
 @dataclass
@@ -31,33 +32,6 @@ class SceneSamplerConfig:
     light_elevation_range_deg: tuple[float, float] = (30.0, 70.0)
 
     floor_color_range: tuple[float, float] = (0.35, 0.75)
-
-
-def _look_at_euler(camera_pos: np.ndarray, target: np.ndarray = np.zeros(3)) -> tuple[float, float, float]:
-    """Euler angles (Blender XYZ) for a camera at camera_pos looking at target."""
-    direction = target - camera_pos
-    direction = direction / np.linalg.norm(direction)
-    # Blender camera looks down local -Z, with local +Y "up".
-    forward = -direction
-    world_up = np.array([0.0, 0.0, 1.0])
-    if abs(np.dot(forward, world_up)) > 0.999:
-        world_up = np.array([0.0, 1.0, 0.0])
-    right = np.cross(world_up, forward)
-    right = right / np.linalg.norm(right)
-    up = np.cross(forward, right)
-
-    rot = np.stack([right, up, forward], axis=1)  # world = rot @ local
-    # Extract XYZ Euler angles from rotation matrix (Blender convention).
-    sy = -rot[2, 0]
-    sy = np.clip(sy, -1.0, 1.0)
-    ry = np.arcsin(sy)
-    if abs(np.cos(ry)) > 1e-6:
-        rx = np.arctan2(rot[2, 1], rot[2, 2])
-        rz = np.arctan2(rot[1, 0], rot[0, 0])
-    else:
-        rx = np.arctan2(-rot[1, 2], rot[1, 1])
-        rz = 0.0
-    return float(rx), float(ry), float(rz)
 
 
 def _sphere_position(radius: float, azimuth_deg: float, elevation_deg: float) -> np.ndarray:
@@ -95,6 +69,8 @@ def sample_scene(scene_id: str, seed: int, cfg: SceneSamplerConfig | None = None
                 rotation_euler=rotation,
                 scale=scale,
                 color=color,
+                # 1-indexed; 0 is reserved for "not an object" (background/floor).
+                instance_id=len(objects) + 1,
             )
         )
         positions_xy.append(xy)
@@ -103,7 +79,7 @@ def sample_scene(scene_id: str, seed: int, cfg: SceneSamplerConfig | None = None
     cam_az = float(rng.uniform(*cfg.camera_azimuth_range_deg))
     cam_el = float(rng.uniform(*cfg.camera_elevation_range_deg))
     cam_pos = _sphere_position(cam_radius, cam_az, cam_el)
-    cam_rot = _look_at_euler(cam_pos)
+    cam_rot = look_at_euler(cam_pos, np.zeros(3))
     camera = CameraState(position=tuple(cam_pos.tolist()), rotation_euler=cam_rot)
 
     light_az = float(rng.uniform(*cfg.light_azimuth_range_deg))
@@ -124,3 +100,9 @@ def sample_scene(scene_id: str, seed: int, cfg: SceneSamplerConfig | None = None
         light=light,
         floor_color=floor_color,
     )
+
+
+# Task 2 ("CONTROLLED 3D SCENE GENERATION") names this step generate_scene();
+# it is exactly sample_scene() above, kept under its original name too since
+# earlier (V0) modules already import it as sample_scene.
+generate_scene = sample_scene

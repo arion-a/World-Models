@@ -37,6 +37,14 @@ class ObjectState:
     rotation_euler: Vec3  # radians, XYZ order
     scale: float
     color: tuple[float, float, float]  # linear RGB in [0, 1]
+    # Persistent instance id, unique within a scene, used both as the
+    # segmentation-mask pixel value (see generation/bpy_renderer.py) and as
+    # the key that ties one object's identity across frames/transforms.
+    # 0 is reserved for "not an object" (background/floor) -- see
+    # generation/COORDINATE_SYSTEM.md. Default 0 only for backward
+    # compatibility with code that never assigns one; generate_scene()
+    # (Task 2) always assigns 1..N.
+    instance_id: int = 0
 
     def to_dict(self) -> dict:
         return dataclasses.asdict(self)
@@ -49,6 +57,7 @@ class ObjectState:
             rotation_euler=tuple(d["rotation_euler"]),
             scale=float(d["scale"]),
             color=tuple(d["color"]),
+            instance_id=int(d.get("instance_id", 0)),
         )
 
 
@@ -57,6 +66,11 @@ class CameraState:
     position: Vec3
     rotation_euler: Vec3  # radians, XYZ order, Blender camera convention
     lens_mm: float = 35.0
+    # Blender's camera "sensor width" for a perspective lens -- together
+    # with lens_mm and the render resolution this fully determines the
+    # pinhole intrinsics matrix K (see camera_intrinsics() below). 32mm is
+    # Blender's own default sensor width.
+    sensor_width_mm: float = 32.0
 
     def to_dict(self) -> dict:
         return dataclasses.asdict(self)
@@ -67,6 +81,7 @@ class CameraState:
             position=tuple(d["position"]),
             rotation_euler=tuple(d["rotation_euler"]),
             lens_mm=float(d.get("lens_mm", 35.0)),
+            sensor_width_mm=float(d.get("sensor_width_mm", 32.0)),
         )
 
 
@@ -153,3 +168,28 @@ def camera_forward_vector(camera: CameraState) -> np.ndarray:
     rot_z = np.array([[cz, -sz, 0], [sz, cz, 0], [0, 0, 1]])
     rot = rot_z @ rot_y @ rot_x
     return rot @ local_forward
+
+
+def camera_intrinsics(camera: CameraState, resolution_x: int, resolution_y: int) -> dict:
+    """Pinhole intrinsics (fx, fy, cx, cy, and the 3x3 matrix K) for `camera`.
+
+    Standard Blender perspective-camera conversion (sensor fit 'AUTO', no
+    lens shift): the sensor width in mm maps to the *larger* image
+    dimension. This project always renders square frames
+    (resolution_x == resolution_y), so fx == fy and the formula is exact
+    without needing to special-case the sensor-fit axis; that assumption
+    is asserted here rather than silently mishandled for a non-square
+    render. See generation/COORDINATE_SYSTEM.md for the full camera model.
+    """
+    if resolution_x != resolution_y:
+        raise NotImplementedError(
+            "camera_intrinsics() assumes a square render (sensor fit AUTO maps "
+            "sensor_width_mm to the larger dimension); non-square resolutions "
+            "need that axis handled explicitly and are not supported yet."
+        )
+    fx = resolution_x * camera.lens_mm / camera.sensor_width_mm
+    fy = fx
+    cx = resolution_x / 2.0
+    cy = resolution_y / 2.0
+    K = [[fx, 0.0, cx], [0.0, fy, cy], [0.0, 0.0, 1.0]]
+    return {"fx": fx, "fy": fy, "cx": cx, "cy": cy, "K": K}
