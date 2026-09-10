@@ -7,10 +7,164 @@
     4,
     5
   ],
-  "status": "READY",
-  "attempts": {},
+  "status": "BLOCKED",
+  "attempts": {
+    "6": 3
+  },
   "commits": {},
-  "last_qa": {},
-  "history": [],
-  "updated_at": "2026-09-10T16:38:14+00:00"
+  "last_qa": {
+    "6": {
+      "task": 6,
+      "passed": false,
+      "layers": [
+        {
+          "name": "A. SOFTWARE CORRECTNESS",
+          "passed": false,
+          "details": [
+            "test command ['pytest', '-m', 'not slow', '-q'] exited 0",
+            "every numeric value under 'metrics' is exactly 0.0 -- looks like an unfilled template, not a genuine run"
+          ]
+        },
+        {
+          "name": "B. TASK ACCEPTANCE",
+          "passed": false,
+          "details": [
+            "required field is empty: dataset.train_scene_ids",
+            "required field is empty: dataset.test_scene_ids",
+            "implementation_status is 'BLOCKED', expected 'COMPLETE'"
+          ]
+        },
+        {
+          "name": "C. SCIENTIFIC VALIDITY",
+          "passed": true,
+          "details": []
+        },
+        {
+          "name": "D. RESEARCH ALIGNMENT",
+          "passed": true,
+          "details": []
+        },
+        {
+          "name": "E. DATA LEAKAGE",
+          "passed": false,
+          "details": [
+            "dataset.train_scene_ids is empty or not a list",
+            "dataset.test_scene_ids is empty or not a list"
+          ]
+        },
+        {
+          "name": "F. REPRODUCIBILITY",
+          "passed": true,
+          "details": []
+        },
+        {
+          "name": "G. REGRESSION",
+          "passed": true,
+          "details": []
+        }
+      ]
+    }
+  },
+  "history": [
+    {
+      "event": "transition",
+      "timestamp": "2026-09-10T18:05:17+00:00",
+      "from_status": "READY",
+      "to_status": "RUNNING",
+      "task": 6
+    },
+    {
+      "event": "attempt",
+      "timestamp": "2026-09-10T18:05:17+00:00",
+      "task": 6,
+      "attempt": 1
+    },
+    {
+      "event": "transition",
+      "timestamp": "2026-09-10T18:19:29+00:00",
+      "from_status": "RUNNING",
+      "to_status": "QA",
+      "task": 6
+    },
+    {
+      "event": "qa",
+      "timestamp": "2026-09-10T18:21:31+00:00",
+      "task": 6,
+      "passed": false
+    },
+    {
+      "event": "transition",
+      "timestamp": "2026-09-10T18:21:31+00:00",
+      "from_status": "QA",
+      "to_status": "FIXING",
+      "task": 6
+    },
+    {
+      "event": "transition",
+      "timestamp": "2026-09-10T18:21:31+00:00",
+      "from_status": "FIXING",
+      "to_status": "RUNNING",
+      "task": 6
+    },
+    {
+      "event": "attempt",
+      "timestamp": "2026-09-10T18:21:31+00:00",
+      "task": 6,
+      "attempt": 2
+    },
+    {
+      "event": "transition",
+      "timestamp": "2026-09-10T18:26:22+00:00",
+      "from_status": "RUNNING",
+      "to_status": "QA",
+      "task": 6
+    },
+    {
+      "event": "qa",
+      "timestamp": "2026-09-10T18:28:25+00:00",
+      "task": 6,
+      "passed": false
+    },
+    {
+      "event": "transition",
+      "timestamp": "2026-09-10T18:28:25+00:00",
+      "from_status": "QA",
+      "to_status": "FIXING",
+      "task": 6
+    },
+    {
+      "event": "transition",
+      "timestamp": "2026-09-10T18:28:25+00:00",
+      "from_status": "FIXING",
+      "to_status": "RUNNING",
+      "task": 6
+    },
+    {
+      "event": "attempt",
+      "timestamp": "2026-09-10T18:28:25+00:00",
+      "task": 6,
+      "attempt": 3
+    },
+    {
+      "event": "transition",
+      "timestamp": "2026-09-10T18:31:42+00:00",
+      "from_status": "RUNNING",
+      "to_status": "QA",
+      "task": 6
+    },
+    {
+      "event": "qa",
+      "timestamp": "2026-09-10T18:33:41+00:00",
+      "task": 6,
+      "passed": false
+    },
+    {
+      "event": "transition",
+      "timestamp": "2026-09-10T18:33:41+00:00",
+      "from_status": "QA",
+      "to_status": "BLOCKED",
+      "task": 6
+    }
+  ],
+  "updated_at": "2026-09-10T18:33:41+00:00"
 }

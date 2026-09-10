@@ -1,0 +1,31 @@
+# Task 6 config: first camera-rotation geometric consistency experiment.
+#
+# >=40 scenes, 80/20 train/test split (scene-level, decided before any
+# rendering), a FIXED 30-degree azimuth camera rotation, and the real
+# pretrained V-JEPA 2 ViT-L/16 encoder. If Hugging Face Hub is
+# unreachable at run time, encoders.vjepa.VJEPAEncoder falls back to a
+# seeded random-weight model of the same architecture and this run's
+# state/task_06_result.json will honestly record encoder.pretrained:
+# false -- see tasks/06_camera_rotation.md's Inputs section.
+
+num_scenes: 40
+train_fraction: 0.8
+base_seed: 0
+output_dir: experiments/camera_rotation
+result_path: state/task_06_result.json
+
+resolution: 128
+num_frames: 4
+fps: 4.0
+
+camera_rotation_azimuth_deg: 30.0
+ridge_alpha: 10.0
+shuffled_pairing_seed: 0
+
+num_objects_min: 1
+num_objects_max: 3
+
+pretrained: true
+checkpoint: facebook/vjepa2-vitl-fpc64-256
+device: null
+fallback_seed: 0
