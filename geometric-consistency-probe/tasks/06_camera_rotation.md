@@ -1,110 +1,171 @@
 # Task 6 — First camera-rotation geometric consistency experiment
 
+**Authoritative source: `research/CANONICAL_RESEARCH_PROTOCOL.md`,
+"TASK 6 — First camera-rotation geometric consistency experiment"
+section.** This file is that section's content, reorganized under the
+header taxonomy the orchestrator's QA (`tests/research/
+test_research_alignment.py`) checks against, so it can be sent to
+Claude Code verbatim as this task's prompt without any loss of
+substance versus the canonical document. If the two ever disagree,
+`research/CANONICAL_RESEARCH_PROTOCOL.md` is authoritative — treat any
+discrepancy as a defect in this file, to be re-synced, not resolved by
+editing the canonical document to match.
+
 **Depends on (do not redo, do not modify without explicit justification
-recorded in the task result — invariant 15):** Tasks 1–5. Concretely:
-`generation/generate.py` (`generate_scene`, `generate_trajectory`),
-`transforms/pairs.py` (`generate_pair`), `transforms/scene_transform.py`
-(`camera_rotation`), `encoders/vjepa.py` (`VJEPAEncoder`, `mean_pool`),
-`encoders/extract.py`.
+recorded in the task result — Global Invariant 27):** Tasks 1–5.
+Concretely: `generation/generate.py` (`generate_scene`,
+`generate_trajectory`), `transforms/pairs.py` (`generate_pair`),
+`transforms/scene_transform.py` (`camera_rotation`), `encoders/vjepa.py`
+(`VJEPAEncoder`, `mean_pool`), `encoders/extract.py`.
 
 ## Objective
 
-Build and run the first real geometric-consistency experiment using the
-Task 5 frozen-encoder pipeline (not V0's older pooled `FrozenEncoder` /
-`encoders/vjepa2.py` path — this is a new, independent experiment
-script under `experiments/` or a new `research_experiments/` module,
-your choice, as long as it imports the Task 2/3/5 interfaces rather than
-duplicating them).
+**Purpose.** Establish the first controlled test of whether a known
+physical geometric transformation produces a predictable transformation
+in latent representation space.
+
+**Why this task exists.** This is the first experiment directly testing
+the central geometric consistency hypothesis with the real Task 4/5
+encoder (`encoders.vjepa.VJEPAEncoder`, real pretrained ViT-L/16
+weights) and the real Task 2/3 scene/transform pipeline, rather than the
+exploratory V0 pipeline that predates the formal task numbering.
+Everything later (Tasks 7–18) either generalizes this protocol (Task 7),
+asks a related but distinct question about it (Task 8), controls for
+confounds in it (Task 9), formalizes its baselines (Task 10),
+stress-tests it at scale (Task 11), or extends it into new regimes
+(temporal — Task 12, occlusion — Task 13, counterfactual — Task 14).
+Getting Task 6's protocol right is a precondition for all of them.
+
+**Relationship to previous tasks.** Inherits directly, without
+modification: `generation.scene_sampler.sample_scene`/`generation
+.generate.generate_scene` (Task 2 scene sampling),
+`transforms.scene_transform.apply_transform` and `transforms.pairs
+.generate_pair` (Task 3's transform + matched-pair rendering),
+`encoders.vjepa.VJEPAEncoder`/`encoders.extract` (Task 4/5's frozen
+encoder). Does **not** modify these modules except for a minimal,
+justified bug fix (recorded per Global Invariant 27 /
+`protected_files_justification` in the result JSON).
 
 ## Scientific question
 
-Does a fixed, known camera rotation applied to a rendered 3D scene
-induce a **predictable, linear** transformation in the frozen encoder's
-representation space — one that **generalizes to scenes never seen while
-fitting that linear map**? This is the first direct test of the
-project's central hypothesis:
+If the camera undergoes a known rotation, does the frozen V-JEPA
+representation change according to a predictable transformation that
+generalizes across unseen scenes?
+
+**Hypothesis.** A fixed-magnitude camera rotation applied to a
+controlled synthetic scene induces a change in the frozen encoder's
+pooled representation that is well-approximated by a single linear map
+`W_T`, fit on a set of training scenes, and that this map generalizes
+to unseen test scenes better than the persistence baseline, the
+mean-transformed-representation baseline, and the shuffled-pairing
+(random-pair) control.
+
+**Mathematical formulation.**
 
 ```
-Z' ≈ W_T Z
+S' = camera_rotation(S)        (transforms.scene_transform.apply_transform)
+V  = R(S),   V' = R(S')        (transforms.pairs.generate_pair, reusing generation's renderer)
+Z  = E(V),   Z' = E(V')        (encoders.vjepa.VJEPAEncoder.encode, then mean_pool)
+
+Z' ≈ W_T Z + b_T                (probes.linear_rep_transform.LinearRepTransform.fit, TRAIN scenes only)
 ```
 
-for `T = camera_rotation`, `W_T` fit on TRAIN scenes only, evaluated on
-TEST scenes.
+Evaluated via `metrics.equivariance.evaluate_equivariance` on
+`(Z_test, Z'_test)`, per DESIGN.md §6's weaker, aggregate,
+parameter-marginalized notion of equivariance (not strict group
+equivariance; the homomorphism property is not tested).
 
 ## Implementation requirements
 
-1. **Scenes.** Sample at least 40 scenes with `generation.scene_sampler.
-   sample_scene` (or `generation.generate.generate_scene`), each with a
-   distinct seed. Split scene IDs into train/test **before** any
-   rendering or encoding happens (scene-level split — invariants 4–5).
-   An 80/20 or similar split is fine; record the exact fraction and seed
-   used to compute it.
-2. **Transform.** For each scene, apply `camera_rotation` via
-   `transforms.scene_transform.apply_transform` (through `transforms.
-   pairs.generate_pair`, which renders both the original and transformed
-   side with full ground truth). Use a **fixed** rotation magnitude for
-   this first experiment — 30 degrees azimuth, per the task brief, using
-   whatever `TransformConfig` field already controls `camera_rotation`'s
-   magnitude in `transforms/scene_transform.py` (do not invent a second,
-   parallel way to specify the angle — inspect and reuse the existing
-   one, only setting the magnitude explicitly instead of leaving it at
-   its sampled default if it is currently randomized).
-3. **Rendering.** Reuse `transforms.pairs.generate_pair` — do not write
-   a new renderer call path. A handful of frames per clip (matching
-   Task 2/3's existing defaults, e.g. 4–8) is enough; this experiment
-   does not require long clips.
-4. **Encoding.** Encode both the original and transformed clip with
-   `encoders.vjepa.VJEPAEncoder` (`pretrained=True` — use real weights;
-   if the environment cannot reach Hugging Face Hub when this task runs,
-   the encoder's own documented fallback applies and **the resulting
-   `pretrained: false` must be recorded and surfaced**, not hidden).
-   Reduce each clip's token sequence to a single vector with `encoders.
-   vjepa.mean_pool` before fitting anything — ridge regression over the
-   raw unpooled `(num_tokens, hidden_size)` tensor is both
-   dimensionally unreasonable for ~40 scenes and not what "predictable
-   transformation of the representation" should mean here; pooling
-   first is a deliberate, documented choice, not an oversight.
-5. **Fitting `W_T`.** Use `probes.linear_rep_transform.LinearRepTransform.
-   fit` (ridge regression, reuse — do not reimplement) on
-   `(Z_train, Z'_train)` only.
-6. **Evaluation.** Use `metrics.equivariance.evaluate_equivariance`
-   (reuse) on `(Z_test, Z'_test)` for R², mean cosine similarity, mean
-   relative L2 error.
+**Inputs.**
 
-## Required controls (all evaluated on the exact same test split, exact
-same metrics, as the learned `W_T` — invariant 14)
+- A set of at least 40 sampled `SceneState`s (`generation.scene_sampler
+  .sample_scene`, one seed per scene), split into train/test at the
+  **scene level**, before any rendering.
+- A fixed camera-rotation magnitude (e.g. 30 degrees azimuth), set
+  explicitly via `TransformConfig`'s existing
+  `camera_rotation_azimuth_deg_range` field (e.g. `(30.0, 30.0)`) rather
+  than left at its sampled `(10.0, 35.0)` default or specified through a
+  new, parallel mechanism — the exact convention (azimuth vs.
+  elevation, sign, units) must be inspected from
+  `transforms/scene_transform.py` and `transforms/se3.py`, never
+  invented.
+- `encoders.vjepa.VJEPAEncoder(pretrained=True)` — real pretrained
+  weights; if unreachable at run time, the encoder's own documented
+  fallback applies and `pretrained: false` **must** be recorded
+  plainly, never hidden.
 
-1. **Persistence baseline** (`Z_hat' = Z`) — reuse `baselines.
-   identity_baseline.evaluate_identity_baseline`.
-2. **Mean transformed-representation baseline**
-   (`Z_hat' = mean(Z'_train)`, constant prediction for every test scene)
-   — this does not exist yet in `baselines/`; add it as
-   `baselines/mean_baseline.py`, following the exact structure/style of
-   `baselines/identity_baseline.py` (a dataclass result + one function),
-   computing the metrics with `metrics.common`'s existing primitives.
-3. **Random-pair control** — reuse `baselines.
-   shuffled_pairing_baseline.evaluate_shuffled_pairing_baseline` (fits
-   `W_T` on deliberately mismatched train pairs; a real test of whether
-   the fitting procedure itself is finding genuine correspondence).
+**Outputs.**
 
-## Metrics (same three for the learned map and every control, per scene split)
+- Rendered original/transformed clip pairs for every scene (reusing
+  `transforms.pairs.generate_pair`'s output layout — no new renderer
+  output convention).
+- `state/task_06_result.json` (schema below).
+- A runnable script/module under `experiments/` (e.g.
+  `experiments/task6_camera_rotation.py`) with a `main()` callable via
+  `python -m ...` and a `--config` flag.
 
-- Held-out R² (`metrics.common.r_squared` via `evaluate_equivariance`)
-- Mean cosine similarity between predicted and actual `Z'`
-- Mean relative L2 error
+**Experimental protocol.**
+
+1. Sample ≥40 scenes with distinct seeds.
+2. Assign train/test split at the scene level, before rendering.
+3. For every scene, render the original and the fixed-magnitude
+   `camera_rotation`-transformed clip via `transforms.pairs
+   .generate_pair`.
+4. Encode both clips with `VJEPAEncoder`, reduce to a single vector per
+   clip with `mean_pool` (pooling choice stated explicitly, not an
+   unstated default — ridge regression over the raw unpooled
+   `(num_tokens, hidden_size)` tensor is dimensionally unreasonable at
+   this scene count).
+5. Fit `W_T` on `(Z_train, Z'_train)` only.
+6. Evaluate `W_T`, and every baseline (below), on `(Z_test, Z'_test)`.
+
+**Dataset requirements.** ≥40 scenes, each with a distinct seed, each
+rendered on both the original and `camera_rotation`-transformed side.
+An 80/20 (or similar, explicitly recorded) train/test fraction.
+
+**Train/test protocol.** Scene-level, assigned once before any
+rendering. Every variant of `scene_001` (original, rotated) belongs to
+the same split as every other variant of `scene_001`. It is forbidden
+to place different variants of the same underlying scene into train
+and test.
+
+**Controls.**
+
+1. **Persistence** (`Z_hat' = Z`) — `baselines.identity_baseline
+   .evaluate_identity_baseline`.
+2. **Mean transformed representation** (`Z_hat' = mean(Z'_train)`) —
+   does not yet exist; add `baselines/mean_baseline.py`, matching
+   `identity_baseline.py`'s structure (a dataclass result + one
+   function), using `metrics.common`'s existing primitives.
+3. **Random-pair control**, which must destroy the true scene
+   correspondence — `baselines.shuffled_pairing_baseline
+   .evaluate_shuffled_pairing_baseline`.
+
+**Baselines.** The three controls above are this task's required
+baseline set. Task 10 will later formalize DESIGN.md §12's full
+four-baseline set (identity, shuffled-pairing, pixel-statistics
+encoder, randomly-initialized encoder) as reusable infrastructure; Task
+6 is not required to run the pixel-statistics or
+randomly-initialized-encoder baselines itself, but must not report
+results in a way that would conflict with their later addition (e.g.
+must not claim "beats every reasonable baseline" — only "beats
+persistence, mean, and random-pair").
+
+**Metrics.** Held-out R² (`metrics.common.r_squared`), mean cosine
+similarity, mean relative L2 error — via `metrics.equivariance
+.evaluate_equivariance`, computed identically for the learned `W_T` and
+all three controls. Metric definitions are fixed by this document and
+by `metrics.equivariance`/`metrics.common` before any result is
+inspected; the metric must not be chosen or changed after inspecting
+results to produce a favorable conclusion.
 
 ## Required artifacts
 
-- A runnable script/module (e.g. `experiments/task6_camera_rotation.py`
-  or `research_experiments/task6_camera_rotation.py`) with a `main()`
-  callable via `python -m ...` and a `--config` flag for reproducibility.
-- Rendered scene data on disk (reuse `transforms.pairs.generate_pair`'s
-  own output layout; do not invent a new one).
-- `state/task_06_result.json` (see schema below).
-- A short human-readable report (markdown) is optional but encouraged;
-  `state/task_06_result.json` is the QA-checked artifact of record.
-
-## `state/task_06_result.json` schema (minimum required fields)
+- `experiments/camera_rotation/` (or the task's own output directory,
+  consistent with `transforms.pairs.generate_pair`'s layout) containing
+  the rendered scene data.
+- `state/task_06_result.json`, containing at minimum:
 
 ```json
 {
@@ -148,65 +209,114 @@ the experiment.
 
 ## Tests required
 
-- Unit test(s) for the new `baselines/mean_baseline.py` (mirroring the
-  style of existing `tests/` files for `identity_baseline`/
-  `shuffled_pairing_baseline` if those exist, or added alongside
-  `tests/test_metrics.py`/`tests/test_probes.py`'s existing coverage).
-- A test (fast, `pytest -m "not slow"`-safe, using a small synthetic
-  in-memory example — no real render/encode needed) that the experiment
-  script's scene-level split logic never puts a scene's original and
-  transformed representation in different splits, and that train/test
-  scene ID sets are disjoint.
-- Run the full existing suite (`pytest -m "not slow"`) and confirm no
-  regression.
+**Required software tests.**
 
-## Leakage checks (independently verified by orchestrator QA, layer E)
+- Transformation runs; rendering runs; encoding runs; `W_T` fitting
+  runs; prediction runs; metrics run; result files are generated.
+- No NaN/Inf anywhere in the result.
+- Expected tensor dimensions at every stage (pooled `Z`/`Z'` are
+  `(1024,)`; stacked train/test arrays are `(N, 1024)`).
+- Unit test(s) for the new `baselines/mean_baseline.py`.
+- Full existing suite (`pytest -m "not slow"`) still passes — no
+  regression in Tasks 1–5.
 
-- `train_scene_ids` and `test_scene_ids` in the result JSON are disjoint
-  sets.
+**Required scientific-validity tests.**
+
+- The transformation is actually applied (the rendered transformed
+  video's ground truth — `changed_variables`/`fixed_variables`/
+  `transform_matrix` from `apply_transform` — reflects exactly the
+  intended camera rotation and nothing else).
+- The transformed video genuinely corresponds to the transformed scene,
+  and `Z`/`Z'` genuinely correspond to `V`/`V'` (no accidental
+  mismatch/misindexing between scene, render, and representation).
+- `W_T` was fit on train scenes only; test scenes were never seen
+  during fitting.
+- Transformed variants never cross the train/test split.
+- The encoder is frozen throughout (parameters unchanged before/after
+  encoding, per `tests/test_vjepa_encoder.py`'s existing pattern).
+- No ground-truth coordinates (rotation matrices, camera pose) enter
+  the encoder as input — only as labels/config for constructing `T` and
+  as provenance metadata.
+
+**Required research-alignment checks.** Consistent with
+`research/RESEARCH_INVARIANTS.md` and `research
+/CANONICAL_RESEARCH_PROTOCOL.md`'s Global Scientific Invariants: frozen
+encoder declared and verified, scene-level split declared, baselines
+present, seed/config recorded, no fabricated/stub metrics
+(`orchestrator/qa.py` layers A/C/D/F).
+
+## Leakage checks
+
+- `train_scene_ids` and `test_scene_ids` are disjoint sets.
 - Every `test_scene_ids` entry's representation was excluded from
-  `LinearRepTransform.fit`'s training data — i.e. `Z_train`/`Z'_train`'s
-  scene provenance matches `train_scene_ids` exactly.
+  `LinearRepTransform.fit`'s training data.
 - No test-split scene contributed to the mean-baseline's computed mean.
+
+**Reproducibility requirements.** Fixed seed produces a
+bit-reproducible (or documented-tolerance) result across independent
+runs; `base_seed`, the fixed rotation magnitude, ridge `alpha`, encoder
+checkpoint/`pretrained` flag, and software versions (`transformers`,
+`torch`, `python`) are all recorded in `state/task_06_result.json`.
 
 ## Acceptance criteria
 
-1. At least 40 scenes generated and rendered through both original and
+**Failure conditions** (any of the following is a SOFTWARE FAILURE —
+the orchestrator must retry/fix, not accept): missing/invalid result
+JSON; NaN/Inf; train/test scene overlap; a baseline silently skipped;
+encoder parameters changed by the run; ground-truth coordinates fed to
+the encoder; scene count below 40; `alpha` or any hyperparameter chosen
+by inspecting test metrics; unjustified modification of Task 1–5
+modules.
+
+**Acceptance criteria.**
+
+1. ≥40 scenes generated and rendered through both original and
    `camera_rotation`-transformed sides.
-2. Real `VJEPAEncoder` (pretrained, per requirement 4) used for both
-   sides of every scene.
+2. Real `VJEPAEncoder` (pretrained per the Inputs section) used for
+   both sides of every scene.
 3. `W_T` fit on train only, evaluated on test only.
 4. All three required controls computed on the identical test split.
 5. `state/task_06_result.json` present and matches the schema above.
 6. No NaN/Inf in any reported metric.
-7. Full existing test suite still passes (`pytest -m "not slow"`).
-8. Scene-level split integrity holds (see leakage checks).
+7. Full existing test suite still passes.
+8. Scene-level split integrity holds (leakage checks above).
 
 ## Prohibited shortcuts
 
-- Do not feed ground-truth camera pose/rotation matrices into the
-  encoder as input (invariant 7). They may be used to *construct* the
-  transform and to *label* metadata, never as model input.
-- Do not fit `W_T` (or choose its ridge `alpha`) by looking at test
+- Feeding ground-truth camera pose/rotation matrices into the encoder
+  as input.
+- Fitting `W_T` or choosing its ridge `alpha` by looking at test
   metrics.
-- Do not reduce scene count to make ridge regression trivially "work" —
-  40 is a floor, not a target to shrink from if results look weak.
-- Do not silently swap `pretrained=False` in to dodge slow/networked
-  runs without recording it plainly in the result JSON — see
-  requirement 4.
-- Do not modify `transforms/`, `generation/`, or `encoders/` core
-  modules from Tasks 1–5 to make this experiment's numbers look better;
-  if a genuine bug is found there, fix it minimally and record why in
-  the result JSON's `protected_files_justification` field.
+- Reducing scene count to make ridge regression trivially "work."
+- Silently swapping `pretrained=False` to dodge slow/networked runs
+  without recording it.
+- Modifying `transforms/`, `generation/`, or `encoders/` to make this
+  experiment's numbers look better (a genuine bug fix is allowed, must
+  be minimal and justified in `protected_files_justification`).
 
 ## Scientific interpretation limits
 
-A high R² / cosine similarity for the learned `W_T`, clearly above all
-three baselines, is evidence that camera-rotation's effect on this
-frozen encoder's representation is **linearly predictable and
-generalizes** — nothing more. It is **not** evidence that the model
-"understands 3D," has an internal camera model, or generalizes to
-rotations of other magnitudes/axes (that is Task 7's question). A weak
-or null result is a valid, complete outcome for this task — see
-`research/RESEARCH_INVARIANTS.md` invariants 10–11 — and must be
-reported as such rather than reframed as a software failure.
+**Interpretation rules.** Allowed: "The representation exhibits
+measurable predictive consistency under the tested camera rotation,
+exceeding [baseline] by [margin]." Allowed: "No measurable predictive
+consistency was found under the tested protocol." **Not allowed, under
+any result:** "V-JEPA understands 3D," or any claim beyond DESIGN.md
+§13's "can support" list.
+
+**What a positive result means.** Camera-rotation's effect on this
+frozen encoder's pooled representation is linearly predictable and
+generalizes to unseen scenes, under this scene distribution, this
+pooling scheme, and this rotation magnitude — nothing more.
+
+**What a negative result means.** Under this protocol, no linear map
+recovers camera-rotation's effect on `Z` better than trivial controls —
+a real, complete, reportable finding, not a task failure.
+
+**What this task does NOT establish.** Generalization to other rotation
+magnitudes or axes (Task 7's question); that physical camera state is
+*itself* decodable from `Z` (Task 8's question, related but distinct —
+DESIGN.md §13); robustness to appearance confounds (Task 9); behavior
+at scale (Task 11); anything about temporal dynamics, occlusion, or
+counterfactual structure (Tasks 12–14); and, under any outcome, any
+claim that the model "understands" 3D, has an internal camera model, or
+performs geometric reasoning.
