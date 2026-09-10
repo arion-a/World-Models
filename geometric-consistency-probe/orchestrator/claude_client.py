@@ -35,6 +35,7 @@ import os
 import platform
 import shlex
 import subprocess
+import uuid
 import time
 from dataclasses import dataclass
 from pathlib import Path
@@ -79,6 +80,7 @@ class ClaudeResult:
     parsed_json: dict | None
     duration_seconds: float
     command: list[str]
+    session_id: str | None = None
 
     @property
     def ok(self) -> bool:
@@ -104,10 +106,22 @@ def detect_platform() -> str:
     return system
 
 
-def build_command(prompt: str, config: ClaudeConfig) -> list[str]:
-    """Pure function: prompt + config -> argv list. No subprocess call,
-    no I/O -- kept separate from invoke_claude() so command construction
-    can be unit-tested without ever touching the real CLI."""
+def build_command(prompt: str, config: ClaudeConfig, session_id: str | None = None) -> list[str]:
+    """Pure function: prompt + config (+ an optional pre-generated
+    session_id) -> argv list. No subprocess call, no I/O -- kept separate
+    from invoke_claude() so command construction can be unit-tested
+    without ever touching the real CLI.
+
+    `session_id`, when given, is passed as `--session-id`. This matters:
+    plain `claude -p "..."` with no session flag defaults to *continuing
+    the most recent session tied to the working directory* rather than
+    starting a fresh one -- confirmed empirically, not assumed, by
+    running it from this very directory and observing it reuse this
+    orchestrating session's own session_id. Task implementations must
+    run in a genuinely fresh session, isolated from whatever session
+    (this one included) happens to have last touched the repo, so
+    invoke_claude() always generates and passes a fresh UUID.
+    """
     command = config.command
     if platform.system().lower() == "windows" and detect_platform() == "windows":
         # Native Windows (not WSL): a plain "claude" on PATH is often the
@@ -132,6 +146,8 @@ def build_command(prompt: str, config: ClaudeConfig) -> list[str]:
         "--permission-prompts",
         "none",
     ]
+    if session_id:
+        argv.extend(["--session-id", session_id])
     for flag in config.extra_args:
         if flag in _DANGEROUS_FLAGS:
             raise ClaudeInvocationError(
@@ -157,7 +173,8 @@ def invoke_claude(
     (executable not found) or timed out.
     """
     config = config or ClaudeConfig.from_env()
-    argv = build_command(prompt, config)
+    session_id = str(uuid.uuid4())
+    argv = build_command(prompt, config, session_id=session_id)
 
     started = time.monotonic()
     try:
@@ -190,6 +207,7 @@ def invoke_claude(
         parsed_json=parsed,
         duration_seconds=duration,
         command=argv,
+        session_id=session_id,
     )
 
 
