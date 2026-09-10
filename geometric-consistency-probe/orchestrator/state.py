@@ -39,12 +39,18 @@ STATUSES = (READY, RUNNING, QA, FIXING, PASSED, FAILED, BLOCKED)
 # FAILED/BLOCKED are terminal: resuming them requires an explicit
 # operator reset (OrchestratorState.reset_task), never an automatic
 # transition. PASSED -> READY happens only inside advance_task().
+# PASSED -> BLOCKED is the one other legal exit from PASSED: QA already
+# passed, but the checkpoint commit itself could not be created OR
+# recovered (orchestrator/run.py's _finish_passed_task) -- a genuine
+# MISSING_DEPENDENCY-shaped infra failure (e.g. git/disk failure), never
+# an automatic re-attempt; the task must not be silently reported
+# advanced without a real commit backing it.
 ALLOWED_TRANSITIONS: dict[str, set[str]] = {
     READY: {RUNNING},
     RUNNING: {QA, FAILED},
     QA: {PASSED, FIXING, BLOCKED},
     FIXING: {RUNNING},
-    PASSED: {READY},
+    PASSED: {READY, BLOCKED},
     FAILED: set(),
     BLOCKED: set(),
 }
@@ -75,6 +81,18 @@ class OrchestratorState:
     attempts: dict[str, int] = field(default_factory=dict)
     commits: dict[str, str | None] = field(default_factory=dict)
     last_qa: dict[str, dict | None] = field(default_factory=dict)
+    # Per-task record that orchestrator.sync ran and whether it changed
+    # tasks/{NN}_*.md to match research/CANONICAL_RESEARCH_PROTOCOL.md --
+    # this is what makes "the task file was reconciled with the canonical
+    # protocol" an auditable, non-interactive fact instead of something
+    # anyone had to be asked about.
+    sync: dict[str, dict] = field(default_factory=dict)
+    # Per-task record of WHY a task is BLOCKED, when it's for a reason
+    # more specific than "repair attempts exhausted" -- see
+    # orchestrator/classify.py. None/absent means either not blocked, or
+    # blocked only because MAX_FIX_ATTEMPTS was exhausted with no more
+    # specific category identified.
+    blockers: dict[str, dict] = field(default_factory=dict)
     history: list[dict] = field(default_factory=list)
     updated_at: str = ""
 
@@ -101,6 +119,8 @@ class OrchestratorState:
                 attempts=dict(data.get("attempts", {})),
                 commits=dict(data.get("commits", {})),
                 last_qa=dict(data.get("last_qa", {})),
+                sync=dict(data.get("sync", {})),
+                blockers=dict(data.get("blockers", {})),
                 history=list(data.get("history", [])),
                 updated_at=data.get("updated_at", ""),
             )
@@ -167,6 +187,15 @@ class OrchestratorState:
             if v is not None and not isinstance(v, dict):
                 raise StateError(f"last_qa[{k!r}] must be a dict or null")
 
+        for label, mapping in (("sync", self.sync), ("blockers", self.blockers)):
+            if not isinstance(mapping, dict):
+                raise StateError(f"{label} must be a dict")
+            for k, v in mapping.items():
+                if not _is_task_key(k):
+                    raise StateError(f"{label} has a non-task-number key: {k!r}")
+                if not isinstance(v, dict):
+                    raise StateError(f"{label}[{k!r}] must be a dict")
+
         if not isinstance(self.history, list):
             raise StateError("history must be a list")
 
@@ -200,6 +229,21 @@ class OrchestratorState:
         self.last_qa[str(task)] = qa_summary
         self._append_history("qa", task=task, passed=qa_summary.get("passed"))
 
+    def record_sync(self, task: int, changed: bool, path: str, title: str) -> None:
+        """Records that orchestrator.sync reconciled tasks/{NN}_*.md with
+        research/CANONICAL_RESEARCH_PROTOCOL.md for this task -- a
+        routine, deterministic, non-interactive fact, logged for audit
+        rather than asked about."""
+        self.sync[str(task)] = {"changed": changed, "path": path, "title": title, "timestamp": _now_iso()}
+        self._append_history("sync", task=task, changed=changed)
+
+    def record_blocker(self, task: int, category: str, reason: str) -> None:
+        """Records WHY a task is BLOCKED when it's for a more specific
+        reason than 'repair attempts exhausted' -- see
+        orchestrator/classify.py's category names."""
+        self.blockers[str(task)] = {"category": category, "reason": reason, "timestamp": _now_iso()}
+        self._append_history("blocker", task=task, category=category)
+
     def advance_task(self, commit_hash: str | None) -> int:
         """The ONLY way current_task moves forward. Requires status ==
         PASSED (i.e. QA actually passed this task) -- this is the
@@ -222,6 +266,7 @@ class OrchestratorState:
         if self.status not in (BLOCKED, FAILED):
             raise StateError(f"reset_task only valid from BLOCKED/FAILED, current status is {self.status!r}")
         self.attempts[str(task)] = 0
+        self.blockers.pop(str(task), None)
         old_status = self.status
         self.status = READY
         self._append_history("reset", task=task, from_status=old_status)

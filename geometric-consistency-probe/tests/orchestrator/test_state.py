@@ -138,6 +138,19 @@ def test_illegal_transitions_are_rejected(start, target):
     assert s.status == start, "a rejected transition must not partially apply"
 
 
+def test_passed_to_blocked_is_legal():
+    """QA passing does not guarantee the checkpoint commit itself can be
+    made (orchestrator/run.py's _finish_passed_task falls back to
+    BLOCKED when both create_checkpoint and its get_status recovery
+    fallback fail) -- this must be a legal transition, not something
+    that crashes the orchestrator with an illegal-transition StateError
+    on top of the underlying git failure."""
+    s = st.OrchestratorState.bootstrap()
+    s.status = st.PASSED
+    s.transition(st.BLOCKED)
+    assert s.status == st.BLOCKED
+
+
 def test_self_transition_is_a_safe_no_op():
     """This is what makes resuming after an interruption safe: whichever
     status the process died in, re-entering the loop and re-asserting

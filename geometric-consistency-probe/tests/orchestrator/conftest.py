@@ -21,47 +21,30 @@ from pathlib import Path
 
 import pytest
 
+from orchestrator import sync
+
 FAKE_INVARIANTS_MD = "\n".join(f"{n}. **Fake invariant {n}.** Placeholder text for testing." for n in range(1, 19))
 
-FAKE_TASK_SPEC_TEMPLATE = """\
-# Task {task} — Fake task for orchestrator unit tests
+# Fake tasks/{NN}_*.md files are generated FOR REAL by orchestrator.sync
+# from this fake canonical protocol document, exercising the actual
+# sync/parse/render code path rather than a hand-maintained parallel
+# format that could silently drift from it. Covers tasks 6-8 so
+# multi-task --loop tests have somewhere to advance to.
+FAKE_TASK_TITLES = {6: "Fake task six", 7: "Fake task seven", 8: "Fake task eight"}
 
-## Objective
 
-Fake objective.
+def _fake_canonical_task_section(task: int, title: str) -> str:
+    fields = "\n\n".join(f"### {name}\n\nFake {name.lower()} for task {task}." for name in sync.CANONICAL_FIELD_ORDER)
+    return f"# TASK {task} — {title.upper()}\n\n{fields}\n\n"
 
-## Scientific question
 
-Fake question.
+def _render_fake_canonical_protocol(titles: dict[int, str]) -> str:
+    return "".join(_fake_canonical_task_section(t, title) for t, title in titles.items()) + (
+        "## Validation performed on this document\n\nFake validation section -- not a task.\n"
+    )
 
-## Implementation requirements
 
-Fake requirements.
-
-## Required artifacts
-
-Fake artifacts.
-
-## Tests required
-
-Fake tests.
-
-## Leakage checks
-
-Fake leakage checks.
-
-## Acceptance criteria
-
-Fake acceptance criteria.
-
-## Prohibited shortcuts
-
-Fake prohibited shortcuts.
-
-## Scientific interpretation limits
-
-Fake limits.
-"""
+FAKE_CANONICAL_PROTOCOL = _render_fake_canonical_protocol(FAKE_TASK_TITLES)
 
 
 def _run_git(args, cwd):
@@ -70,7 +53,7 @@ def _run_git(args, cwd):
     return result
 
 
-def make_fake_repo(root: Path, task: int = 6, nested: bool = False) -> Path:
+def make_fake_repo(root: Path, task: int = 6, nested: bool = False, canonical_tasks: dict[int, str] | None = None) -> Path:
     """`nested=True` git-inits at `root` but puts all the fake-repo
     content under `root/inner`, returning that subdirectory as
     repo_root -- mirrors this project's actual deployment shape
@@ -81,9 +64,20 @@ def make_fake_repo(root: Path, task: int = 6, nested: bool = False) -> Path:
     orchestrator/git_ops.py's DEFAULT_IGNORED_FOR_DIRTY_CHECK or
     orchestrator/qa.py's PROTECTED_PATHS silently never matching -- a
     real bug this project's first live run hit that `nested=False`
-    fixtures could not have caught."""
+    fixtures could not have caught.
+
+    `task` only decides which fake result/checkpoint helpers a test
+    defaults to reasoning about -- it is NOT what makes a task's
+    canonical section exist or not (that's real orchestrator.sync
+    behavior, driven only by the canonical protocol text). Pass
+    `canonical_tasks` (default FAKE_TASK_TITLES) to control exactly
+    which '# TASK N -- ...' sections the fake canonical protocol
+    contains -- e.g. `canonical_tasks={}` for a repo where no task has
+    a canonical section yet, or `canonical_tasks={6: "Fake task six"}`
+    for one where only task 6 does."""
     content_root = (root / "inner") if nested else root
     git_root = root
+    titles = FAKE_TASK_TITLES if canonical_tasks is None else canonical_tasks
 
     (content_root / "tasks").mkdir(parents=True, exist_ok=True)
     (content_root / "state").mkdir(parents=True, exist_ok=True)
@@ -93,11 +87,17 @@ def make_fake_repo(root: Path, task: int = 6, nested: bool = False) -> Path:
 
     (content_root / ".gitignore").write_text("__pycache__/\n*.pyc\n.pytest_cache/\nlogs/\n")
     (content_root / "research" / "RESEARCH_INVARIANTS.md").write_text(FAKE_INVARIANTS_MD)
+    (content_root / "research" / "CANONICAL_RESEARCH_PROTOCOL.md").write_text(_render_fake_canonical_protocol(titles))
     (content_root / "tests" / "research" / "test_fake_alignment.py").write_text("def test_ok():\n    assert True\n")
     (content_root / "tests" / "test_dummy.py").write_text("def test_ok():\n    assert True\n")
     (content_root / "pytest.ini").write_text("[pytest]\nmarkers =\n    slow: slow test\n")
-    (content_root / "tasks" / f"{task:02d}_fake.md").write_text(FAKE_TASK_SPEC_TEMPLATE.format(task=task))
     (content_root / "generation" / "core.py").write_text("# protected placeholder module\nVALUE = 1\n")
+
+    # Generate tasks/{NN}_*.md FOR REAL via the actual sync module, for
+    # every task the fake canonical protocol covers -- not hand-written,
+    # so these fixtures can never drift from what sync.py actually does.
+    for t in titles:
+        sync.sync_task_spec(t, content_root)
 
     _run_git(["init"], git_root)
     _run_git(["config", "user.email", "test@example.com"], git_root)
@@ -131,6 +131,21 @@ def write_valid_result(root: Path, task: int, artifact_name: str = "report.md", 
     }
     if extra_fields:
         result.update(extra_fields)
+    (root / "state" / f"task_{task:02d}_result.json").write_text(json.dumps(result, indent=2))
+
+
+def write_blocked_result(root: Path, task: int, blocker_category: str, blocking_issue: str) -> None:
+    """Simulates a task that correctly identified it could not proceed
+    and reported so honestly (per research/CANONICAL_RESEARCH_PROTOCOL.md's
+    'STOP and record the conflict' rule) -- e.g. a genuine scientific
+    conflict, a missing credential, or a required destructive action."""
+    result = {
+        "task": task,
+        "implementation_status": "BLOCKED",
+        "blocker_category": blocker_category,
+        "blocking_issue": blocking_issue,
+        "scientific_result": "No experiment was executed -- see blocking_issue.",
+    }
     (root / "state" / f"task_{task:02d}_result.json").write_text(json.dumps(result, indent=2))
 
 

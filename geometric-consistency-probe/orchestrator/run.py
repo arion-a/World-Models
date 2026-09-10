@@ -3,36 +3,53 @@
     python -m orchestrator.run --dry-run     # show state/plan, change nothing
     python -m orchestrator.run               # actually run the next task
     python -m orchestrator.run --loop        # run tasks back-to-back while
-                                              # their spec files exist
+                                              # the canonical protocol already
+                                              # covers the next task number
     python -m orchestrator.run --reset-task 6  # explicit operator override
                                               # to retry a BLOCKED/FAILED task
 
-Flow per task (see the module docstrings of state.py / qa.py / prompts.py
-/ claude_client.py / git_ops.py for the pieces this wires together):
+Flow per task (see the module docstrings of state.py / sync.py / qa.py /
+classify.py / prompts.py / claude_client.py / git_ops.py for the pieces
+this wires together):
 
-    load state -> determine next task -> require a clean git tree
-    -> RUNNING: invoke Claude with the task prompt
+    load state -> determine next task
+    -> SYNC: reconcile tasks/{NN}_*.md with research/
+       CANONICAL_RESEARCH_PROTOCOL.md (deterministic, no judgment involved
+       -- see orchestrator/sync.py)
+    -> require a clean git tree -> RUNNING: invoke Claude with the task
+       prompt (built from the canonical protocol, invariants, synced spec,
+       current state, and the previous task's result)
     -> QA: independently verify (never trust Claude's own report)
-    -> PASSED -> git checkpoint commit -> advance_task() -> done
-       FAILED (QA) and attempts remain -> FIXING: invoke Claude with a
-           fix prompt, back to RUNNING
-       FAILED (QA) and attempts exhausted -> BLOCKED, stop
+    -> PASSED -> git checkpoint commit -> advance_task() -> next task's
+       SYNC, automatically, if --loop
+       QA FAILED and the task itself reported a genuine
+           SCIENTIFIC_CONFLICT/DESTRUCTIVE_ACTION/MISSING_DEPENDENCY
+           blocker (orchestrator/classify.py) -> BLOCKED immediately,
+           no repair attempt wasted on something retrying cannot fix
+       QA FAILED (ordinary implementation/methodological failure) and
+           attempts remain -> FIXING: invoke Claude with a fix prompt,
+           back to RUNNING
+       QA FAILED and attempts exhausted -> BLOCKED, stop
 
-If tasks/{NN}_*.md does not exist yet for the next task, the orchestrator
-stops cleanly without changing anything -- this is the intended way the
-user's own workflow ("insert task N+1's prompt only after N is accepted")
-gates the pipeline, not an error condition.
+None of this asks a human anything. The only way this stops short of
+Task 18 completing is: (a) the canonical protocol has no section yet for
+the next task number (nothing to derive a task from), (b) a task
+reports a genuine SCIENTIFIC_CONFLICT/DESTRUCTIVE_ACTION/
+MISSING_DEPENDENCY blocker, or (c) repair attempts are exhausted on an
+ordinary failure. All three land in BLOCKED or a clean early return;
+none of them is "ask the user for a routine decision."
 """
 
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import sys
 from pathlib import Path
 
-from orchestrator import claude_client, git_ops, qa, state
-from orchestrator.prompts import TaskSpecNotFound, render_fix_prompt, render_task_prompt
+from orchestrator import classify, claude_client, git_ops, qa, state, sync
+from orchestrator.prompts import render_fix_prompt, render_previous_result_summary, render_state_summary, render_task_prompt, render_task_prompt_from_content
 
 DEFAULT_MAX_FIX_ATTEMPTS = int(os.environ.get("MAX_FIX_ATTEMPTS", "3"))
 
@@ -53,7 +70,7 @@ def _paths(repo_root: Path) -> dict[str, Path]:
 def build_arg_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Autonomous task orchestrator for the Geometric Consistency Probe.")
     parser.add_argument("--dry-run", action="store_true", help="Show state/plan without changing anything.")
-    parser.add_argument("--loop", action="store_true", help="After a task passes, continue to the next one if its spec file already exists.")
+    parser.add_argument("--loop", action="store_true", help="After a task passes, continue to the next one while the canonical protocol already covers it.")
     parser.add_argument("--allow-dirty", action="store_true", help="Proceed even if the git working tree has uncommitted changes.")
     parser.add_argument("--max-fix-attempts", type=int, default=DEFAULT_MAX_FIX_ATTEMPTS, help=f"Max repair attempts per task (default: {DEFAULT_MAX_FIX_ATTEMPTS}, env MAX_FIX_ATTEMPTS).")
     parser.add_argument("--repo-root", type=str, default=None, help="Repository root (default: the geometric-consistency-probe/ directory containing this package).")
@@ -88,6 +105,19 @@ def main(argv: list[str] | None = None) -> int:
     return _run_loop(current_state, repo_root, paths, args)
 
 
+def _load_previous_result(repo_root: Path, task: int) -> tuple[int, dict | None]:
+    prev_task = task - 1
+    if prev_task < 1:
+        return prev_task, None
+    path = repo_root / "state" / f"task_{prev_task:02d}_result.json"
+    if not path.exists():
+        return prev_task, None
+    try:
+        return prev_task, json.loads(path.read_text())
+    except json.JSONDecodeError:
+        return prev_task, None
+
+
 def _dry_run(current_state: state.OrchestratorState, repo_root: Path, paths: dict, args) -> int:
     print("=== DRY RUN (no changes will be made) ===")
     print(f"repo_root: {repo_root}")
@@ -97,7 +127,10 @@ def _dry_run(current_state: state.OrchestratorState, repo_root: Path, paths: dic
     print(f"current_task: {current_state.current_task}")
 
     if current_state.status in (state.BLOCKED, state.FAILED):
+        blocker = current_state.blockers.get(str(current_state.current_task))
         print(f"Task {current_state.current_task} is {current_state.status} -- orchestrator would refuse to proceed without --reset-task.")
+        if blocker:
+            print(f"  blocker category: {blocker['category']} -- {blocker['reason']}")
         return 0
 
     next_task = current_state.next_task()
@@ -106,12 +139,26 @@ def _dry_run(current_state: state.OrchestratorState, repo_root: Path, paths: dic
         return 0
 
     print(f"next task: {next_task}")
+    # dry_run=True: report what sync WOULD do without writing anything --
+    # a genuinely stale/missing tasks/{NN}_*.md is exactly the kind of
+    # fact --dry-run exists to surface, not silently fix on disk.
     try:
-        prompt = render_task_prompt(next_task, paths["tasks"])
-    except TaskSpecNotFound as exc:
-        print(f"Task spec not found: {exc}")
-        print("Orchestrator would stop here and wait for the task file to be added.")
+        sync_result = sync.sync_task_spec(next_task, repo_root, dry_run=True)
+    except sync.CanonicalSectionNotFound as exc:
+        print(f"Canonical protocol has no section for task {next_task} yet: {exc}")
+        print("Orchestrator would stop here and wait for the canonical protocol to be extended.")
         return 0
+    print(f"task spec sync: {'would update' if sync_result.changed else 'already up to date'} ({sync_result.path})")
+
+    prev_task, prev_result = _load_previous_result(repo_root, next_task)
+    prompt = render_task_prompt_from_content(
+        next_task,
+        sync_result.path.name,
+        sync_result.content,
+        render_state_summary(current_state.to_dict(), next_task, 1, args.max_fix_attempts),
+        render_previous_result_summary(prev_result, prev_task),
+        prev_task,
+    )
 
     print(f"rendered prompt: {len(prompt)} chars (spec file located)")
     claude_config = claude_client.ClaudeConfig.from_env()
@@ -133,6 +180,8 @@ def _dry_run(current_state: state.OrchestratorState, repo_root: Path, paths: dic
         print(f"  - {name}")
     print(f"test command QA will run: {list(q_config.test_command)}")
     print(f"max fix attempts: {args.max_fix_attempts}")
+    print("blocker categories that skip remaining repair attempts (no human question, straight to BLOCKED):")
+    print(f"  {list(classify.STOP_REPAIR_CATEGORIES)}")
 
     try:
         git_status = git_ops.get_status(repo_root)
@@ -155,19 +204,25 @@ def _run_loop(current_state: state.OrchestratorState, repo_root: Path, paths: di
         if current_state.is_complete():
             print("All tasks (1-18) complete.")
             return 0
-        # Only continue the loop if the next task's spec file already
-        # exists -- otherwise stop cleanly and wait, per the user's own
-        # "insert the next task only after this one is accepted" workflow.
+        # Only continue the loop while the canonical protocol already
+        # covers the next task number -- otherwise stop cleanly and wait.
+        # This is the one remaining "wait" condition: there is nothing to
+        # derive a task from until its scientific design exists in the
+        # canonical protocol (research/CANONICAL_RESEARCH_PROTOCOL.md's
+        # own "IMPORTANT DISTINCTION" -- inventing scope is never routine).
         try:
-            render_task_prompt(current_state.next_task(), paths["tasks"])
-        except TaskSpecNotFound:
-            print(f"--loop: task {current_state.next_task()}'s spec file does not exist yet. Stopping and waiting.")
+            sync.sync_task_spec(current_state.next_task(), repo_root)
+        except sync.CanonicalSectionNotFound:
+            print(f"--loop: research/CANONICAL_RESEARCH_PROTOCOL.md has no section for task {current_state.next_task()} yet. Stopping and waiting.")
             return 0
 
 
 def _run_one_task(current_state: state.OrchestratorState, repo_root: Path, paths: dict, args) -> int:
     if current_state.status in (state.BLOCKED, state.FAILED):
+        blocker = current_state.blockers.get(str(current_state.current_task))
         print(f"Task {current_state.current_task} is {current_state.status}. Refusing to proceed automatically.")
+        if blocker:
+            print(f"  blocker category: {blocker['category']} -- {blocker['reason']}")
         print(f"Use `python -m orchestrator.run --reset-task {current_state.current_task}` after investigating, to retry.")
         return 1
 
@@ -176,12 +231,37 @@ def _run_one_task(current_state: state.OrchestratorState, repo_root: Path, paths
         print("All tasks (1-18) complete. Nothing to do.")
         return 0
 
+    # A dirty tree is a DESTRUCTIVE-ACTION-adjacent risk (a checkpoint's
+    # `git add -A` could fold in unrelated in-progress work), so this
+    # check must happen before anything else -- including before the
+    # otherwise-routine SYNC_SPECIFICATION step below -- and nothing may
+    # be persisted to state/progress.json if it fails. Only relevant on
+    # a fresh (READY) start: a resume of RUNNING/QA/FIXING legitimately
+    # has the interrupted attempt's uncommitted changes still present.
+    if current_state.status == state.READY:
+        try:
+            if args.allow_dirty:
+                git_ops.get_status(repo_root)
+            else:
+                git_ops.require_clean_tree(repo_root)
+        except git_ops.GitError as exc:
+            print(f"FATAL: {exc}", file=sys.stderr)
+            return 2
+
+    # SYNC_SPECIFICATION: a routine, deterministic, non-interactive step
+    # -- reconcile tasks/{NN}_*.md with the canonical protocol before
+    # doing anything else. This is category A (ROUTINE DERIVABLE
+    # DECISION) in the canonical protocol's own terms: never ask a human.
     try:
-        render_task_prompt(task, paths["tasks"])  # just to check existence up front
-    except TaskSpecNotFound as exc:
+        sync_result = sync.sync_task_spec(task, repo_root)
+    except sync.CanonicalSectionNotFound as exc:
         print(f"Task {task}: {exc}")
-        print("Stopping and waiting for the task spec file to be added -- state is unchanged.")
+        print("Stopping and waiting for the canonical protocol to be extended -- state is unchanged.")
         return 0
+    if sync_result.changed:
+        print(f"Task {task}: synchronized {sync_result.path} with the canonical protocol.")
+    current_state.record_sync(task, sync_result.changed, str(sync_result.path), sync_result.title)
+    state.save(current_state, paths["state"])
 
     paths["logs"].mkdir(parents=True, exist_ok=True)
     log_path = paths["logs"] / f"task_{task:02d}.log"
@@ -200,14 +280,6 @@ def _run_one_task(current_state: state.OrchestratorState, repo_root: Path, paths
         return _finish_passed_task(current_state, repo_root, paths, task)
 
     if current_state.status == state.READY:
-        try:
-            if args.allow_dirty:
-                git_ops.get_status(repo_root)
-            else:
-                git_ops.require_clean_tree(repo_root)
-        except git_ops.GitError as exc:
-            print(f"FATAL: {exc}", file=sys.stderr)
-            return 2
         current_state.transition(state.RUNNING, task=task)
         state.save(current_state, paths["state"])
     else:
@@ -225,6 +297,7 @@ def _run_one_task(current_state: state.OrchestratorState, repo_root: Path, paths
         print(f"FATAL: {exc}", file=sys.stderr)
         return 2
 
+    prev_task, prev_result = _load_previous_result(repo_root, task)
     attempts_already_made = current_state.attempts.get(str(task), 0)
     last_qa_dict = current_state.last_qa.get(str(task))
 
@@ -237,10 +310,16 @@ def _run_one_task(current_state: state.OrchestratorState, repo_root: Path, paths
         state.save(current_state, paths["state"])
 
         if attempt == 1:
-            prompt = render_task_prompt(task, paths["tasks"])
+            prompt = render_task_prompt(
+                task,
+                sync_result.path,
+                render_state_summary(current_state.to_dict(), task, attempt, max_attempts),
+                render_previous_result_summary(prev_result, prev_task),
+                prev_task,
+            )
         else:
             prior_report = qa.render_report(last_qa_dict) if last_qa_dict else "(no prior QA report available -- resumed after interruption)"
-            prompt = render_fix_prompt(task, paths["tasks"], prior_report, attempt, max_attempts)
+            prompt = render_fix_prompt(task, sync_result.path, prior_report, attempt, max_attempts)
 
         print(f"Task {task}, attempt {attempt}/{max_attempts}: invoking Claude...")
         try:
@@ -272,8 +351,23 @@ def _run_one_task(current_state: state.OrchestratorState, repo_root: Path, paths
             state.save(current_state, paths["state"])
             return _finish_passed_task(current_state, repo_root, paths, task, message_body=f"QA passed on attempt {attempt}/{max_attempts}.")
 
+        # AUTOMATIC QA DECISION: a QA failure alone never means "ask the
+        # user" -- classify whether the task itself reported a genuine
+        # blocker (retrying cannot fix a missing credential or a real
+        # scientific-protocol conflict) or an ordinary implementation
+        # failure (the ordinary repair loop below is exactly for this).
+        declared_result = _try_load_json(result_path)
+        category = classify.classify_blocker(declared_result)
+        if category in classify.STOP_REPAIR_CATEGORIES:
+            reason = (declared_result or {}).get("blocking_issue", "(no blocking_issue field found in the result JSON)")
+            print(f"Task {task}, attempt {attempt}: QA failed with a declared {category} blocker -- retrying will not help. Marking BLOCKED and stopping.")
+            current_state.record_blocker(task, category, reason)
+            current_state.transition(state.BLOCKED, task=task)
+            state.save(current_state, paths["state"])
+            return 1
+
         if attempt < max_attempts:
-            print(f"Task {task}, attempt {attempt}: QA failed. Preparing a fix prompt for attempt {attempt + 1}.")
+            print(f"Task {task}, attempt {attempt}: QA failed (ordinary implementation/methodological failure). Preparing a fix prompt for attempt {attempt + 1}.")
             current_state.transition(state.FIXING, task=task)
             state.save(current_state, paths["state"])
         else:
@@ -286,6 +380,15 @@ def _run_one_task(current_state: state.OrchestratorState, repo_root: Path, paths
     current_state.transition(state.BLOCKED, task=task)
     state.save(current_state, paths["state"])
     return 1
+
+
+def _try_load_json(path: Path) -> dict | None:
+    if not path.exists():
+        return None
+    try:
+        return json.loads(path.read_text())
+    except json.JSONDecodeError:
+        return None
 
 
 def _finish_passed_task(current_state: state.OrchestratorState, repo_root: Path, paths: dict, task: int, message_body: str = "resumed after interruption") -> int:

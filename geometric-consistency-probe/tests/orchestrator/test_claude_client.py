@@ -34,6 +34,15 @@ def test_build_command_uses_configured_permission_mode():
     assert argv[argv.index("--permission-mode") + 1] == "acceptEdits"
 
 
+def test_build_command_never_offers_an_interactive_prompt_surface():
+    # `--permission-prompts none` is what makes it structurally
+    # impossible for Claude to pause and wait on a human during an
+    # orchestrator-invoked task -- there is no channel to answer on even
+    # if it tried. This must be unconditional, not gated by config.
+    argv = cc.build_command("prompt", cc.ClaudeConfig())
+    assert argv[argv.index("--permission-prompts") + 1] == "none"
+
+
 def test_build_command_respects_claude_command_override():
     argv = cc.build_command("prompt", cc.ClaudeConfig(command="/custom/path/claude"))
     assert argv[0] == "/custom/path/claude"

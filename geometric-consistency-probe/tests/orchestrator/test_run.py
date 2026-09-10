@@ -209,19 +209,48 @@ def test_dry_run_makes_no_changes(repo, monkeypatch, capsys):
     assert "next task: 6" in out
 
 
+def test_dry_run_does_not_write_a_stale_task_spec(tmp_path, capsys):
+    """Regression: --dry-run must never call the real (writing)
+    sync_task_spec -- a genuinely stale tasks/{NN}_*.md is exactly the
+    kind of fact --dry-run exists to report, not silently fix on disk.
+    (Caught by running --dry-run against the real repo, which has a
+    genuinely stale tasks/07_geometric_consistency.md -- the other
+    dry-run tests all use fixtures whose spec already matches the
+    canonical protocol, which hid this bug.)"""
+    repo = make_fake_repo(tmp_path / "repo", canonical_tasks={6: "Fake task six"})
+    spec_path = next((repo / "tasks").glob("06_*.md"))
+    original_content = spec_path.read_text()
+    spec_path.write_text("this file is stale and disagrees with the canonical protocol\n")
+
+    exit_code = run.main(["--repo-root", str(repo), "--dry-run"])
+    assert exit_code == 0
+
+    assert spec_path.read_text() == "this file is stale and disagrees with the canonical protocol\n", (
+        "dry-run must not have overwritten the stale spec"
+    )
+    out = capsys.readouterr().out
+    assert "task spec sync: would update" in out
+    # The prompt preview must still reflect the CORRECT (synced) content
+    # the real run would actually send, not the stale on-disk content.
+    assert "Fake purpose for task 6." in original_content  # sanity: canonical content differs from the stale file
+
+
 def test_dry_run_reports_task_spec_missing_without_erroring(tmp_path, capsys):
-    repo = make_fake_repo(tmp_path / "repo2", task=99)  # no 06_*.md spec exists
+    # No '# TASK 6 -- ...' section in the canonical protocol at all --
+    # sync.sync_task_spec(6, ...) must raise CanonicalSectionNotFound
+    # rather than the orchestrator fabricating a task.
+    repo = make_fake_repo(tmp_path / "repo2", canonical_tasks={})
     exit_code = run.main(["--repo-root", str(repo), "--dry-run"])
     assert exit_code == 0
     out = capsys.readouterr().out
-    assert "Task spec not found" in out
+    assert "Canonical protocol has no section for task 6 yet" in out
 
 
 def test_missing_task_spec_stops_cleanly_in_real_run(tmp_path):
-    """Per the user's own workflow: task N+1's prompt is only added after
-    task N is accepted. If it's not there yet, the orchestrator must
-    stop cleanly -- not error, not fabricate work."""
-    repo = make_fake_repo(tmp_path / "repo3", task=99)
+    """Per the user's own workflow: task N+1's canonical section is only
+    written after task N is accepted. If it's not there yet, the
+    orchestrator must stop cleanly -- not error, not fabricate work."""
+    repo = make_fake_repo(tmp_path / "repo3", canonical_tasks={})
     exit_code = run.main(["--repo-root", str(repo)])
     assert exit_code == 0
     assert not (repo / "state" / "progress.json").exists()
@@ -300,15 +329,17 @@ def test_resume_from_fixing_status_sends_a_fix_prompt_not_initial_prompt(repo, m
     assert resumed.attempts["6"] == 2
 
 
-def test_resume_completed_task_is_a_pure_skip(repo, monkeypatch):
+def test_resume_completed_task_is_a_pure_skip(tmp_path, monkeypatch):
     """If progress.json already shows a later task as current (task 6
     completed by a previous, separate run), starting the orchestrator
     must work on the NEW current task, never redo task 6."""
+    # Canonical protocol has no '# TASK 7 -- ...' section yet -> the
+    # orchestrator must stop cleanly on task 7, and crucially must NEVER
+    # re-invoke Claude for the already-completed task 6.
+    repo = make_fake_repo(tmp_path / "repo", canonical_tasks={6: "Fake task six"})
     s = state.OrchestratorState(current_task=7, completed_tasks=[1, 2, 3, 4, 5, 6], status=state.READY)
     s.validate()
     state.save(s, repo / "state" / "progress.json")
-    # no tasks/07_*.md exists in this fake repo -> must stop cleanly, and
-    # crucially must NEVER re-invoke Claude for task 6.
     monkeypatch.setattr(run.claude_client, "invoke_claude", _fake_claude_factory([]))
     exit_code = run.main(["--repo-root", str(repo)])
     assert exit_code == 0
@@ -320,24 +351,28 @@ def test_resume_completed_task_is_a_pure_skip(repo, monkeypatch):
 # --- --loop behavior ----------------------------------------------------------
 
 
-def test_loop_stops_when_next_spec_file_is_missing(repo, monkeypatch):
+def test_loop_stops_when_next_spec_file_is_missing(tmp_path, monkeypatch):
     """--loop must not fabricate task 7 just because task 6 passed -- it
-    stops and waits once tasks/07_*.md doesn't exist, per the user's own
-    'insert the next task only after this one is accepted' workflow."""
+    stops and waits once the canonical protocol has no '# TASK 7 -- ...'
+    section yet, per the user's own 'insert the next task only after
+    this one is accepted' workflow."""
+    repo = make_fake_repo(tmp_path / "repo", canonical_tasks={6: "Fake task six"})
     monkeypatch.setattr(run.claude_client, "invoke_claude", _fake_claude_factory([_writes_valid_result()]))
     exit_code = run.main(["--repo-root", str(repo), "--loop"])
     assert exit_code == 0
     s = state.load(repo / "state" / "progress.json")
     assert s.current_task == 7  # task 6 passed...
     # ...but no infinite/incorrect advancement past 7 happened, and no
-    # crash occurred just because 07_*.md is absent.
+    # crash occurred just because the canonical protocol has no task 7
+    # section yet (a single invoke_claude call was expected and used).
 
 
-def test_loop_continues_across_two_available_tasks(repo, monkeypatch):
-    (repo / "tasks" / "07_fake.md").write_text((repo / "tasks" / "06_fake.md").read_text().replace("Task 6", "Task 7"))
-    subprocess.run(["git", "add", "-A"], cwd=repo, check=True, capture_output=True)
-    subprocess.run(["git", "commit", "-m", "add task 7 spec"], cwd=repo, check=True, capture_output=True)
-
+def test_loop_continues_across_two_available_tasks(tmp_path, monkeypatch):
+    # Canonical protocol covers tasks 6 and 7 but not 8 -- orchestrator.
+    # sync generates each tasks/{NN}_*.md for real as --loop reaches it
+    # (nothing hand-copied), and --loop must stop cleanly once it reaches
+    # 8, which has no canonical section yet.
+    repo = make_fake_repo(tmp_path / "repo", canonical_tasks={6: "Fake task six", 7: "Fake task seven"})
     calls = {"n": 0}
 
     def behavior(prompt, repo_root):
