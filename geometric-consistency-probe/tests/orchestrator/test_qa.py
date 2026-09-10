@@ -319,6 +319,27 @@ def test_unrelated_file_change_does_not_trigger_protected_files_check(repo):
     assert layer_g.passed
 
 
+# --- Layer G with repo_root nested inside the actual git repo ---------------
+#
+# The real deployment shape (geometric-consistency-probe/ inside the
+# World-Models repo). Confirms the protected-files check still works
+# when git reports paths prefixed with the outer subdirectory name --
+# this is exactly the shape that let a protected-file change silently
+# evade layer G in production until orchestrator/git_ops.py stripped
+# the git-reported prefix.
+
+
+def test_unjustified_protected_file_change_is_caught_when_repo_root_is_nested(tmp_path):
+    nested_repo = make_fake_repo(tmp_path / "outer", task=6, nested=True)
+    pre = _base_commit(nested_repo)
+    write_valid_result(nested_repo, task=6)
+    (nested_repo / "generation" / "core.py").write_text("# protected placeholder module\nVALUE = 2  # changed!\n")
+    result = qa.run_qa(6, nested_repo, nested_repo / "state" / "task_06_result.json", pre_task_commit=pre)
+    layer_g = next(l for l in result.layers if l.name.startswith("G."))
+    assert not layer_g.passed
+    assert any("generation/core.py" in d for d in layer_g.details)
+
+
 # --- QAResult reporting -------------------------------------------------------
 
 

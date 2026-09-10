@@ -73,6 +73,35 @@ def _porcelain_path(line: str) -> str:
     return path.split(" -> ")[-1]
 
 
+def repo_relative_prefix(repo_root: str | Path) -> str:
+    """`git status --porcelain` and `git diff --name-only` ALWAYS report
+    paths relative to the git top-level, never relative to `cwd` -- so
+    if `repo_root` is a subdirectory of the actual git repository (true
+    here: geometric-consistency-probe/ sits inside the World-Models
+    repo), every reported path comes back prefixed with that
+    subdirectory (e.g. "geometric-consistency-probe/state/progress.json"
+    instead of "state/progress.json"). Confirmed empirically (not
+    assumed) after `state/` prefix-matching silently failed against a
+    real run despite passing every orchestrator unit test -- the unit
+    tests' fake repos all had repo_root == git top-level, which hid this
+    exact bug. This returns that prefix via `git rev-parse
+    --show-prefix` (empty string if repo_root IS the top level) so
+    callers can strip it before matching against repo_root-relative
+    patterns like `DEFAULT_IGNORED_FOR_DIRTY_CHECK` or
+    `orchestrator.qa.PROTECTED_PATHS`.
+    """
+    result = _run_git(["rev-parse", "--show-prefix"], repo_root)
+    if result.returncode != 0:
+        raise GitError(f"git rev-parse --show-prefix failed: {result.stderr.strip()}")
+    return result.stdout.strip()
+
+
+def _strip_prefix(path: str, prefix: str) -> str:
+    if prefix and path.startswith(prefix):
+        return path[len(prefix):]
+    return path
+
+
 def require_clean_tree(repo_root: str | Path, ignore_paths: tuple[str, ...] = DEFAULT_IGNORED_FOR_DIRTY_CHECK) -> GitStatus:
     """Refuse to proceed if there are pre-existing uncommitted changes
     unrelated to the orchestrator's own work. This is what makes the
@@ -81,8 +110,11 @@ def require_clean_tree(repo_root: str | Path, ignore_paths: tuple[str, ...] = DE
     everything staged afterward is that task's own change, never a
     bystander's unrelated edit."""
     status = get_status(repo_root)
+    prefix = repo_relative_prefix(repo_root)
     relevant_lines = [
-        line for line in status.porcelain.splitlines() if line.strip() and not any(_porcelain_path(line).startswith(p) for p in ignore_paths)
+        line
+        for line in status.porcelain.splitlines()
+        if line.strip() and not any(_strip_prefix(_porcelain_path(line), prefix).startswith(p) for p in ignore_paths)
     ]
     if relevant_lines:
         raise GitError(
@@ -150,12 +182,18 @@ def diff_name_only(repo_root: str | Path, from_commit: str, to_commit: str | Non
     in untracked files from `git status --porcelain` -- otherwise a task
     that added a new file under a protected path (e.g. a new file in
     generation/) would silently evade the protected-files check.
+
+    Returned paths are always relative to `repo_root` -- see
+    repo_relative_prefix()'s docstring for why that stripping is
+    necessary whenever repo_root is a subdirectory of the actual git
+    repository (true for this project).
     """
     args = ["diff", "--name-only", from_commit] if to_commit is None else ["diff", "--name-only", from_commit, to_commit]
     result = _run_git(args, repo_root)
     if result.returncode != 0:
         raise GitError(f"git diff failed: {result.stderr.strip()}")
-    changed = {line for line in result.stdout.splitlines() if line.strip()}
+    prefix = repo_relative_prefix(repo_root)
+    changed = {_strip_prefix(line, prefix) for line in result.stdout.splitlines() if line.strip()}
 
     if to_commit is None:
         status = _run_git(["status", "--porcelain", "--untracked-files=all"], repo_root)
@@ -163,6 +201,6 @@ def diff_name_only(repo_root: str | Path, from_commit: str, to_commit: str | Non
             raise GitError(f"git status failed: {status.stderr.strip()}")
         for line in status.stdout.splitlines():
             if line.startswith("??"):
-                changed.add(line[3:].strip())
+                changed.add(_strip_prefix(line[3:].strip(), prefix))
 
     return sorted(changed)

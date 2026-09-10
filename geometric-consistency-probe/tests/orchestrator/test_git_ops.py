@@ -129,3 +129,72 @@ def test_git_ops_never_uses_shell_true():
 
     source = inspect.getsource(git_ops)
     assert "shell=True" not in source
+
+
+# --- repo_root as a SUBDIRECTORY of the actual git repository --------------
+#
+# This is the real deployment shape (geometric-consistency-probe/ is a
+# subdirectory of the World-Models git repo, not its own repo), and it
+# broke both require_clean_tree()'s state/-exclusion and qa.py's
+# PROTECTED_PATHS matching the first time the orchestrator ran for
+# real: `git status --porcelain` / `git diff --name-only` always report
+# paths relative to the git TOP-LEVEL, never relative to cwd, so every
+# reported path came back prefixed with the subdirectory name (e.g.
+# "geometric-consistency-probe/state/progress.json"), which no
+# repo_root-relative prefix check ("state/", "generation/", ...) could
+# ever match. None of the tests above caught this because `repo` there
+# IS the git top-level. These tests pin the nested case specifically.
+
+
+@pytest.fixture
+def nested_repo(tmp_path):
+    """git init'd at tmp_path/outer; the orchestrator's repo_root is the
+    subdirectory tmp_path/outer/inner -- mirrors geometric-consistency-
+    probe/ living inside the World-Models repo."""
+    outer = tmp_path / "outer"
+    outer.mkdir()
+    subprocess.run(["git", "init"], cwd=outer, check=True, capture_output=True)
+    subprocess.run(["git", "config", "user.email", "t@example.com"], cwd=outer, check=True, capture_output=True)
+    subprocess.run(["git", "config", "user.name", "T"], cwd=outer, check=True, capture_output=True)
+    inner = outer / "inner"
+    (inner / "generation").mkdir(parents=True)
+    (inner / "generation" / "core.py").write_text("VALUE = 1\n")
+    (inner / "a.txt").write_text("initial\n")
+    subprocess.run(["git", "add", "-A"], cwd=outer, check=True, capture_output=True)
+    subprocess.run(["git", "commit", "-m", "initial"], cwd=outer, check=True, capture_output=True)
+    return inner
+
+
+def test_repo_relative_prefix_reflects_subdirectory_nesting(nested_repo):
+    assert git_ops.repo_relative_prefix(nested_repo) == "inner/"
+
+
+def test_repo_relative_prefix_is_empty_at_git_toplevel(repo):
+    assert git_ops.repo_relative_prefix(repo) == ""
+
+
+def test_require_clean_tree_ignores_state_dir_when_repo_root_is_nested(nested_repo):
+    """The exact bug: state/progress.json modified inside a nested
+    repo_root must still be excluded from the dirty check, even though
+    git reports it as 'inner/state/progress.json'."""
+    (nested_repo / "state").mkdir()
+    (nested_repo / "state" / "progress.json").write_text('{"a": 1}\n')
+    subprocess.run(["git", "add", "-A"], cwd=nested_repo, check=True, capture_output=True)
+    subprocess.run(["git", "commit", "-m", "add progress.json"], cwd=nested_repo, check=True, capture_output=True)
+
+    (nested_repo / "state" / "progress.json").write_text('{"a": 2}\n')
+    status = git_ops.require_clean_tree(nested_repo)  # must NOT raise
+    assert not status.clean  # state/ change is real, just excluded from the check
+
+
+def test_require_clean_tree_still_catches_unrelated_dirty_files_when_nested(nested_repo):
+    (nested_repo / "unrelated.txt").write_text("someone's work\n")
+    with pytest.raises(git_ops.GitError):
+        git_ops.require_clean_tree(nested_repo)
+
+
+def test_diff_name_only_strips_nesting_prefix(nested_repo):
+    before = git_ops.get_status(nested_repo).commit
+    (nested_repo / "generation" / "core.py").write_text("VALUE = 2\n")
+    changed = git_ops.diff_name_only(nested_repo, before, to_commit=None)
+    assert changed == ["generation/core.py"], "paths must be repo_root-relative, not prefixed with the outer repo's subdirectory name"

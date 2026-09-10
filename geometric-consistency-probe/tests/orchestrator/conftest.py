@@ -70,27 +70,41 @@ def _run_git(args, cwd):
     return result
 
 
-def make_fake_repo(root: Path, task: int = 6) -> Path:
-    (root / "tasks").mkdir(parents=True, exist_ok=True)
-    (root / "state").mkdir(parents=True, exist_ok=True)
-    (root / "research").mkdir(parents=True, exist_ok=True)
-    (root / "tests" / "research").mkdir(parents=True, exist_ok=True)
-    (root / "generation").mkdir(parents=True, exist_ok=True)
+def make_fake_repo(root: Path, task: int = 6, nested: bool = False) -> Path:
+    """`nested=True` git-inits at `root` but puts all the fake-repo
+    content under `root/inner`, returning that subdirectory as
+    repo_root -- mirrors this project's actual deployment shape
+    (geometric-consistency-probe/ is a subdirectory of the World-Models
+    git repo, not its own repo root). `git status`/`git diff` report
+    paths relative to the git TOP-LEVEL, never relative to cwd, so this
+    nested shape is the only way to catch a prefix-matching bug like
+    orchestrator/git_ops.py's DEFAULT_IGNORED_FOR_DIRTY_CHECK or
+    orchestrator/qa.py's PROTECTED_PATHS silently never matching -- a
+    real bug this project's first live run hit that `nested=False`
+    fixtures could not have caught."""
+    content_root = (root / "inner") if nested else root
+    git_root = root
 
-    (root / ".gitignore").write_text("__pycache__/\n*.pyc\n.pytest_cache/\nlogs/\n")
-    (root / "research" / "RESEARCH_INVARIANTS.md").write_text(FAKE_INVARIANTS_MD)
-    (root / "tests" / "research" / "test_fake_alignment.py").write_text("def test_ok():\n    assert True\n")
-    (root / "tests" / "test_dummy.py").write_text("def test_ok():\n    assert True\n")
-    (root / "pytest.ini").write_text("[pytest]\nmarkers =\n    slow: slow test\n")
-    (root / "tasks" / f"{task:02d}_fake.md").write_text(FAKE_TASK_SPEC_TEMPLATE.format(task=task))
-    (root / "generation" / "core.py").write_text("# protected placeholder module\nVALUE = 1\n")
+    (content_root / "tasks").mkdir(parents=True, exist_ok=True)
+    (content_root / "state").mkdir(parents=True, exist_ok=True)
+    (content_root / "research").mkdir(parents=True, exist_ok=True)
+    (content_root / "tests" / "research").mkdir(parents=True, exist_ok=True)
+    (content_root / "generation").mkdir(parents=True, exist_ok=True)
 
-    _run_git(["init"], root)
-    _run_git(["config", "user.email", "test@example.com"], root)
-    _run_git(["config", "user.name", "Test"], root)
-    _run_git(["add", "-A"], root)
-    _run_git(["commit", "-m", "initial fake repo"], root)
-    return root
+    (content_root / ".gitignore").write_text("__pycache__/\n*.pyc\n.pytest_cache/\nlogs/\n")
+    (content_root / "research" / "RESEARCH_INVARIANTS.md").write_text(FAKE_INVARIANTS_MD)
+    (content_root / "tests" / "research" / "test_fake_alignment.py").write_text("def test_ok():\n    assert True\n")
+    (content_root / "tests" / "test_dummy.py").write_text("def test_ok():\n    assert True\n")
+    (content_root / "pytest.ini").write_text("[pytest]\nmarkers =\n    slow: slow test\n")
+    (content_root / "tasks" / f"{task:02d}_fake.md").write_text(FAKE_TASK_SPEC_TEMPLATE.format(task=task))
+    (content_root / "generation" / "core.py").write_text("# protected placeholder module\nVALUE = 1\n")
+
+    _run_git(["init"], git_root)
+    _run_git(["config", "user.email", "test@example.com"], git_root)
+    _run_git(["config", "user.name", "Test"], git_root)
+    _run_git(["add", "-A"], git_root)
+    _run_git(["commit", "-m", "initial fake repo"], git_root)
+    return content_root
 
 
 def write_valid_result(root: Path, task: int, artifact_name: str = "report.md", extra_fields: dict | None = None) -> None:
