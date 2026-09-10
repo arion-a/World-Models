@@ -38,8 +38,9 @@ before reading anything into the numbers in `reports/`.
 ## Project principles (why the code looks the way it does)
 
 - Start small: V0 covers exactly one pipeline, six transform types, and
-  one physical-state probe. See `DESIGN.md` for what's deliberately
-  deferred.
+  one physical-state probe. See `IMPLEMENTATION_NOTES.md` for what's
+  deliberately deferred, and `DESIGN.md` for the research specification
+  this pipeline implements.
 - No new renderer, no new foundation model: rendering is 100% Blender/
   Cycles (`bpy`); the encoder's weights are always frozen.
 - Linear before neural: every probe and every `rho(T)` here is ridge
@@ -54,7 +55,8 @@ before reading anything into the numbers in `reports/`.
   (`tests/test_metrics.py`).
 - Results are reported with explicit interpretation guardrails: a good
   probe score is evidence of *accessibility* or *predictability*, not of
-  "understanding" -- see `DESIGN.md`, "Interpretation guardrails."
+  "understanding" -- see `DESIGN.md`, "13. What this framework can and
+  cannot support."
 
 ## Known limitation: pretrained weights
 
