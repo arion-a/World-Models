@@ -115,9 +115,24 @@ def _build_metadata(scene: SceneState, trajectory: Trajectory, clip: ClipGroundT
     }
 
 
-def save_ground_truth(scene: SceneState, trajectory: Trajectory, clip: ClipGroundTruth, out_dir: str | Path, resolution: int) -> Path:
-    """Write `scene`'s complete ground truth to `out_dir/{scene.scene_id}/`. Returns that path."""
-    scene_dir = Path(out_dir) / scene.scene_id
+def save_ground_truth(
+    scene: SceneState,
+    trajectory: Trajectory,
+    clip: ClipGroundTruth,
+    out_dir: str | Path,
+    resolution: int,
+    dir_name: str | None = None,
+) -> Path:
+    """Write `scene`'s complete ground truth to `out_dir/{dir_name or scene.scene_id}/`.
+
+    `dir_name` lets a caller name the directory something other than the
+    scene's own id -- e.g. Task 3's paired samples
+    (transforms/pairs.py), which save two SceneStates that share one
+    `scene_id` (the transformed one *is* the original, physically) into
+    sibling `original/` and `transformed/` directories rather than
+    colliding on the same folder name.
+    """
+    scene_dir = Path(out_dir) / (dir_name or scene.scene_id)
     scene_dir.mkdir(parents=True, exist_ok=True)
 
     np.save(scene_dir / "rgb.npy", clip.rgb)

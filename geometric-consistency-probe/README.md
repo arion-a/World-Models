@@ -131,8 +131,7 @@ To try the non-learned pixel-statistics baseline encoder instead, set
 ## Task 2: controlled 3D scene generation with complete ground truth
 
 A separate, independently-runnable generator (no transforms `T`
-involved -- see DESIGN.md §5 for where those come back in a later
-task):
+involved -- see "Task 3" below for those):
 
 ```bash
 python -m generation.generate --config configs/generation.yaml
@@ -148,6 +147,39 @@ it documents, with the empirical checks behind each claim, exactly what
 world frame, camera convention, depth encoding, and segmentation
 encoding are used, several of which differ from common
 computer-vision defaults (e.g. depth is *not* Euclidean ray distance).
+
+## Task 3: controlled geometric transformations (S' = T(S))
+
+The transformation engine (`transforms/scene_transform.py`,
+`transforms/se3.py`) applies one of six named transforms to a
+`SceneState` and returns both the transformed scene and its exact
+ground truth: an explicit 4x4 SE(3) matrix for the four geometric
+transforms (camera/object translation and rotation), and, for every
+transform, which `SceneState` fields changed and which were held fixed.
+Generate a rendered original/transformed pair (reusing Task 2's
+renderer, so each side gets full RGB + depth + segmentation ground
+truth):
+
+```python
+from generation.scene_sampler import generate_scene, SceneSamplerConfig
+from transforms.pairs import generate_pair
+
+scene = generate_scene("demo", seed=0, cfg=SceneSamplerConfig())
+pair_dir = generate_pair(scene, "camera_rotation", "data/pairs/demo_camera_rotation")
+# -> data/pairs/demo_camera_rotation/{original,transformed}/{rgb,depth,segmentation}.npy + metadata.json
+#    data/pairs/demo_camera_rotation/transformation.json
+```
+
+`transformation.json` records the transform's own parameters, its exact
+`transform_matrix` (`null` for the two appearance-only controls, which
+are not rigid transforms), and `changed_variables`/`fixed_variables`.
+See `IMPLEMENTATION_NOTES.md`'s "Task 3" section for how the SE(3)
+engine is built (in particular, why `camera_rotation`'s azimuth+
+elevation orbit is expressible as a single rotation matrix, and the
+world-to-camera vs. camera-to-world distinction) and
+`tests/test_se3_matrices.py` / `tests/test_scene_transform_matrices.py`
+/ `tests/test_pairs.py` for the identity/composition/inverse/isolation
+tests this is built to satisfy.
 
 ## Tests
 

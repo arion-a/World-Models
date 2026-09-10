@@ -20,6 +20,8 @@ from dataclasses import dataclass, field
 
 import numpy as np
 
+from transforms.se3 import euler_to_matrix, inverse_rigid, pose_matrix
+
 Vec3 = tuple[float, float, float]
 
 # Primitive shapes used for V0. All but "sphere" are rotationally
@@ -158,16 +160,30 @@ def camera_forward_vector(camera: CameraState) -> np.ndarray:
     Blender cameras look down their local -Z axis with +Y as "up" in
     camera space; rotation_euler is applied in XYZ order.
     """
-    rx, ry, rz = camera.rotation_euler
     local_forward = np.array([0.0, 0.0, -1.0])
-    cx, sx = np.cos(rx), np.sin(rx)
-    cy, sy = np.cos(ry), np.sin(ry)
-    cz, sz = np.cos(rz), np.sin(rz)
-    rot_x = np.array([[1, 0, 0], [0, cx, -sx], [0, sx, cx]])
-    rot_y = np.array([[cy, 0, sy], [0, 1, 0], [-sy, 0, cy]])
-    rot_z = np.array([[cz, -sz, 0], [sz, cz, 0], [0, 0, 1]])
-    rot = rot_z @ rot_y @ rot_x
-    return rot @ local_forward
+    return euler_to_matrix(camera.rotation_euler) @ local_forward
+
+
+def camera_to_world_matrix(camera: CameraState) -> np.ndarray:
+    """The camera's pose in world coordinates, as a 4x4 SE(3) matrix:
+    maps a point given in the camera's own local coordinates to world
+    coordinates (`p_world = camera_to_world @ [p_local; 1]`). This is
+    "camera pose in world coordinates" (Task 3) made concrete.
+    """
+    return pose_matrix(camera.position, camera.rotation_euler)
+
+
+def world_to_camera_matrix(camera: CameraState) -> np.ndarray:
+    """The extrinsics matrix: maps a WORLD point into the camera's local
+    coordinates (`p_camera = world_to_camera @ [p_world; 1]`) -- the
+    matrix a standard pinhole projection (with `camera_intrinsics`'s `K`)
+    expects, and the inverse of `camera_to_world_matrix`, NOT the same
+    matrix. Do not use `camera_to_world_matrix` where this is needed, or
+    vice versa -- see `transforms/se3.py:inverse_rigid`'s docstring for
+    the concrete bug that conflating them causes, and
+    tests/test_se3_matrices.py for the regression test.
+    """
+    return inverse_rigid(camera_to_world_matrix(camera))
 
 
 def camera_intrinsics(camera: CameraState, resolution_x: int, resolution_y: int) -> dict:

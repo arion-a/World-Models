@@ -329,6 +329,116 @@ consolidated into `transforms/se3.look_at_euler` during this task
 (previously duplicated in the first two places) rather than written a
 third time.
 
+## Task 3: a unified SE(3) engine replaces four separate ad hoc computations
+
+V0's `transforms/scene_transform.py` computed each geometric transform's
+new position/orientation directly (e.g. `camera_rotation` called
+`orbit_position` then separately reconstructed orientation with
+`look_at_euler`) and never produced an explicit transformation matrix.
+Task 3 asks for "the exact ground-truth transformation matrix where
+appropriate" and "SE(3) conventions consistently," so every geometric
+transform (`transforms/scene_transform.py`) was rewritten around one
+shared computation: construct a 4x4 matrix `T`, then
+`new_pose = T @ old_pose` (`transforms/se3.py`'s `pose_matrix` /
+`matrix_to_pose`), decomposed back to `(position, rotation_euler)`. The
+matrix returned in each transform's metadata (`transform_matrix`) is
+always exactly the matrix that produced the result -- there is no
+second, separately-derived computation that could silently drift out of
+sync with it.
+
+This unification revealed that all four geometric transforms are one of
+three primitive SE(3) operations:
+
+- **camera_translation** / **object_translation**: `translation_matrix(delta)`.
+- **camera_rotation**: a pure rotation about the *world origin*
+  (`rotation_only_matrix`) -- see `orbit_rotation_matrix` below.
+- **object_rotation**: a rotation about the *object's own current
+  position* (`rotate_about_point_matrix`, the
+  `Translate(pivot) @ Rotate(R) @ Translate(-pivot)` sandwich), which
+  is what "rotate an object in place" means concretely.
+
+### `orbit_rotation_matrix`: deriving one rotation matrix for an azimuth+elevation orbit
+
+`camera_rotation` moves the camera by an azimuth delta and an elevation
+delta on a sphere -- two numbers, not obviously "a rotation matrix" on
+their own, since elevation is defined relative to the *current*
+azimuth. By Euler's rotation theorem, though, any composition of
+rotations about axes through a common point (here, the world origin) is
+itself some single rotation about that point, so one must exist; it was
+derived as `R_elevation(tangent axis at the NEW azimuth) @
+R_azimuth(world Z)`, with the tangent axis
+`(sin(az_new), -cos(az_new), 0)` (a horizontal direction perpendicular
+to the new radial direction). The sign of that axis, and the whole
+formula, was verified numerically against the pre-existing (and
+already-tested) `orbit_position` function over 500 random trials before
+being trusted -- not derived and assumed correct. A second, independent
+check confirmed that applying this *same* matrix to the camera's full
+orientation (not just its position) exactly reproduces
+`look_at_euler(new_position, origin)`, i.e. one matrix correctly moves
+the whole rigid pose, which is what makes it usable as `T` for the
+whole camera, not just its position (`tests/test_se3_matrices.py`). This
+only holds for `pivot = origin` and away from the +-90 degree elevation
+poles, where `orbit_position`'s own clamping (to avoid a singularity)
+makes the two diverge -- not a concern for this project's configured
+elevation ranges, but a real, documented limit of the function.
+
+### A second Euler-angle-uniqueness gotcha, this time in the transforms themselves
+
+Early versions of `apply_camera_translation`/`apply_object_translation`/
+`apply_object_rotation` round-tripped *every* pose component (including
+the one that is mathematically guaranteed unchanged -- rotation for a
+pure translation, position for a rotation about the object's own
+pivot) through `matrix_to_pose`. `tests/test_scene_transform_matrices.py`
+caught this: a translated object's `rotation_euler` field changed even
+though nothing rotated, because `matrix_to_euler` can legitimately
+return a *different* Euler triple for the exact same (bit-identical)
+rotation matrix (the same non-uniqueness noted in
+`tests/test_transforms.py::test_euler_matrix_roundtrip`, now caught one
+level up, at the transform level rather than the raw-math level). The
+fix: when a component is known analytically to be unchanged, the code
+now keeps the literal original tuple for it instead of deriving it from
+the matrix -- which also makes `fixed_variables` true at the field
+level (byte-identical), not just "physically-equivalent-up-to-Euler-
+representation."
+
+### World-to-camera vs. camera-to-world
+
+Per Task 3's explicit instruction not to assume these are
+interchangeable: `generation/scene.py:camera_to_world_matrix(camera)`
+is the camera's pose in world coordinates (`pose_matrix` applied to its
+position/rotation); `world_to_camera_matrix(camera)` is its *exact*
+rigid inverse (`transforms/se3.py:inverse_rigid`, `[R^T, -R^T @ t]`, not
+the common wrong shortcut `[R^T, -t]`).
+`tests/test_se3_matrices.py::test_inverse_rigid_is_not_naive_negate_translation`
+is a regression test specifically against that wrong shortcut, and
+`test_world_to_camera_and_camera_to_world_are_inverses_but_not_equal`
+checks both that they invert each other and that they are not the same
+matrix.
+
+### Pairs render full ground truth on both sides, not one RGB frame
+
+`transforms/pairs.py`'s `pair_dir/{original,transformed}/` each contain
+a full Task 2 `save_ground_truth` output (RGB + depth + segmentation +
+metadata), produced via a trivial static (zero-motion) `Trajectory`,
+rather than V0's original single-RGB-frame-per-variant approach. This
+reuses Task 2's already-tested renderer and gives depth/segmentation
+ground truth for transformation pairs "for free" -- e.g.
+`tests/test_pairs.py::test_geometric_transform_changes_depth_but_appearance_transform_need_not`
+checks that a camera move changes the depth map while a lighting change
+does not, a cross-check that would not be possible with RGB alone.
+
+### Backward compatibility re-verified, not just asserted
+
+`transforms/scene_transform.py`'s public surface
+(`TRANSFORM_NAMES`/`GEOMETRIC_TRANSFORMS`/`CONTROL_TRANSFORMS`/
+`TransformConfig`/`apply_transform`) is unchanged, and V0's full
+experiment pipeline (`experiments/run.py`) was re-run after this rewrite
+on the same seeds it was run on for the V0 smoke-test report; the
+reported R^2/cosine-similarity numbers came back bit-for-bit identical,
+confirming the new matrix-based computation is not just "similar to"
+but exactly equivalent to what V0 computed directly, for every case V0
+exercises.
+
 ## Deferred to later versions
 
 Explicitly out of scope until V0's core loop is validated with real
