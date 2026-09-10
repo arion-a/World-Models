@@ -122,6 +122,27 @@ Configuration is via environment variables, all optional:
 `CLAUDE_TIMEOUT_SECONDS`, `CLAUDE_EXTRA_ARGS`, `MAX_FIX_ATTEMPTS`
 (default 3).
 
+**One-time environment setup, before the first real (non-dry-run) run**:
+`--permission-mode acceptEdits --permission-prompts none` (the
+orchestrator's non-interactive invocation) auto-denies any Bash command
+not already covered by a tiny built-in safelist (plain `echo` succeeds;
+`python3 -c "..."` does not) unless a permissions allowlist covers it —
+confirmed empirically, not assumed, by watching Task 6's first real run
+get BLOCKED for exactly this reason. Two things must both be true for a
+nested task session to actually execute anything:
+1. `.claude/settings.json` (in `geometric-consistency-probe/`, checked
+   into the repo) declares `permissions.allow` entries for the commands
+   tasks need (`Bash(python3 *)`, `Bash(pytest *)`, `Bash(git *)`, etc.).
+2. The workspace itself must be marked trusted, or that allowlist is
+   silently ignored with only a stderr warning
+   (`"this workspace has not been trusted"`) — a `-p` session has no
+   interactive prompt surface to accept that dialog itself. Fix once per
+   machine/environment by setting
+   `projects["<absolute repo root>"].hasTrustDialogAccepted: true` in
+   `~/.claude.json` (not part of this repo — it's local environment
+   state, the same one-time step as accepting the trust dialog
+   interactively).
+
 **Adding a new task**: this project's workflow is that a task's
 `tasks/{NN}_*.md` specification is written and added only *after* the
 previous task has passed QA — the orchestrator's `--loop` mode is built
