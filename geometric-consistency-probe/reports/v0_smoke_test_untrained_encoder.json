@@ -1,0 +1,176 @@
+{
+  "encoder": "vjepa2",
+  "encoder_pretrained": false,
+  "num_scenes": 24,
+  "transforms": {
+    "camera_translation": {
+      "equivariance": {
+        "transform_name": "camera_translation",
+        "r2": 0.6816244125366211,
+        "mean_cosine_similarity": 0.9872555732727051,
+        "mean_relative_l2_error": 0.14071117341518402,
+        "n_train": 18,
+        "n_test": 6
+      },
+      "identity_baseline": {
+        "transform_name": "camera_translation",
+        "r2": 0.834436446428299,
+        "mean_cosine_similarity": 0.9928703308105469,
+        "mean_relative_l2_error": 0.10981015115976334
+      },
+      "shuffled_pairing_baseline": {
+        "transform_name": "camera_translation",
+        "r2": 0.4137263298034668,
+        "mean_cosine_similarity": 0.9747685790061951,
+        "mean_relative_l2_error": 0.2129519134759903
+      },
+      "raw_invariance": {
+        "transform_name": "camera_translation",
+        "mean_cosine_similarity": 0.9928703308105469,
+        "mean_relative_l2_error": 0.10981015115976334,
+        "n": 6
+      }
+    },
+    "camera_rotation": {
+      "equivariance": {
+        "transform_name": "camera_rotation",
+        "r2": 0.5578077733516693,
+        "mean_cosine_similarity": 0.9852761626243591,
+        "mean_relative_l2_error": 0.16150988638401031,
+        "n_train": 18,
+        "n_test": 6
+      },
+      "identity_baseline": {
+        "transform_name": "camera_rotation",
+        "r2": 0.7442776560783386,
+        "mean_cosine_similarity": 0.9910477995872498,
+        "mean_relative_l2_error": 0.1379726678133011
+      },
+      "shuffled_pairing_baseline": {
+        "transform_name": "camera_rotation",
+        "r2": 0.5073110163211823,
+        "mean_cosine_similarity": 0.9801451563835144,
+        "mean_relative_l2_error": 0.17192520201206207
+      },
+      "raw_invariance": {
+        "transform_name": "camera_rotation",
+        "mean_cosine_similarity": 0.9910477995872498,
+        "mean_relative_l2_error": 0.1379726678133011,
+        "n": 6
+      }
+    },
+    "object_translation": {
+      "equivariance": {
+        "transform_name": "object_translation",
+        "r2": 0.8146847039461136,
+        "mean_cosine_similarity": 0.9921647906303406,
+        "mean_relative_l2_error": 0.10043361037969589,
+        "n_train": 18,
+        "n_test": 6
+      },
+      "identity_baseline": {
+        "transform_name": "object_translation",
+        "r2": 0.9815971869975328,
+        "mean_cosine_similarity": 0.9992279410362244,
+        "mean_relative_l2_error": 0.03630103915929794
+      },
+      "shuffled_pairing_baseline": {
+        "transform_name": "object_translation",
+        "r2": 0.45008301734924316,
+        "mean_cosine_similarity": 0.9777739644050598,
+        "mean_relative_l2_error": 0.19550393521785736
+      },
+      "raw_invariance": {
+        "transform_name": "object_translation",
+        "mean_cosine_similarity": 0.9992279410362244,
+        "mean_relative_l2_error": 0.03630103915929794,
+        "n": 6
+      }
+    },
+    "object_rotation": {
+      "equivariance": {
+        "transform_name": "object_rotation",
+        "r2": 0.8341349065303802,
+        "mean_cosine_similarity": 0.9929431080818176,
+        "mean_relative_l2_error": 0.09706920385360718,
+        "n_train": 18,
+        "n_test": 6
+      },
+      "identity_baseline": {
+        "transform_name": "object_rotation",
+        "r2": 0.9905483610928059,
+        "mean_cosine_similarity": 0.9996342658996582,
+        "mean_relative_l2_error": 0.025209814310073853
+      },
+      "shuffled_pairing_baseline": {
+        "transform_name": "object_rotation",
+        "r2": 0.4845206141471863,
+        "mean_cosine_similarity": 0.979433000087738,
+        "mean_relative_l2_error": 0.19182449579238892
+      },
+      "raw_invariance": {
+        "transform_name": "object_rotation",
+        "mean_cosine_similarity": 0.9996342658996582,
+        "mean_relative_l2_error": 0.025209814310073853,
+        "n": 6
+      }
+    },
+    "lighting_change": {
+      "equivariance": {
+        "transform_name": "lighting_change",
+        "r2": -0.4995640516281128,
+        "mean_cosine_similarity": 0.9217770099639893,
+        "mean_relative_l2_error": 0.34990808367729187,
+        "n_train": 18,
+        "n_test": 6
+      },
+      "identity_baseline": {
+        "transform_name": "lighting_change",
+        "r2": -0.3642117977142334,
+        "mean_cosine_similarity": 0.930317223072052,
+        "mean_relative_l2_error": 0.31491029262542725
+      },
+      "shuffled_pairing_baseline": {
+        "transform_name": "lighting_change",
+        "r2": -0.027966737747192383,
+        "mean_cosine_similarity": 0.9496004581451416,
+        "mean_relative_l2_error": 0.28658831119537354
+      },
+      "raw_invariance": {
+        "transform_name": "lighting_change",
+        "mean_cosine_similarity": 0.930317223072052,
+        "mean_relative_l2_error": 0.31491029262542725,
+        "n": 6
+      }
+    },
+    "texture_change": {
+      "equivariance": {
+        "transform_name": "texture_change",
+        "r2": 0.8073068410158157,
+        "mean_cosine_similarity": 0.9914340972900391,
+        "mean_relative_l2_error": 0.10939997434616089,
+        "n_train": 18,
+        "n_test": 6
+      },
+      "identity_baseline": {
+        "transform_name": "texture_change",
+        "r2": 0.9699400793761015,
+        "mean_cosine_similarity": 0.9988554120063782,
+        "mean_relative_l2_error": 0.03930767625570297
+      },
+      "shuffled_pairing_baseline": {
+        "transform_name": "texture_change",
+        "r2": 0.4538918733596802,
+        "mean_cosine_similarity": 0.9767667651176453,
+        "mean_relative_l2_error": 0.20166973769664764
+      },
+      "raw_invariance": {
+        "transform_name": "texture_change",
+        "mean_cosine_similarity": 0.9988554120063782,
+        "mean_relative_l2_error": 0.03930767625570297,
+        "n": 6
+      }
+    }
+  },
+  "state_probe_camera_azimuth_r2": -0.5834749937057495
+}

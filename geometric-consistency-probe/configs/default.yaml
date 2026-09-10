@@ -1,0 +1,35 @@
+# Default V0 configuration for the Geometric Consistency Probe.
+#
+# Override any subset of these fields with a second YAML file passed to
+# `--config`; see configs/experiments/camera_rotation_v0.yaml for the
+# smaller, fast-to-run config used by the smoke-test experiment.
+
+dataset:
+  num_scenes: 100
+  train_fraction: 0.8
+  resolution: 128
+  num_frames: 8
+  base_seed: 0
+  output_dir: data/v0
+  num_objects_min: 1
+  num_objects_max: 3
+
+encoder:
+  name: vjepa2
+  checkpoint: facebook/vjepa2-vitb-fpc64-256
+  pretrained: true
+  device: cpu
+  grid_size: 8
+
+probe:
+  ridge_alpha: 10.0
+
+experiment:
+  transforms:
+    - camera_translation
+    - camera_rotation
+    - object_translation
+    - object_rotation
+    - lighting_change
+    - texture_change
+  flagship_transform: camera_rotation

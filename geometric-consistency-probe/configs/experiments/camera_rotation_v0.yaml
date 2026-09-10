@@ -1,0 +1,38 @@
+# Small, fast configuration for the flagship V0 experiment described in
+# the project brief:
+#
+#   Scene -> original video -> transformed video (known camera rotation)
+#   -> V-JEPA embeddings -> learn linear W_T -> evaluate on unseen scenes
+#   -> report geometric consistency
+#
+# Uses a random-init V-JEPA2 architecture (pretrained: false) by default
+# so it runs anywhere with no network access; flip `pretrained: true` (and
+# ensure Hugging Face Hub is reachable) to run with real pretrained
+# weights.
+
+dataset:
+  num_scenes: 24
+  train_fraction: 0.75
+  resolution: 128
+  num_frames: 8
+  base_seed: 0
+  output_dir: data/camera_rotation_v0
+
+encoder:
+  name: vjepa2
+  checkpoint: facebook/vjepa2-vitb-fpc64-256
+  pretrained: false
+  device: cpu
+
+probe:
+  ridge_alpha: 10.0
+
+experiment:
+  transforms:
+    - camera_translation
+    - camera_rotation
+    - object_translation
+    - object_rotation
+    - lighting_change
+    - texture_change
+  flagship_transform: camera_rotation

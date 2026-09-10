@@ -1,0 +1,18 @@
+# Core numerics / config / IO
+numpy
+pyyaml
+scikit-learn
+imageio
+
+# Rendering: Blender as a Python module (Cycles engine). See DESIGN.md
+# "Renderer choice" for why this is used directly instead of the `kubric`
+# PyPI package. This wheel is large (~1GB) and Linux-focused.
+bpy==5.0.1
+
+# Frozen encoder(s). CPU-only usage is fully supported; install a
+# CUDA-enabled torch build yourself first if you have a GPU available.
+torch>=2.2
+transformers>=4.52  # first version to ship VJEPA2Model/VJEPA2Config
+
+# Dev / tests
+pytest
