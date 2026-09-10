@@ -181,6 +181,38 @@ world-to-camera vs. camera-to-world distinction) and
 / `tests/test_pairs.py` for the identity/composition/inverse/isolation
 tests this is built to satisfy.
 
+## Task 4: frozen V-JEPA 2.1 representation extraction
+
+`encoders/vjepa.py`'s `VJEPAEncoder` wraps V-JEPA 2.1 ViT-B/16 (see
+`IMPLEMENTATION_NOTES.md`'s "Task 4" section for exactly which upstream
+checkpoint this targets, and why -- like V-JEPA 2 in this sandbox --
+pretrained weights can't actually be downloaded here, and how that's
+handled honestly rather than silently). `encoders/extract.py` runs it
+and saves the result:
+
+```python
+from encoders.vjepa import VJEPAEncoder
+from encoders.extract import extract_and_save, load_representation
+
+encoder = VJEPAEncoder()  # pretrained=True by default; auto-uses a GPU if one is available
+representation = encoder.encode(video)  # (num_tokens, 768) float32 -- not pooled, see below
+extract_and_save(encoder, video, "my_video", "data/representations")
+representation, metadata = load_representation("data/representations", "my_video")
+```
+
+Or batch-process a Task 2/3-style dataset (any directory of
+`{video_id}/rgb.npy` files):
+
+```bash
+python -m encoders.extract --input_dir data/generation_v0 --output_dir data/representations_v0
+```
+
+`encode()` returns the encoder's native token sequence, not a pooled
+vector -- see `encoders/REPRESENTATION_FORMAT.md` for the exact shape
+formula and on-disk `metadata.json` schema, and
+`encoders/base.py`'s `VideoEncoder` docstring for why pooling is left to
+whoever consumes these representations rather than done here.
+
 ## Tests
 
 ```bash

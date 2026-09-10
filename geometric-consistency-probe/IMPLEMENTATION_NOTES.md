@@ -439,6 +439,98 @@ confirming the new matrix-based computation is not just "similar to"
 but exactly equivalent to what V0 computed directly, for every case V0
 exercises.
 
+## Task 4: V-JEPA 2.1, and a real reproducibility gap V0 had
+
+### Upstream model, verified rather than assumed
+
+Task 4 asks for "the official V-JEPA 2.1 implementation," which is a
+real, distinct release from V-JEPA 2 (not a typo) -- confirmed by
+reading the `facebookresearch/vjepa2` GitHub repo directly rather than
+assuming "2.1" meant the same thing as "2." Its ViT-B/16 checkpoint:
+80M parameters, **384** resolution (V-JEPA 2's was 256), checkpoint file
+`vjepa2_1_vitb_dist_vitG_384.pt` (distilled from a ViT-G teacher, per
+the checkpoint's own filename), config `configs/train_2_1/vitb16`,
+downloaded upstream from
+`https://dl.fbaipublicfiles.com/vjepa2/vjepa2_1_vitb_dist_vitG_384.pt`.
+Architecturally, V-JEPA 2.1's changes (dense predictive loss, deep
+self-supervision, distillation) are to the *training recipe*, not the
+model class, so it loads through the same `transformers.VJEPA2Model`
+already verified for V-JEPA 2 in `encoders/vjepa2.py` (V0) -- only the
+resolution and (for the untrained fallback) the architecture-size
+constants needed to change, not the loading code's structure.
+
+As of this writing, no checkpoint was found under the official
+`facebook/` Hugging Face Hub namespace specifically for V-JEPA 2.1 (a
+hosting request for it, covering the ViT-B/L/g/G variants, was open on
+the upstream GitHub issue tracker as of March 2026). A third-party
+conversion exists at `apiantonio/vjepa2.1-vit-base-384`, whose own model
+card claims bit-exact agreement with Meta's reference implementation;
+`encoders/vjepa.py:DEFAULT_CHECKPOINT` points there, explicitly labeled
+as an unofficial community conversion rather than a `facebook/` release,
+with `checkpoint=` fully overridable once an official repo exists. This
+sandbox cannot independently verify any of this by downloading it --
+both `huggingface.co` and `dl.fbaipublicfiles.com` are network-policy-
+blocked here, the same constraint documented for V-JEPA 2 in this file's
+earlier "Encoder: honesty about pretrained weights" section, now true of
+V-JEPA 2.1 too regardless of which host the real weights end up on.
+
+### A real reproducibility gap in V0, found by writing Task 4's smoke test
+
+Task 4 requires "the same video produces consistent representations."
+V0's `encoders/vjepa2.py` falls back to a randomly-initialized model
+when pretrained weights can't be loaded (this sandbox's permanent
+situation), but never seeded that initialization -- so two separate
+Python processes hitting the fallback path would silently get two
+*different* random encoders, and "consistent representations" would
+only hold within a single already-constructed encoder instance, not
+across runs (exactly the kind of gap Task 1's DESIGN.md warns a
+selectivity/control-task mindset should catch). `encoders/vjepa.py`
+fixes this: `torch.manual_seed(fallback_seed)` (default 0) runs
+immediately before constructing the untrained model, and
+`tests/test_vjepa_encoder.py::test_same_video_different_instances_same_seed_is_bit_identical`
+constructs two *independent* `VJEPAEncoder` instances and checks their
+output is bit-identical -- verified directly (not just asserted) by
+running the equivalent check as two separate OS processes and diffing
+the saved `.npy` arrays before writing the test. A companion test
+(`test_different_fallback_seed_gives_different_untrained_weights`)
+checks the seed is actually doing something, so the determinism test
+above isn't trivially true for an unrelated reason (e.g. an
+accidentally-always-zero-initialized model).
+
+### Representation extraction is deliberately not pooled
+
+`VJEPAEncoder.encode()` returns the encoder's native token sequence
+(`(num_tokens, hidden_size)`), not a single pooled vector like V0's
+`FrozenEncoder.encode_video()`. This is a deliberate difference, not an
+oversight: Task 4's own pipeline diagram is "video -> preprocessing ->
+V-JEPA 2.1 -> representation/tokens -> saved tensor," and Task 4
+explicitly defers evaluation ("do not implement evaluation metrics
+yet"). Pooling is an evaluation-time decision (mean pooling is what V0
+happened to choose for its own linear-probe pipeline, per DESIGN.md
+§4); baking it into extraction now would decide that question on a
+later task's behalf and throw away information (which tokens moved)
+that a later, more spatially-aware probe might want. `mean_pool()` is
+provided as a convenience, not applied automatically -- see
+`encoders/base.py`'s `VideoEncoder` docstring and
+`encoders/REPRESENTATION_FORMAT.md` for the full reasoning and the
+resulting tensor format.
+
+### Two encoder interfaces, on purpose
+
+`encoders/base.py` now defines both `FrozenEncoder` (V0's
+`encode_video -> pooled vector`, used by `representations/`/
+`experiments/run.py`) and `VideoEncoder` (Task 4's `encode -> native
+tokens`). They are not unified into one hierarchy: doing so now would
+mean picking, on Task 4's behalf, whether pooling lives inside or
+outside the encoder -- exactly the question the previous section says
+Task 4 defers. `encoders/vjepa2.py` (V0, pooled, still used by the V0
+experiment pipeline) and `encoders/vjepa.py` (Task 4, unpooled, new)
+therefore coexist rather than one replacing the other, following the
+same pattern as Task 2/3's `generate_scene`/`sample_scene` and
+`render_trajectory`/`render_scene` coexistence: each formal task adds
+its own well-specified module without an unrequested migration of the
+pipeline that predates it.
+
 ## Deferred to later versions
 
 Explicitly out of scope until V0's core loop is validated with real
