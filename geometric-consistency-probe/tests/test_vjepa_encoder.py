@@ -70,6 +70,63 @@ def test_gpu_used_automatically_when_available(monkeypatch):
     assert enc.device == "cuda"
 
 
+# T5.3 -- numerical validity (no NaN/Inf) ------------------------------------
+
+
+@pytest.mark.parametrize("seed", range(4))
+def test_representation_has_no_nan_or_inf(encoder, seed):
+    rep = encoder.encode(_synthetic_video(seed=seed))
+    assert np.isfinite(rep).all(), "representation contains NaN or Inf"
+    assert not np.isnan(rep).any()
+    assert not np.isinf(rep).any()
+
+
+# T5.5 -- frozen encoder (already partly covered by test_encoder_loads_correctly,
+# restated standalone so it can be verified/reported independently) ----------
+
+
+def test_all_parameters_have_requires_grad_false(encoder):
+    params = list(encoder.model.parameters())
+    assert len(params) > 0, "sanity check: model actually has parameters"
+    assert all(p.requires_grad is False for p in params)
+
+
+# T5.6 -- no optimizer / no training update -----------------------------------
+
+
+def test_no_optimizer_exists_anywhere_on_the_encoder(encoder):
+    """There is no torch.optim.Optimizer instance attached to the encoder
+    or its model -- i.e. there is no object in this codebase capable of
+    performing a training step on it."""
+    import torch as _torch
+
+    for obj in (encoder, encoder.model):
+        for attr_name in dir(obj):
+            if attr_name.startswith("__"):
+                continue
+            try:
+                value = getattr(obj, attr_name)
+            except Exception:
+                continue
+            assert not isinstance(value, _torch.optim.Optimizer), f"found an optimizer at {obj}.{attr_name}"
+
+
+def test_encode_does_not_change_any_parameter_value(encoder):
+    """The strongest possible version of 'frozen': run encode() several
+    times (including on different videos) and verify every parameter
+    tensor is BIT-IDENTICAL to what it was before -- not just that
+    requires_grad is False, but that nothing about the weights moved."""
+    before = [p.detach().clone() for p in encoder.model.parameters()]
+
+    for seed in range(4):
+        encoder.encode(_synthetic_video(seed=seed))
+
+    after = list(encoder.model.parameters())
+    assert len(before) == len(after)
+    for p_before, p_after in zip(before, after):
+        assert torch.equal(p_before, p_after)
+
+
 # 2. video preprocessing is correct -----------------------------------------
 
 
