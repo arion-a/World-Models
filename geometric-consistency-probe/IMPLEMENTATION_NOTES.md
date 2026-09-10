@@ -531,6 +531,85 @@ same pattern as Task 2/3's `generate_scene`/`sample_scene` and
 its own well-specified module without an unrequested migration of the
 pipeline that predates it.
 
+### Task 4 -- real pretrained weights
+
+The environment's network-egress policy was changed (by the user, in
+Claude Code on the web's environment settings) to allow `huggingface.co`,
+which this project had no ability to change from inside a session.
+`dl.fbaipublicfiles.com` remains blocked, but is no longer needed (see
+below). Verifying real pretrained-weight loading, with live Hub access,
+surfaced two problems with what had only ever been *assumed* while the
+sandbox was network-blocked:
+
+1. **`facebook/vjepa2-vitb-fpc64-256` (V0's `encoders/vjepa2.py` default)
+   does not exist on the Hub.** `huggingface_hub.HfApi().model_info(...)`
+   returns `RepositoryNotFoundError` for it. Listing `facebook`'s actual
+   V-JEPA 2 models (`api.list_models(author="facebook", search="vjepa")`)
+   shows only ViT-L/H/G sizes (`vjepa2-vitl-fpc64-256`,
+   `vjepa2-vith-fpc64-256`, `vjepa2-vitg-fpc64-256`/`-384`, plus a few
+   `-ssv2`/`-diving48` fine-tunes) -- **no ViT-B**. This checkpoint name
+   had been in the codebase, unverified, since before this sandbox had
+   any Hub access at all.
+2. **"V-JEPA 2.1" has no official `facebook/`-namespaced checkpoint on
+   the Hub, at any size.** Searching the Hub for `vjepa2.1` / `vjepa
+   2.1` / `v-jepa2.1` returns only individual/community namespaces
+   (`apiantonio`, `davevanveen`, `Dev-Jahn`, `dgrauet`, `RAntonello`),
+   none under `facebook`. The one this project's `encoders/vjepa.py`
+   pointed `DEFAULT_CHECKPOINT` at,
+   `apiantonio/vjepa2.1-vit-base-384`, has a `config.json` declaring
+   `"model_type": "vjepa21"` and an `auto_map` pointing at that repo's
+   own `modeling_vjepa21.py`/`configuration_vjepa21.py` -- i.e. loading
+   it requires `AutoModel.from_pretrained(..., trust_remote_code=True)`,
+   which executes that individual's Python code, not
+   `transformers.VJEPA2Model` as the old module docstring claimed. There
+   is also no way to confirm from the Hub alone that its weights are a
+   faithful conversion of anything Meta actually released.
+
+Both were genuinely unverifiable claims while `huggingface.co` was
+blocked -- this is exactly the situation DESIGN.md's "honesty about
+pretrained weights" principle exists for, and why every report and
+`metadata.json` already carried an explicit `pretrained` field rather
+than assuming success.
+
+Given the choice, put to the user directly rather than resolved
+silently (`AskUserQuestion`, per the standing QA protocol's "no silent
+hypothesis/protocol changes" rule): switch to
+**`facebook/vjepa2-vitl-fpc64-256`** -- official Meta weights, loads
+through `transformers`' built-in `VJEPA2Model`/`VJEPA2Config` with no
+`trust_remote_code`, `config.json` verified live
+(`"architectures": ["VJEPA2Model"]`, `"model_type": "vjepa2"`,
+`hidden_size=1024`, `num_hidden_layers=24`, `num_attention_heads=16`,
+`crop_size=256`). This is a ViT-L, not ViT-B -- larger and slower on
+CPU -- but is the smallest official, code-verified, no-remote-code
+V-JEPA 2 checkpoint that actually exists.
+
+Changes made, all mechanical (checkpoint identifier + matching config
+constants, everywhere the old ViT-B numbers appeared): `encoders/vjepa.py`
+(`DEFAULT_CHECKPOINT`, `DEFAULT_CROP_SIZE=256`, `VITB16_CONFIG_KWARGS`
+renamed `VITL16_CONFIG_KWARGS` with real ViT-L values, `output_dim` is
+now `1024`), `encoders/vjepa2.py` (V0, same checkpoint/config fix, so V0
+doesn't keep a now-known-wrong checkpoint name), `configs/config.py`,
+`configs/default.yaml`, `configs/experiments/camera_rotation_v0.yaml`
+(checkpoint string updated), `tests/test_vjepa_encoder.py`
+(`output_dim == 1024`), `encoders/REPRESENTATION_FORMAT.md` (hidden_size,
+example `metadata.json`), `README.md`, `DESIGN.md` (an explicit
+amendment note, not a silent rewrite of the original ViT-B/16 text). The
+research design itself -- transforms, probes, train/test split,
+baselines -- is unaffected; only the encoder's size changed.
+
+New evidence this actually works, not just that the code compiles:
+`tests/test_vjepa_encoder.py::test_pretrained_checkpoint_loads_real_weights`
+(marked `@pytest.mark.slow`, needs live Hub access) constructs
+`VJEPAEncoder(pretrained=True)` for real, asserts `encoder.pretrained is
+True` (i.e. the except-and-fall-back branch was NOT taken),
+`encoder.checkpoint == DEFAULT_CHECKPOINT`, `output_dim == 1024`, and
+runs a full `encode()` forward pass on a synthetic video, checking the
+output shape and that it's finite. Run directly: real weights
+downloaded and loaded in ~4 minutes on this machine's network/CPU, the
+forward pass produced a finite `(64, 1024)` representation, and the full
+fast suite (102 tests, `pytest -m "not slow"`) still passes with the new
+checkpoint's config wired through.
+
 ## Deferred to later versions
 
 Explicitly out of scope until V0's core loop is validated with real

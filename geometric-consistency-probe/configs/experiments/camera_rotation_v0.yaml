@@ -20,7 +20,7 @@ dataset:
 
 encoder:
   name: vjepa2
-  checkpoint: facebook/vjepa2-vitb-fpc64-256
+  checkpoint: facebook/vjepa2-vitl-fpc64-256
   pretrained: false
   device: cpu
 

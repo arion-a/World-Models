@@ -53,11 +53,34 @@ def videos():
 def test_encoder_loads_correctly(encoder):
     assert encoder.checkpoint  # a non-empty identifier is recorded
     assert encoder.pretrained is False  # requested untrained explicitly
-    assert encoder.output_dim == 768
+    assert encoder.output_dim == 1024
     assert encoder.device in ("cpu", "cuda")
     # frozen: nothing in the model should be trainable
     assert all(not p.requires_grad for p in encoder.model.parameters())
     assert not encoder.model.training  # eval mode
+
+
+@pytest.mark.slow
+def test_pretrained_checkpoint_loads_real_weights():
+    """Requires live Hugging Face Hub access. Verifies the encoder
+    actually loads real pretrained weights end-to-end -- not just that
+    the untrained-fallback code path works (that's what the rest of this
+    module's `encoder` fixture, built with pretrained=False, exercises).
+    A failure here that isn't a network error means the fallback is
+    silently masking a real loading bug -- see encoders/vjepa.py's
+    module docstring for exactly which checkpoint this targets and why.
+    """
+    from encoders.vjepa import DEFAULT_CHECKPOINT
+
+    enc = VJEPAEncoder(pretrained=True, crop_size=CROP, frames_per_clip=FRAMES)
+    assert enc.pretrained is True, "fell back to untrained -- pretrained weights did not load"
+    assert enc.checkpoint == DEFAULT_CHECKPOINT
+    assert enc.output_dim == 1024
+
+    rep = enc.encode(_synthetic_video(seed=0))
+    expected_num_tokens = (FRAMES // 2) * (CROP // 16) ** 2
+    assert rep.shape == (expected_num_tokens, 1024)
+    assert np.isfinite(rep).all()
 
 
 def test_gpu_used_automatically_when_available(monkeypatch):

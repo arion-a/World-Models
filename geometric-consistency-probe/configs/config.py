@@ -28,7 +28,7 @@ class DatasetConfig:
 @dataclass
 class EncoderConfig:
     name: str = "vjepa2"  # "vjepa2" or "pixel_baseline"
-    checkpoint: str = "facebook/vjepa2-vitb-fpc64-256"
+    checkpoint: str = "facebook/vjepa2-vitl-fpc64-256"
     pretrained: bool = True
     device: str = "cpu"
     grid_size: int = 8  # only used by pixel_baseline

@@ -7,7 +7,8 @@ temporal correlations?
 GCP is a small, controlled-experiment testbed for asking this question
 of a **frozen, pretrained** video representation model -- initially
 [V-JEPA 2](https://huggingface.co/docs/transformers/en/model_doc/vjepa2)
-ViT-B/16 -- without training any new model. We render synthetic 3D
+ViT-L/16 (`facebook/vjepa2-vitl-fpc64-256`) -- without training any new
+model. We render synthetic 3D
 scenes, apply a known physical transformation `T` to the scene, and check
 whether the resulting change in the encoder's representation is
 *predictable*:
@@ -31,9 +32,11 @@ all.
 **Current status: V0.** The end-to-end pipeline (generate scenes -> apply
 transforms -> render -> encode -> fit a linear `rho(T)` -> evaluate on
 held-out scenes -> report) works and is unit tested. It has been
-exercised on ~24 scenes with the real `VJEPA2Model` architecture, but
-**not yet with real pretrained weights** -- see "Known limitation" below
-before reading anything into the numbers in `reports/`.
+exercised on ~24 scenes with the real `VJEPA2Model` architecture; **real
+pretrained weights now load successfully** (see "Pretrained weights"
+below) but the numbers in `reports/` predate that and still reflect the
+untrained-fallback caveat stated in each report -- the V0-scale run has
+not yet been re-executed with real weights.
 
 ## Project principles (why the code looks the way it does)
 
@@ -58,19 +61,35 @@ before reading anything into the numbers in `reports/`.
   "understanding" -- see `DESIGN.md`, "13. What this framework can and
   cannot support."
 
-## Known limitation: pretrained weights
+## Pretrained weights
 
-`encoders/vjepa2.py` loads `facebook/vjepa2-vitb-fpc64-256` from Hugging
-Face Hub. **This repo was first built in a network-sandboxed
-environment that blocks `huggingface.co` at the network-policy level**,
-so every result currently in `reports/` was produced with the identical
-model *architecture* but **randomly initialized weights** (the encoder
-detects the failed download and falls back automatically, with a loud
-warning, so the pipeline is still fully exercisable). This is stated
-explicitly in every report and in each result dict's `encoder_pretrained`
-field. **To get scientifically meaningful results, run this on a machine
-with Hugging Face Hub access** -- no code changes needed, just
-`encoder.pretrained: true` (already the default).
+`encoders/vjepa2.py` (V0) and `encoders/vjepa.py` (Task 4) both load
+`facebook/vjepa2-vitl-fpc64-256` from Hugging Face Hub -- the official
+Meta checkpoint, loaded through `transformers`' built-in `VJEPA2Model`
+(no `trust_remote_code`). This repo was first built in a
+network-sandboxed environment that blocked `huggingface.co`, so every
+result currently in `reports/` was produced with the identical model
+*architecture* but **randomly initialized weights** (the encoder detects
+a failed download and falls back automatically, with a loud warning, so
+the pipeline was still fully exercisable). That block has since been
+lifted for this environment, and real pretrained weights have been
+verified to load and produce a valid forward pass
+(`tests/test_vjepa_encoder.py::test_pretrained_checkpoint_loads_real_weights`).
+The V0-scale experiment in `reports/` has not yet been re-run with real
+weights -- it still reflects the untrained-fallback caveat stated
+explicitly in each report and in each result dict's `encoder_pretrained`
+field.
+
+Two checkpoints originally planned here turned out not to exist on the
+Hub once real access was available: `facebook/vjepa2-vitb-fpc64-256`
+(the ViT-B-sized V-JEPA 2 checkpoint DESIGN.md and this project's
+original code assumed) is not hosted under any namespace, and "V-JEPA
+2.1" has no official `facebook/`-namespaced checkpoint at all -- only
+unverified individual/community conversions requiring
+`trust_remote_code=True`. See `encoders/vjepa.py`'s module docstring and
+`IMPLEMENTATION_NOTES.md`'s "Task 4 -- real pretrained weights" section
+for the full account; the encoder is now V-JEPA 2 ViT-L/16, not V-JEPA
+2.1 ViT-B/16 as originally planned.
 
 ## Repository layout
 
@@ -181,21 +200,21 @@ world-to-camera vs. camera-to-world distinction) and
 / `tests/test_pairs.py` for the identity/composition/inverse/isolation
 tests this is built to satisfy.
 
-## Task 4: frozen V-JEPA 2.1 representation extraction
+## Task 4: frozen V-JEPA 2 representation extraction
 
-`encoders/vjepa.py`'s `VJEPAEncoder` wraps V-JEPA 2.1 ViT-B/16 (see
-`IMPLEMENTATION_NOTES.md`'s "Task 4" section for exactly which upstream
-checkpoint this targets, and why -- like V-JEPA 2 in this sandbox --
-pretrained weights can't actually be downloaded here, and how that's
-handled honestly rather than silently). `encoders/extract.py` runs it
-and saves the result:
+`encoders/vjepa.py`'s `VJEPAEncoder` wraps V-JEPA 2 ViT-L/16
+(`facebook/vjepa2-vitl-fpc64-256`, the official Meta checkpoint -- see
+`IMPLEMENTATION_NOTES.md`'s "Task 4 -- real pretrained weights" section
+for why this replaced the originally-planned V-JEPA 2.1 ViT-B/16, and
+`encoders/vjepa.py`'s module docstring for the full verification
+account). `encoders/extract.py` runs it and saves the result:
 
 ```python
 from encoders.vjepa import VJEPAEncoder
 from encoders.extract import extract_and_save, load_representation
 
 encoder = VJEPAEncoder()  # pretrained=True by default; auto-uses a GPU if one is available
-representation = encoder.encode(video)  # (num_tokens, 768) float32 -- not pooled, see below
+representation = encoder.encode(video)  # (num_tokens, 1024) float32 -- not pooled, see below
 extract_and_save(encoder, video, "my_video", "data/representations")
 representation, metadata = load_representation("data/representations", "my_video")
 ```

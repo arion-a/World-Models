@@ -1,43 +1,44 @@
-"""Task 4: the frozen V-JEPA 2.1 video encoder.
+"""Task 4: the frozen V-JEPA 2 video encoder.
 
-Upstream model, exactly (see IMPLEMENTATION_NOTES.md's "Task 4" section
-for the full account of how this was verified, not assumed):
+Upstream model -- corrected after real Hugging Face Hub access became
+available (see IMPLEMENTATION_NOTES.md's "Task 4 -- real pretrained
+weights" section for the full account, including what was wrong before
+this fix and how it was caught):
 
-  * Official source: `facebookresearch/vjepa2` on GitHub. V-JEPA 2.1 is a
-    real, distinct release (not a typo for "V-JEPA 2") -- per that
-    repo's README, its ViT-B/16 checkpoint is `parameters: 80M`,
-    `resolution: 384`, checkpoint file
-    `vjepa2_1_vitb_dist_vitG_384.pt` (distilled from a ViT-G teacher),
-    trained with config `configs/train_2_1/vitb16`, and is downloaded
-    from `https://dl.fbaipublicfiles.com/vjepa2/vjepa2_1_vitb_dist_vitG_384.pt`.
-    Architecturally it is the same JEPA family as V-JEPA 2 (refinements
-    are to the training recipe -- dense predictive loss, deep
-    self-supervision, distillation -- not the model class), so it loads
-    through the same `transformers.VJEPA2Model` used for V-JEPA 2 in
-    this project's V0 code (`encoders/vjepa2.py`).
-  * As of this writing, no checkpoint under the official `facebook/`
-    Hugging Face Hub namespace was found for V-JEPA 2.1 specifically
-    (a hosting request for it was open on the upstream GitHub issue
-    tracker). A third-party conversion exists at
-    `apiantonio/vjepa2.1-vit-base-384`, which that repo's own model card
-    claims is bit-exact against Meta's reference implementation; this is
-    what `DEFAULT_CHECKPOINT` below points at, clearly NOT an official
-    `facebook/`-namespaced release. `checkpoint=` is fully overridable
-    once an official Hub repo exists or for anyone who converts the
-    original `.pt` checkpoint themselves.
-  * This sandbox cannot independently verify any of the above by
-    downloading it: both `huggingface.co` and `dl.fbaipublicfiles.com`
-    are network-policy-blocked here (see encoders/vjepa2.py's identical
-    caveat for V-JEPA 2, confirmed via the proxy's own diagnostic
-    endpoint). See "Reproducibility without the real checkpoint" below
-    for how this is handled honestly rather than silently.
-
-API verified against the installed `transformers` source (same contract
-V0's encoders/vjepa2.py already verified and documents in full):
-`pixel_values_videos` is `(batch, num_frames, channels, H, W)`;
-`model.get_vision_features(...)` returns the encoder's
-`last_hidden_state`, `(batch, num_patches, hidden_size)`, with no
-built-in pooling.
+  * `DEFAULT_CHECKPOINT` is `facebook/vjepa2-vitl-fpc64-256` -- verified,
+    with live Hub access, to actually exist under the official
+    `facebook/` namespace, with `config.json` declaring
+    `"architectures": ["VJEPA2Model"]` and `"model_type": "vjepa2"`, i.e.
+    it loads directly through the `transformers` library's own
+    `VJEPA2Model`/`VJEPA2Config` -- no `trust_remote_code`, no
+    third-party custom modeling code, no arbitrary code execution risk.
+  * This is a **ViT-L/16** checkpoint (`hidden_size=1024`,
+    `num_hidden_layers=24`, `num_attention_heads=16`, native
+    `crop_size=256`), not ViT-B/16 as originally planned in DESIGN.md /
+    IMPLEMENTATION_NOTES.md. That plan assumed two checkpoints which, on
+    verification, do not exist: `facebook/vjepa2-vitb-fpc64-256` (the
+    ViT-B V-JEPA 2 checkpoint V0's `encoders/vjepa2.py` also assumed) is
+    not on the Hub at all -- the smallest official V-JEPA 2 checkpoint is
+    ViT-L; and "V-JEPA 2.1" has no official `facebook/`-namespaced
+    checkpoint of any size on the Hub -- every `vjepa2.1` search hit is
+    from an individual/community namespace (`apiantonio`, `davevanveen`,
+    `Dev-Jahn`, `dgrauet`, `RAntonello`, none under `facebook`), and the
+    one this project pointed at before (`apiantonio/vjepa2.1-vit-base-384`)
+    declares `model_type: "vjepa21"` with `auto_map` custom classes,
+    meaning it requires `trust_remote_code=True` -- running an unverified
+    individual's Python code -- with no way to confirm the weights are a
+    faithful conversion of anything Meta actually released. Given a
+    choice between an official, code-verified, review-safe checkpoint
+    at a different size vs. an unverifiable one at the originally-planned
+    size, this project uses the former; DESIGN.md's encoder identity
+    should be read as "V-JEPA 2 ViT-L/16" from this point on, not V-JEPA
+    2.1 ViT-B/16 -- flagged here rather than silently changed.
+  * `VJEPA2Model.forward` / `get_vision_features` contract (verified
+    against the installed `transformers` source, unchanged by the
+    checkpoint swap): `pixel_values_videos` is
+    `(batch, num_frames, channels, H, W)`; `get_vision_features(...)`
+    returns `last_hidden_state`, `(batch, num_patches, hidden_size)`,
+    with no built-in pooling.
 
 Reproducibility without the real checkpoint:
 `VJEPA2Model.from_pretrained(checkpoint)` requires Hub access. When it's
@@ -70,24 +71,26 @@ logger = logging.getLogger(__name__)
 IMAGENET_MEAN = np.array([0.485, 0.456, 0.406], dtype=np.float32)
 IMAGENET_STD = np.array([0.229, 0.224, 0.225], dtype=np.float32)
 
-# V-JEPA 2.1 ViT-B/16: same patch/hidden/layer conventions as V-JEPA 2's
-# ViT-B (encoders/vjepa2.py), at V-JEPA 2.1's native 384 resolution --
-# used for the untrained-fallback architecture when pretrained weights
-# cannot be loaded (see module docstring).
-VITB16_CONFIG_KWARGS = dict(
+# facebook/vjepa2-vitl-fpc64-256's actual config.json values (verified via
+# live Hub access -- see module docstring) -- used for the
+# untrained-fallback architecture when pretrained weights cannot be
+# loaded, so the fallback at least matches the intended model size.
+VITL16_CONFIG_KWARGS = dict(
     patch_size=16,
-    hidden_size=768,
-    num_attention_heads=12,
-    num_hidden_layers=12,
+    hidden_size=1024,
+    num_attention_heads=16,
+    num_hidden_layers=24,
     pred_hidden_size=384,
     pred_num_attention_heads=12,
     pred_num_hidden_layers=12,
 )
 
-# Third-party conversion, NOT an official `facebook/`-namespaced release
-# -- see module docstring's "Upstream model" section.
-DEFAULT_CHECKPOINT = "apiantonio/vjepa2.1-vit-base-384"
-DEFAULT_CROP_SIZE = 384  # V-JEPA 2.1's native resolution (V-JEPA 2 used 256)
+# Official `facebook/`-namespaced release, loads through transformers'
+# built-in VJEPA2Model with no trust_remote_code -- see module docstring's
+# "Upstream model" section for why this replaced the originally-planned
+# (and, on verification, nonexistent/unsafe) V-JEPA 2.1 ViT-B checkpoints.
+DEFAULT_CHECKPOINT = "facebook/vjepa2-vitl-fpc64-256"
+DEFAULT_CROP_SIZE = 256  # this checkpoint's native resolution
 DEFAULT_FALLBACK_SEED = 0
 
 
@@ -187,7 +190,7 @@ class VJEPAEncoder(VideoEncoder):
             crop_size=crop_size,
             frames_per_clip=frames_per_clip,
             tubelet_size=tubelet_size,
-            **VITB16_CONFIG_KWARGS,
+            **VITL16_CONFIG_KWARGS,
         )
         return VJEPA2Model(config)
 

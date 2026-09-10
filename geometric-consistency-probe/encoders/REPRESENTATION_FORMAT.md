@@ -19,8 +19,9 @@ output: representation, shape (num_tokens, hidden_size), dtype float32
   why); `encoders/vjepa.py:mean_pool(representation)` is provided as the
   obvious first reduction if a single vector is wanted, but is not
   applied automatically.
-- **`hidden_size`** is `768` for the ViT-B/16 configuration this project
-  uses (`encoders/vjepa.py:VITB16_CONFIG_KWARGS`), whether or not
+- **`hidden_size`** is `1024` for the ViT-L/16 configuration this project
+  uses (`encoders/vjepa.py:VITL16_CONFIG_KWARGS`, matching
+  `facebook/vjepa2-vitl-fpc64-256`'s real `config.json`), whether or not
   pretrained weights loaded (the untrained fallback uses the same
   architecture size).
 - **`num_tokens`** depends on the input video's shape and the encoder's
@@ -33,10 +34,11 @@ output: representation, shape (num_tokens, hidden_size), dtype float32
   where `T_used` is `T` rounded up to a multiple of `tubelet_size` (the
   underlying `VJEPA2Embeddings` repeats frames if `T < tubelet_size`;
   see `transformers`' `modeling_vjepa2.py`), and `crop_size`/`patch_size`
-  are the encoder's configured values (`crop_size` defaults to 384 for
-  V-JEPA 2.1; `patch_size` is fixed at 16). Concretely, for the default
-  8-frame, `tubelet_size=2` configuration: `T_used/tubelet_size = 4`
-  temporal groups, times `(crop_size/16)**2` spatial patches.
+  are the encoder's configured values (`crop_size` defaults to 256, this
+  checkpoint's native resolution; `patch_size` is fixed at 16).
+  Concretely, for the default 8-frame, `tubelet_size=2` configuration:
+  `T_used/tubelet_size = 4` temporal groups, times `(crop_size/16)**2`
+  spatial patches.
 - **Token ordering** matches `Conv3d`'s flattened output order in
   `VJEPA2PatchEmbeddings3D.forward` (`.flatten(2).transpose(1, 2)`):
   row-major over `(temporal_group, patch_row, patch_col)`, i.e. all
@@ -57,11 +59,11 @@ out_dir/{video_id}/metadata.json        -- provenance (see below)
 {
   "video_id": "scene_0000",
   "encoder": "VJEPAEncoder",
-  "checkpoint": "apiantonio/vjepa2.1-vit-base-384",
-  "pretrained": false,
+  "checkpoint": "facebook/vjepa2-vitl-fpc64-256",
+  "pretrained": true,
   "preprocessing_config": {
-    "crop_size": 384,
-    "resize_size": 439,
+    "crop_size": 256,
+    "resize_size": 293,
     "normalize_mean": [0.485, 0.456, 0.406],
     "normalize_std": [0.229, 0.224, 0.225],
     "resize_mode": "bilinear"
@@ -70,7 +72,7 @@ out_dir/{video_id}/metadata.json        -- provenance (see below)
   "num_frames": 8,
   "frame_height": 128,
   "frame_width": 128,
-  "representation_shape": [64, 768],
+  "representation_shape": [64, 1024],
   "representation_dtype": "float32",
   "device": "cpu"
 }

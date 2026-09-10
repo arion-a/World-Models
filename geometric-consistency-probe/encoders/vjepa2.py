@@ -49,20 +49,24 @@ logger = logging.getLogger(__name__)
 IMAGENET_MEAN = np.array([0.485, 0.456, 0.406], dtype=np.float32)
 IMAGENET_STD = np.array([0.229, 0.224, 0.225], dtype=np.float32)
 
-# ViT-B/16 architecture constants (the pretrained checkpoint's config, used
-# for the from_pretrained=False fallback so the untrained model at least
-# matches the intended model size).
-VITB16_CONFIG_KWARGS = dict(
+# ViT-L/16 architecture constants (facebook/vjepa2-vitl-fpc64-256's actual
+# config.json, verified via live Hub access -- see encoders/vjepa.py's
+# module docstring: the ViT-B V-JEPA 2 checkpoint this file originally
+# assumed does not exist on the Hub under any namespace; ViT-L is the
+# smallest official facebook/-namespaced V-JEPA 2 checkpoint). Used for
+# the from_pretrained=False fallback so the untrained model at least
+# matches the intended model size.
+VITL16_CONFIG_KWARGS = dict(
     patch_size=16,
-    hidden_size=768,
-    num_attention_heads=12,
-    num_hidden_layers=12,
+    hidden_size=1024,
+    num_attention_heads=16,
+    num_hidden_layers=24,
     pred_hidden_size=384,
     pred_num_attention_heads=12,
     pred_num_hidden_layers=12,
 )
 
-DEFAULT_CHECKPOINT = "facebook/vjepa2-vitb-fpc64-256"
+DEFAULT_CHECKPOINT = "facebook/vjepa2-vitl-fpc64-256"
 
 
 class VJEPA2Encoder(FrozenEncoder):
@@ -104,7 +108,7 @@ class VJEPA2Encoder(FrozenEncoder):
                     crop_size=crop_size,
                     frames_per_clip=frames_per_clip,
                     tubelet_size=tubelet_size,
-                    **VITB16_CONFIG_KWARGS,
+                    **VITL16_CONFIG_KWARGS,
                 )
                 self.model = VJEPA2Model(config)
         else:
@@ -112,7 +116,7 @@ class VJEPA2Encoder(FrozenEncoder):
                 crop_size=crop_size,
                 frames_per_clip=frames_per_clip,
                 tubelet_size=tubelet_size,
-                **VITB16_CONFIG_KWARGS,
+                **VITL16_CONFIG_KWARGS,
             )
             self.model = VJEPA2Model(config)
 

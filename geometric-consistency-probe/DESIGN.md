@@ -8,6 +8,22 @@ V0 code — for that, see `IMPLEMENTATION_NOTES.md`, which records
 engineering decisions made while building the pipeline this spec
 describes, and is subordinate to this document wherever the two disagree.
 
+**Amendment (post-Task-4, user-approved):** every mention of "V-JEPA 2
+ViT-B/16" below is superseded by **V-JEPA 2 ViT-L/16**
+(`facebook/vjepa2-vitl-fpc64-256`). Once real Hugging Face Hub access was
+available, neither of this project's originally planned checkpoints
+turned out to exist under an official namespace: `facebook/vjepa2-vitb-fpc64-256`
+is not hosted at all, and "V-JEPA 2.1" has no official
+`facebook/`-namespaced checkpoint (only unverified third-party
+conversions requiring `trust_remote_code=True`). ViT-L/16 is the
+smallest official, code-verified V-JEPA 2 checkpoint on the Hub. This
+was surfaced to and chosen by the user rather than changed silently --
+see `encoders/vjepa.py`'s module docstring and `IMPLEMENTATION_NOTES.md`'s
+"Task 4 -- real pretrained weights" section for the full account. The
+research question, transforms, probes, and everything else in this
+document are unaffected by this substitution -- only the encoder's size
+changed, not its family or the experimental design.
+
 ## 0. Background: what we're building on
 
 This project sits inside two lines of existing work, and borrows its
