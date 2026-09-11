@@ -1,0 +1,113 @@
+{
+  "train_only_geometry": {
+    "n_train": 32,
+    "effective_rank_train_only": 15.692173957824707,
+    "explained_variance_by_top_k": {
+      "1": 0.22743813693523407,
+      "5": 0.5937319397926331,
+      "10": 0.7902323603630066,
+      "20": 0.9493743181228638,
+      "31": 1.0
+    },
+    "note": "PCA fit on the 32 TRAIN scenes only (N_train-1=31 components max) -- distinct from the forensic audit's N=40 (train+test pooled) effective-rank figure; this is what the regression itself actually has to work with."
+  },
+  "per_transform": {
+    "camera_translation": {
+      "raw_space_ridge": {
+        "r2": 0.19755034084782874,
+        "cosine": 0.9584792064596486
+      },
+      "pca_reduced_ridge": {
+        "k_components": 16,
+        "r2": 0.29387165553637484,
+        "cosine": 0.9627321533474953
+      },
+      "whitened_ridge": {
+        "k_components": 16,
+        "r2": 0.27676862961792226,
+        "cosine": 0.9617662110707835
+      }
+    },
+    "camera_rotation": {
+      "raw_space_ridge": {
+        "r2": -0.17572094272909644,
+        "cosine": 0.9292762954578583
+      },
+      "pca_reduced_ridge": {
+        "k_components": 16,
+        "r2": -0.05229167795805867,
+        "cosine": 0.9353794637264128
+      },
+      "whitened_ridge": {
+        "k_components": 16,
+        "r2": -0.024655210420405638,
+        "cosine": 0.9368275740022941
+      }
+    },
+    "object_translation": {
+      "raw_space_ridge": {
+        "r2": 0.38119456634372273,
+        "cosine": 0.9654080246963903
+      },
+      "pca_reduced_ridge": {
+        "k_components": 16,
+        "r2": 0.3731771295263915,
+        "cosine": 0.9647363184305959
+      },
+      "whitened_ridge": {
+        "k_components": 16,
+        "r2": 0.3628009494308606,
+        "cosine": 0.9641195725670915
+      }
+    },
+    "object_rotation": {
+      "raw_space_ridge": {
+        "r2": -0.19475498895465226,
+        "cosine": 0.9469591922374035
+      },
+      "pca_reduced_ridge": {
+        "k_components": 16,
+        "r2": 0.06495300385457004,
+        "cosine": 0.9581141833511133
+      },
+      "whitened_ridge": {
+        "k_components": 16,
+        "r2": 0.09426036750531663,
+        "cosine": 0.9594302764740688
+      }
+    },
+    "lighting_change": {
+      "raw_space_ridge": {
+        "r2": 0.06997694022123557,
+        "cosine": 0.9539871417443696
+      },
+      "pca_reduced_ridge": {
+        "k_components": 16,
+        "r2": 0.08680864170709746,
+        "cosine": 0.9545268798242997
+      },
+      "whitened_ridge": {
+        "k_components": 16,
+        "r2": 0.12950105515985333,
+        "cosine": 0.9565765793650045
+      }
+    },
+    "texture_change": {
+      "raw_space_ridge": {
+        "r2": 0.4258892055948511,
+        "cosine": 0.9691794163412472
+      },
+      "pca_reduced_ridge": {
+        "k_components": 16,
+        "r2": 0.3876063237396099,
+        "cosine": 0.9671030413049686
+      },
+      "whitened_ridge": {
+        "k_components": 16,
+        "r2": 0.3703678792482564,
+        "cosine": 0.9661182870776586
+      }
+    }
+  },
+  "k_selected_for_90pct_train_variance": 16
+}
