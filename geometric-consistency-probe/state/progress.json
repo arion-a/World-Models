@@ -10,11 +10,12 @@
     7,
     8
   ],
-  "status": "READY",
+  "status": "PASSED",
   "attempts": {
     "6": 1,
     "7": 2,
-    "8": 1
+    "8": 1,
+    "9": 1
   },
   "commits": {
     "6": "3bc16304b57b4fe8138490b8d554457380ecce64",
@@ -150,6 +151,49 @@
           "details": []
         }
       ]
+    },
+    "9": {
+      "task": 9,
+      "passed": true,
+      "layers": [
+        {
+          "name": "A. SOFTWARE CORRECTNESS",
+          "passed": true,
+          "details": [
+            "test command ['pytest', '-m', 'not slow', '-q'] exited 0"
+          ]
+        },
+        {
+          "name": "B. TASK ACCEPTANCE",
+          "passed": true,
+          "details": []
+        },
+        {
+          "name": "C. SCIENTIFIC VALIDITY",
+          "passed": true,
+          "details": []
+        },
+        {
+          "name": "D. RESEARCH ALIGNMENT",
+          "passed": true,
+          "details": []
+        },
+        {
+          "name": "E. DATA LEAKAGE",
+          "passed": true,
+          "details": []
+        },
+        {
+          "name": "F. REPRODUCIBILITY",
+          "passed": true,
+          "details": []
+        },
+        {
+          "name": "G. REGRESSION",
+          "passed": true,
+          "details": []
+        }
+      ]
     }
   },
   "sync": {
@@ -164,6 +208,12 @@
       "path": "/home/user/World-Models/geometric-consistency-probe/tasks/08_physical_state.md",
       "title": "Physical-state accessibility",
       "timestamp": "2026-09-11T12:50:41+00:00"
+    },
+    "9": {
+      "changed": false,
+      "path": "/home/user/World-Models/geometric-consistency-probe/tasks/09_appearance_invariance.md",
+      "title": "Appearance invariance controls",
+      "timestamp": "2026-09-11T14:28:28+00:00"
     }
   },
   "blockers": {},
@@ -440,7 +490,157 @@
       "to_status": "READY",
       "task": 8,
       "commit": "ca239011c9f9d8fe6cdc4496e44c469ff3bca587"
+    },
+    {
+      "event": "sync",
+      "timestamp": "2026-09-11T13:41:57+00:00",
+      "task": 9,
+      "changed": true
+    },
+    {
+      "event": "transition",
+      "timestamp": "2026-09-11T13:41:57+00:00",
+      "from_status": "READY",
+      "to_status": "RUNNING",
+      "task": 9
+    },
+    {
+      "event": "attempt",
+      "timestamp": "2026-09-11T13:41:57+00:00",
+      "task": 9,
+      "attempt": 1
+    },
+    {
+      "event": "transition",
+      "timestamp": "2026-09-11T13:54:36+00:00",
+      "from_status": "RUNNING",
+      "to_status": "QA",
+      "task": 9
+    },
+    {
+      "event": "qa",
+      "timestamp": "2026-09-11T13:56:47+00:00",
+      "task": 9,
+      "passed": false
+    },
+    {
+      "event": "transition",
+      "timestamp": "2026-09-11T13:56:47+00:00",
+      "from_status": "QA",
+      "to_status": "FIXING",
+      "task": 9
+    },
+    {
+      "event": "transition",
+      "timestamp": "2026-09-11T13:56:47+00:00",
+      "from_status": "FIXING",
+      "to_status": "RUNNING",
+      "task": 9
+    },
+    {
+      "event": "attempt",
+      "timestamp": "2026-09-11T13:56:47+00:00",
+      "task": 9,
+      "attempt": 2
+    },
+    {
+      "event": "transition",
+      "timestamp": "2026-09-11T13:59:40+00:00",
+      "from_status": "RUNNING",
+      "to_status": "QA",
+      "task": 9
+    },
+    {
+      "event": "qa",
+      "timestamp": "2026-09-11T14:01:51+00:00",
+      "task": 9,
+      "passed": false
+    },
+    {
+      "event": "transition",
+      "timestamp": "2026-09-11T14:01:51+00:00",
+      "from_status": "QA",
+      "to_status": "FIXING",
+      "task": 9
+    },
+    {
+      "event": "transition",
+      "timestamp": "2026-09-11T14:01:51+00:00",
+      "from_status": "FIXING",
+      "to_status": "RUNNING",
+      "task": 9
+    },
+    {
+      "event": "attempt",
+      "timestamp": "2026-09-11T14:01:51+00:00",
+      "task": 9,
+      "attempt": 3
+    },
+    {
+      "event": "transition",
+      "timestamp": "2026-09-11T14:06:03+00:00",
+      "from_status": "RUNNING",
+      "to_status": "QA",
+      "task": 9
+    },
+    {
+      "event": "qa",
+      "timestamp": "2026-09-11T14:08:25+00:00",
+      "task": 9,
+      "passed": false
+    },
+    {
+      "event": "transition",
+      "timestamp": "2026-09-11T14:08:25+00:00",
+      "from_status": "QA",
+      "to_status": "BLOCKED",
+      "task": 9
+    },
+    {
+      "event": "reset",
+      "timestamp": "2026-09-11T14:27:17+00:00",
+      "task": 9,
+      "from_status": "BLOCKED"
+    },
+    {
+      "event": "sync",
+      "timestamp": "2026-09-11T14:28:28+00:00",
+      "task": 9,
+      "changed": false
+    },
+    {
+      "event": "transition",
+      "timestamp": "2026-09-11T14:28:28+00:00",
+      "from_status": "READY",
+      "to_status": "RUNNING",
+      "task": 9
+    },
+    {
+      "event": "attempt",
+      "timestamp": "2026-09-11T14:28:28+00:00",
+      "task": 9,
+      "attempt": 1
+    },
+    {
+      "event": "transition",
+      "timestamp": "2026-09-11T14:33:42+00:00",
+      "from_status": "RUNNING",
+      "to_status": "QA",
+      "task": 9
+    },
+    {
+      "event": "qa",
+      "timestamp": "2026-09-11T14:35:56+00:00",
+      "task": 9,
+      "passed": true
+    },
+    {
+      "event": "transition",
+      "timestamp": "2026-09-11T14:35:56+00:00",
+      "from_status": "QA",
+      "to_status": "PASSED",
+      "task": 9
     }
   ],
-  "updated_at": "2026-09-11T13:06:24+00:00"
+  "updated_at": "2026-09-11T14:35:56+00:00"
 }

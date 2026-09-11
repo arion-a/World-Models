@@ -138,6 +138,101 @@ def verify_transform_ground_truth(pair_dir: Path, transform_name: str, num_objec
         )
 
 
+def render_null_transform_pairs(scenes: list[SceneState], out_dir: str | Path, num_frames: int, fps: float, resolution: int) -> Path:
+    """Task 9's required null-transform sanity check: render each scene
+    TWICE, independently, with no transform applied at all (T = identity)
+    -- both renders start from the bit-identical SceneState and the
+    bit-identical Trajectory (generate_trajectory is pure/deterministic,
+    generation/motion.py), so any difference between the two renders'
+    representations reveals a rendering/pipeline determinism bug, not a
+    scientific finding (see tests/test_bpy_renderer.py::
+    test_render_trajectory_is_reproducible, which already establishes
+    bit-exact RGB/depth/segmentation reproducibility at the renderer
+    level; this reruns that same guarantee through the full render ->
+    encode path used everywhere else in this project).
+
+    Deliberately does not go through transforms.pairs.generate_pair /
+    transforms.scene_transform.apply_transform -- "null transform" is not
+    a registered member of TRANSFORM_NAMES (it changes nothing, by
+    definition, so it is not one of the six named physical transforms
+    this project studies); it only reuses generation's own
+    render/save primitives directly, unmodified.
+    """
+    from generation.bpy_renderer import render_trajectory
+    from generation.ground_truth import save_ground_truth
+    from generation.motion import generate_trajectory
+
+    out_dir = Path(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    for scene in scenes:
+        pair_dir = out_dir / scene.scene_id
+        pair_dir.mkdir(parents=True, exist_ok=True)
+        trajectory = generate_trajectory(scene, num_frames=num_frames, fps=fps)
+        for dir_name in ("original", "transformed"):
+            clip = render_trajectory(scene, trajectory, resolution=resolution)
+            save_ground_truth(scene, trajectory, clip, pair_dir, resolution, dir_name=dir_name)
+        transformation_record = {
+            "type": "null_transform",
+            "transform_name": "null_transform",
+            "transform_matrix": np.eye(4).tolist(),
+            "changed_variables": [],
+            "object_index": None,
+        }
+        (pair_dir / "transformation.json").write_text(json.dumps(transformation_record, indent=2))
+    return out_dir
+
+
+def verify_null_transform_ground_truth(pair_dir: Path) -> None:
+    """Required software test / runtime check for the null-transform
+    sanity check: its transformation.json must show literally nothing
+    changed (changed_variables == []) and carry the identity SE(3)
+    matrix -- the "T = identity" contract render_null_transform_pairs
+    writes above, re-verified independently rather than assumed.
+    """
+    transformation = json.loads((pair_dir / "transformation.json").read_text())
+    if transformation.get("type") != "null_transform" or transformation.get("transform_name") != "null_transform":
+        raise ValueError(f"{pair_dir}: expected the null_transform sanity-check record, got {transformation.get('type')!r}")
+    if transformation.get("changed_variables"):
+        raise ValueError(f"{pair_dir}: null_transform must not change any variable, got {transformation['changed_variables']}")
+    matrix = np.array(transformation.get("transform_matrix"))
+    if matrix.shape != (4, 4) or not np.allclose(matrix, np.eye(4)):
+        raise ValueError(f"{pair_dir}: null_transform must carry exactly the 4x4 identity matrix")
+
+
+def verify_appearance_physical_equality(scenes: list[SceneState], out_dir: Path, transform_name: str) -> None:
+    """Task 9's required, explicit re-verification (not assumed) that an
+    appearance-only control (`lighting_change`/`texture_change`) leaves
+    camera pose, every object's pose, and object identity/count bit-for-
+    bit unchanged -- reads each scene's own transformation.json directly
+    off disk and cross-checks it against apply_transform's own ground
+    truth (via expected_changed_variables), independently of whatever
+    check ran when the pair was originally rendered (Task 7 or otherwise).
+    """
+    if transform_name not in CONTROL_TRANSFORMS:
+        raise ValueError(f"verify_appearance_physical_equality is only valid for appearance controls, got {transform_name!r}")
+
+    pose_pattern = re.compile(r"^objects\[\d+\]\.(position|rotation_euler)$")
+    for scene in scenes:
+        pair_dir = Path(out_dir) / scene.scene_id
+        transformation = json.loads((pair_dir / "transformation.json").read_text())
+
+        if transformation.get("transform_matrix") is not None:
+            raise ValueError(f"{pair_dir}: {transform_name} must not carry a rigid transform_matrix (appearance-only control)")
+
+        changed = set(transformation.get("changed_variables", []))
+        expected = expected_changed_variables(transform_name, transformation, len(scene.objects))
+        if changed != expected:
+            raise ValueError(
+                f"{pair_dir}: {transform_name} changed unexpected variables: {sorted(changed)} != expected {sorted(expected)}"
+            )
+        for path in changed:
+            if path in ("camera.position", "camera.rotation_euler") or pose_pattern.match(path):
+                raise ValueError(
+                    f"{pair_dir}: {transform_name} unexpectedly changed a camera/object pose variable ({path}) "
+                    "-- this appearance control is not a valid invariance control if it moves geometry."
+                )
+
+
 def render_transform_pairs(
     scenes: list[SceneState],
     transform_name: str,
@@ -244,6 +339,18 @@ def build_arrays(
     Z_test = np.stack([reps[sid]["Z"] for sid in test_ids])
     Zp_test = np.stack([reps[sid]["Z_prime"] for sid in test_ids])
     return train_ids, test_ids, Z_train, Zp_train, Z_test, Zp_test
+
+
+def build_full_arrays(scenes: list[SceneState], reps: dict[str, dict[str, np.ndarray]]) -> tuple[list[str], np.ndarray, np.ndarray]:
+    """Like build_arrays, but for Task 9's invariance computation, which
+    (per DESIGN.md Sec 7 / tasks/09_appearance_invariance.md's Train/test
+    protocol) fits nothing and therefore has no train/test split to
+    contaminate -- every scene's (Z, Z') pair is used directly.
+    """
+    ids = [s.scene_id for s in scenes]
+    Z = np.stack([reps[sid]["Z"] for sid in ids])
+    Zp = np.stack([reps[sid]["Z_prime"] for sid in ids])
+    return ids, Z, Zp
 
 
 # --- fit W_T + evaluate + the three required controls, one transform -------

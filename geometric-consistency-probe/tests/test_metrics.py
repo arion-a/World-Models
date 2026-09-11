@@ -1,6 +1,7 @@
 import numpy as np
 
 from metrics.common import cosine_similarity, r_squared, relative_l2_error
+from metrics.invariance import evaluate_invariance
 
 
 def test_cosine_similarity_identical_vectors():
@@ -62,3 +63,38 @@ def test_r_squared_handles_1d_vs_column_vector_shape_mismatch():
     pred_col = pred_flat.reshape(-1, 1)
     assert np.isclose(r_squared(pred_flat, target_col), r_squared(pred_col, target_col))
     assert r_squared(pred_flat, target_col) > 0.9
+
+
+# --- evaluate_invariance (Task 9: Z' vs Z measured directly, no map fit) ---
+
+
+def test_evaluate_invariance_identical_arrays_is_perfectly_invariant():
+    rng = np.random.default_rng(0)
+    Z = rng.normal(size=(6, 8))
+    result = evaluate_invariance("lighting_change", Z, Z)
+    assert result.transform_name == "lighting_change"
+    assert result.n == 6
+    assert np.isclose(result.mean_cosine_similarity, 1.0)
+    assert np.isclose(result.mean_relative_l2_error, 0.0)
+
+
+def test_evaluate_invariance_orthogonal_arrays_is_not_invariant():
+    Z = np.array([[1.0, 0.0], [0.0, 1.0]])
+    Z_prime = np.array([[0.0, 1.0], [1.0, 0.0]])
+    result = evaluate_invariance("camera_rotation", Z, Z_prime)
+    assert np.isclose(result.mean_cosine_similarity, 0.0)
+    assert result.mean_relative_l2_error > 1.0
+
+
+def test_evaluate_invariance_does_not_fit_anything_and_is_order_independent_of_train_test():
+    """Invariance is a direct per-row comparison, not a fitted map -- unlike
+    equivariance, computing it on a permuted row order changes nothing
+    about the MEAN score (no parameters are estimated from the data)."""
+    rng = np.random.default_rng(1)
+    Z = rng.normal(size=(10, 4))
+    Z_prime = Z + rng.normal(scale=0.05, size=(10, 4))
+    order = rng.permutation(10)
+    result_a = evaluate_invariance("texture_change", Z, Z_prime)
+    result_b = evaluate_invariance("texture_change", Z[order], Z_prime[order])
+    assert np.isclose(result_a.mean_cosine_similarity, result_b.mean_cosine_similarity)
+    assert np.isclose(result_a.mean_relative_l2_error, result_b.mean_relative_l2_error)
