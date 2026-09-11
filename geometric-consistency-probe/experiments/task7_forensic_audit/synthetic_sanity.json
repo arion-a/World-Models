@@ -1,0 +1,134 @@
+{
+  "real_shape_low_noise_alpha10": {
+    "learned_W_T": {
+      "r2": -0.14890780091118305,
+      "mean_cosine_similarity": 0.13810566682213551,
+      "mean_relative_l2_error": 0.9971620816535426
+    },
+    "persistence_baseline": {
+      "r2": -1.252398675667202,
+      "mean_cosine_similarity": 0.01330924190375404,
+      "mean_relative_l2_error": 1.3970587569593098
+    },
+    "mean_baseline": {
+      "r2": -0.18238597529075684,
+      "mean_cosine_similarity": 0.042903084828638596,
+      "mean_relative_l2_error": 1.0114816493052572
+    },
+    "random_pair_control": {
+      "r2": -0.21685783153124638,
+      "mean_cosine_similarity": 0.02641912761358973,
+      "mean_relative_l2_error": 1.0262053633540893
+    }
+  },
+  "real_shape_low_noise_alpha0.01": {
+    "learned_W_T": {
+      "r2": -0.14888060359439637,
+      "mean_cosine_similarity": 0.1386239959284472,
+      "mean_relative_l2_error": 0.997151963788895
+    },
+    "persistence_baseline": {
+      "r2": -1.252398675667202,
+      "mean_cosine_similarity": 0.01330924190375404,
+      "mean_relative_l2_error": 1.3970587569593098
+    },
+    "mean_baseline": {
+      "r2": -0.18238597529075684,
+      "mean_cosine_similarity": 0.042903084828638596,
+      "mean_relative_l2_error": 1.0114816493052572
+    },
+    "random_pair_control": {
+      "r2": -0.21758296971059798,
+      "mean_cosine_similarity": 0.026224628808460645,
+      "mean_relative_l2_error": 1.026512375165878
+    }
+  },
+  "real_shape_moderate_noise_alpha10": {
+    "learned_W_T": {
+      "r2": -0.16762794117498236,
+      "mean_cosine_similarity": 0.10761372089509325,
+      "mean_relative_l2_error": 1.0053623442203694
+    },
+    "persistence_baseline": {
+      "r2": -1.0508148092946454,
+      "mean_cosine_similarity": 0.0036860763255507946,
+      "mean_relative_l2_error": 1.332420662495699
+    },
+    "mean_baseline": {
+      "r2": -0.19245924463109643,
+      "mean_cosine_similarity": 0.021065386679924858,
+      "mean_relative_l2_error": 1.0158407344273148
+    },
+    "random_pair_control": {
+      "r2": -0.21908552725689123,
+      "mean_cosine_similarity": 0.02884205669171732,
+      "mean_relative_l2_error": 1.0270956074822293
+    }
+  },
+  "easy_shape_low_d": {
+    "learned_W_T": {
+      "r2": 0.9983475851528816,
+      "mean_cosine_similarity": 0.9995205357548602,
+      "mean_relative_l2_error": 0.043869113936856025
+    },
+    "persistence_baseline": {
+      "r2": -0.6996229073901818,
+      "mean_cosine_similarity": 0.09284241834514412,
+      "mean_relative_l2_error": 1.446708917138293
+    },
+    "mean_baseline": {
+      "r2": -0.13276667570660927,
+      "mean_cosine_similarity": -0.048964413563051014,
+      "mean_relative_l2_error": 1.0566271387346153
+    },
+    "random_pair_control": {
+      "r2": -0.11379639609969194,
+      "mean_cosine_similarity": 0.2813118119472684,
+      "mean_relative_l2_error": 1.0773513120718359
+    }
+  },
+  "identity": {
+    "learned_W_T": {
+      "r2": -0.14563840760231828,
+      "mean_cosine_similarity": 0.10975673960362578,
+      "mean_relative_l2_error": 1.002507736807758
+    },
+    "persistence_baseline": {
+      "r2": 1.0,
+      "mean_cosine_similarity": 1.0,
+      "mean_relative_l2_error": 0.0
+    },
+    "mean_baseline": {
+      "r2": -0.1785138024862758,
+      "mean_cosine_similarity": -0.012449581685973859,
+      "mean_relative_l2_error": 1.0167908928867906
+    },
+    "random_pair_control": {
+      "r2": -0.21330495660131232,
+      "mean_cosine_similarity": -0.012945379961252963,
+      "mean_relative_l2_error": 1.0316200380458724
+    }
+  },
+  "constant": {
+    "learned_W_T": {
+      "r2": NaN,
+      "mean_cosine_similarity": 1.0,
+      "mean_relative_l2_error": 4.362127188259544e-16
+    },
+    "persistence_baseline": {
+      "r2": NaN,
+      "mean_cosine_similarity": -0.014451546584640589,
+      "mean_relative_l2_error": 1.4322553129476883
+    },
+    "mean_baseline": {
+      "r2": NaN,
+      "mean_cosine_similarity": 1.0,
+      "mean_relative_l2_error": 4.362127188259544e-16
+    },
+    "random_pair_control": {
+      "r2": NaN,
+      "mean_cosine_similarity": 1.0,
+      "mean_relative_l2_error": 4.362127188259544e-16
+    }
+  }
+}

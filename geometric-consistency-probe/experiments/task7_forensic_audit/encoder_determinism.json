@@ -1,0 +1,36 @@
+{
+  "model.training (should be False -- eval mode)": false,
+  "any_param_requires_grad (should be False -- frozen)": false,
+  "checkpoint_config": {
+    "frames_per_clip": 64,
+    "tubelet_size": 2,
+    "crop_size": 256,
+    "patch_size": 16,
+    "hidden_size": 1024
+  },
+  "actual_input_clip_shape": [
+    4,
+    128,
+    128,
+    3
+  ],
+  "encode_determinism": {
+    "tokens_shape": [
+      512,
+      1024
+    ],
+    "bit_identical_across_two_calls": true,
+    "relative_l2_diff": 0.0,
+    "cosine_similarity": 1.0000001192092896
+  },
+  "temporal_context_analysis": {
+    "native_temporal_tubelets_from_checkpoint_training_config": 32,
+    "actual_temporal_tubelets_fed_by_this_project": 2,
+    "fraction_of_native_temporal_context_used": 0.0625,
+    "note": "This checkpoint's config.json declares frames_per_clip=64 (checkpoint name itself is 'vjepa2-vitl-fpc64-256' -- fpc64 = frames per clip 64). This project renders 4-frame clips (see configs/experiments/task7_geometric_consistency.yaml's num_frames=4), i.e. 2 of the 32 temporal tubelets (tubelet_size=2) the model was pretrained with -- 6.25% of its native temporal context. VJEPA2's attention uses RoPE-based relative position ids computed from the ACTUAL input token count (transformers/models/vjepa2/modeling_vjepa2.py's VJEPA2RopeAttention.get_position_ids), not a fixed-size learned positional-embedding buffer, so this does not crash or silently misindex -- but it is still a large distribution shift in temporal context length relative to pretraining, which is a plausible contributor to degraded representation quality independent of any code bug."
+  },
+  "cross_scene_sanity": {
+    "cosine_similarity_scene0000_vs_scene0001": 0.49450862407684326,
+    "note": "should be clearly lower than the same-video repeat-encode cosine similarity above if the encoder is not collapsed."
+  }
+}

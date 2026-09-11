@@ -1,0 +1,242 @@
+[
+  {
+    "transform": "object_rotation",
+    "scene_id": "scene_0000",
+    "all_fixed_vars_unchanged": true,
+    "num_fixed_checked": 18,
+    "all_changed_vars_actually_differ": true,
+    "num_changed_checked": 1,
+    "fixed_failures": [],
+    "changed_failures": []
+  },
+  {
+    "transform": "object_translation",
+    "scene_id": "scene_0023",
+    "all_fixed_vars_unchanged": true,
+    "num_fixed_checked": 8,
+    "all_changed_vars_actually_differ": true,
+    "num_changed_checked": 1,
+    "fixed_failures": [],
+    "changed_failures": []
+  },
+  {
+    "transform": "camera_rotation",
+    "scene_id": "scene_0017",
+    "all_fixed_vars_unchanged": true,
+    "num_fixed_checked": 17,
+    "all_changed_vars_actually_differ": true,
+    "num_changed_checked": 2,
+    "fixed_failures": [],
+    "changed_failures": []
+  },
+  {
+    "transform": "lighting_change",
+    "scene_id": "scene_0027",
+    "all_fixed_vars_unchanged": true,
+    "num_fixed_checked": 7,
+    "all_changed_vars_actually_differ": true,
+    "num_changed_checked": 2,
+    "fixed_failures": [],
+    "changed_failures": []
+  },
+  {
+    "transform": "camera_rotation",
+    "scene_id": "scene_0023",
+    "all_fixed_vars_unchanged": true,
+    "num_fixed_checked": 7,
+    "all_changed_vars_actually_differ": true,
+    "num_changed_checked": 2,
+    "fixed_failures": [],
+    "changed_failures": []
+  },
+  {
+    "transform": "camera_translation",
+    "scene_id": "scene_0027",
+    "all_fixed_vars_unchanged": true,
+    "num_fixed_checked": 8,
+    "all_changed_vars_actually_differ": true,
+    "num_changed_checked": 1,
+    "fixed_failures": [],
+    "changed_failures": []
+  },
+  {
+    "transform": "object_translation",
+    "scene_id": "scene_0035",
+    "all_fixed_vars_unchanged": true,
+    "num_fixed_checked": 8,
+    "all_changed_vars_actually_differ": true,
+    "num_changed_checked": 1,
+    "fixed_failures": [],
+    "changed_failures": []
+  },
+  {
+    "transform": "texture_change",
+    "scene_id": "scene_0011",
+    "all_fixed_vars_unchanged": true,
+    "num_fixed_checked": 8,
+    "all_changed_vars_actually_differ": true,
+    "num_changed_checked": 1,
+    "fixed_failures": [],
+    "changed_failures": []
+  },
+  {
+    "transform": "lighting_change",
+    "scene_id": "scene_0035",
+    "all_fixed_vars_unchanged": true,
+    "num_fixed_checked": 7,
+    "all_changed_vars_actually_differ": true,
+    "num_changed_checked": 2,
+    "fixed_failures": [],
+    "changed_failures": []
+  },
+  {
+    "transform": "camera_rotation",
+    "scene_id": "scene_0022",
+    "all_fixed_vars_unchanged": true,
+    "num_fixed_checked": 17,
+    "all_changed_vars_actually_differ": true,
+    "num_changed_checked": 2,
+    "fixed_failures": [],
+    "changed_failures": []
+  },
+  {
+    "transform": "texture_change",
+    "scene_id": "scene_0005",
+    "all_fixed_vars_unchanged": true,
+    "num_fixed_checked": 16,
+    "all_changed_vars_actually_differ": true,
+    "num_changed_checked": 3,
+    "fixed_failures": [],
+    "changed_failures": []
+  },
+  {
+    "transform": "lighting_change",
+    "scene_id": "scene_0026",
+    "all_fixed_vars_unchanged": true,
+    "num_fixed_checked": 17,
+    "all_changed_vars_actually_differ": true,
+    "num_changed_checked": 2,
+    "fixed_failures": [],
+    "changed_failures": []
+  },
+  {
+    "transform": "lighting_change",
+    "scene_id": "scene_0032",
+    "all_fixed_vars_unchanged": true,
+    "num_fixed_checked": 17,
+    "all_changed_vars_actually_differ": true,
+    "num_changed_checked": 2,
+    "fixed_failures": [],
+    "changed_failures": []
+  },
+  {
+    "transform": "camera_rotation",
+    "scene_id": "scene_0009",
+    "all_fixed_vars_unchanged": true,
+    "num_fixed_checked": 12,
+    "all_changed_vars_actually_differ": true,
+    "num_changed_checked": 2,
+    "fixed_failures": [],
+    "changed_failures": []
+  },
+  {
+    "transform": "camera_rotation",
+    "scene_id": "scene_0004",
+    "all_fixed_vars_unchanged": true,
+    "num_fixed_checked": 17,
+    "all_changed_vars_actually_differ": true,
+    "num_changed_checked": 2,
+    "fixed_failures": [],
+    "changed_failures": []
+  },
+  {
+    "transform": "camera_rotation",
+    "scene_id": "scene_0021",
+    "all_fixed_vars_unchanged": true,
+    "num_fixed_checked": 7,
+    "all_changed_vars_actually_differ": true,
+    "num_changed_checked": 2,
+    "fixed_failures": [],
+    "changed_failures": []
+  },
+  {
+    "transform": "object_translation",
+    "scene_id": "scene_0001",
+    "all_fixed_vars_unchanged": true,
+    "num_fixed_checked": 13,
+    "all_changed_vars_actually_differ": true,
+    "num_changed_checked": 1,
+    "fixed_failures": [],
+    "changed_failures": []
+  },
+  {
+    "transform": "object_rotation",
+    "scene_id": "scene_0021",
+    "all_fixed_vars_unchanged": true,
+    "num_fixed_checked": 8,
+    "all_changed_vars_actually_differ": true,
+    "num_changed_checked": 1,
+    "fixed_failures": [],
+    "changed_failures": []
+  },
+  {
+    "transform": "camera_translation",
+    "scene_id": "scene_0032",
+    "all_fixed_vars_unchanged": true,
+    "num_fixed_checked": 18,
+    "all_changed_vars_actually_differ": true,
+    "num_changed_checked": 1,
+    "fixed_failures": [],
+    "changed_failures": []
+  },
+  {
+    "transform": "texture_change",
+    "scene_id": "scene_0026",
+    "all_fixed_vars_unchanged": true,
+    "num_fixed_checked": 16,
+    "all_changed_vars_actually_differ": true,
+    "num_changed_checked": 3,
+    "fixed_failures": [],
+    "changed_failures": []
+  },
+  {
+    "transform": "camera_translation",
+    "scene_id": "scene_0000",
+    "all_fixed_vars_unchanged": true,
+    "num_fixed_checked": 18,
+    "all_changed_vars_actually_differ": true,
+    "num_changed_checked": 1,
+    "fixed_failures": [],
+    "changed_failures": []
+  },
+  {
+    "transform": "texture_change",
+    "scene_id": "scene_0010",
+    "all_fixed_vars_unchanged": true,
+    "num_fixed_checked": 16,
+    "all_changed_vars_actually_differ": true,
+    "num_changed_checked": 3,
+    "fixed_failures": [],
+    "changed_failures": []
+  },
+  {
+    "transform": "lighting_change",
+    "scene_id": "scene_0011",
+    "all_fixed_vars_unchanged": true,
+    "num_fixed_checked": 7,
+    "all_changed_vars_actually_differ": true,
+    "num_changed_checked": 2,
+    "fixed_failures": [],
+    "changed_failures": []
+  },
+  {
+    "transform": "object_translation",
+    "scene_id": "scene_0006",
+    "all_fixed_vars_unchanged": true,
+    "num_fixed_checked": 13,
+    "all_changed_vars_actually_differ": true,
+    "num_changed_checked": 1,
+    "fixed_failures": [],
+    "changed_failures": []
+  }
+]

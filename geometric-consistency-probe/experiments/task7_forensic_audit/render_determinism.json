@@ -1,0 +1,32 @@
+{
+  "camera_rotation": {
+    "original": {
+      "bit_identical": true,
+      "max_abs_pixel_diff": 0,
+      "mean_abs_pixel_diff": 0.0
+    },
+    "transformation_json_identical": true,
+    "original_within_clip_frames_identical": true,
+    "transformed": {
+      "bit_identical": true,
+      "max_abs_pixel_diff": 0,
+      "mean_abs_pixel_diff": 0.0
+    },
+    "transformed_within_clip_frames_identical": true
+  },
+  "lighting_change": {
+    "original": {
+      "bit_identical": true,
+      "max_abs_pixel_diff": 0,
+      "mean_abs_pixel_diff": 0.0
+    },
+    "transformation_json_identical": true,
+    "original_within_clip_frames_identical": true,
+    "transformed": {
+      "bit_identical": true,
+      "max_abs_pixel_diff": 0,
+      "mean_abs_pixel_diff": 0.0
+    },
+    "transformed_within_clip_frames_identical": true
+  }
+}
