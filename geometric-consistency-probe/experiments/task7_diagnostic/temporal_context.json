@@ -44,6 +44,15 @@
       "learned_W_T_r2": -0.9013308365490911,
       "learned_W_T_cosine": 0.9045199513312524,
       "persistence_baseline_r2": -0.014190912246704102
+    },
+    "64": {
+      "num_frames": 64,
+      "n_train": 9,
+      "n_test": 3,
+      "wall_time_seconds": 1989.93723487854,
+      "learned_W_T_r2": -1.006989948787262,
+      "learned_W_T_cosine": 0.9035720783082354,
+      "persistence_baseline_r2": -0.11103034019470215
     }
   }
 }

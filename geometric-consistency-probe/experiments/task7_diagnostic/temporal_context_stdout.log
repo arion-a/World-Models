@@ -8068,3 +8068,6 @@ num_frames= 32  r2=-0.9013  cosine=0.9045  persistence_r2=-0.0142  (this frame c
 47:08.280  render           | Saved: '/tmp/tmpsp4oxmaa/frame_0063_depth.png'
 47:08.280  render           | Saved: '/tmp/tmpsp4oxmaa/frame_0063_seg.png'
 47:08.283  render           | Saved: '/tmp/tmpsp4oxmaa/frame_0063_rgb.png'
+num_frames= 64  r2=-1.0070  cosine=0.9036  persistence_r2=-0.1110  (this frame count took 1990s, total_elapsed=3012s)
+
+Total wall time: 3012s
