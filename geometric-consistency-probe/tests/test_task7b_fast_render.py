@@ -40,3 +40,20 @@ def test_fast_render_matches_slow_render_bit_for_bit(tmp_path, transform_name, c
     slow_transformation = (slow_dir / "transformation.json").read_text()
     fast_transformation = (fast_dir / "transformation.json").read_text()
     assert slow_transformation == fast_transformation
+
+
+@pytest.mark.slow  # needs bpy
+def test_generate_pair_fast_sides_only_renders_requested_sides(tmp_path):
+    """Stage 2/3's multi-magnitude sweep only needs the transformed side
+    (the original is magnitude-independent, already cached from Stage 1)
+    -- sides=("transformed",) must skip rendering "original" entirely,
+    while transformation.json (needed either way) is still written."""
+    scene = generate_scene("fast_render_sides_check", seed=6, cfg=SceneSamplerConfig(num_objects_min=2, num_objects_max=2))
+    cfg = TransformConfig(fixed_azimuth_deg=30.0, fixed_elevation_deg=0.0)
+
+    out_dir = tmp_path / "transformed_only"
+    generate_pair_fast(scene, "camera_rotation", out_dir, transform_cfg=cfg, num_frames=4, fps=4.0, resolution=128, sides=("transformed",))
+
+    assert (out_dir / "transformed" / "rgb.npy").exists()
+    assert not (out_dir / "original").exists()
+    assert (out_dir / "transformation.json").exists()

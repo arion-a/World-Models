@@ -65,19 +65,29 @@ def generate_pair_fast(
     num_frames: int = 4,
     fps: float = 4.0,
     resolution: int = 128,
+    sides: tuple[str, ...] = ("original", "transformed"),
 ) -> Path:
     """Drop-in equivalent of transforms.pairs.generate_pair for this
     project's zero-motion (static) clips: renders each side's frame 0
     once and repeats it, rather than rendering every frame independently.
     Produces byte-identical rgb/depth/segmentation arrays to
     generate_pair for a static clip -- see this module's docstring and
-    tests/test_task7b_fast_render.py."""
+    tests/test_task7b_fast_render.py.
+
+    `sides` defaults to both (Stage 1's usage: builds the primary Z/Z'
+    pair from scratch, needs both). Stage 2/3's multi-magnitude sweep
+    only ever needs the transformed side -- the original is
+    magnitude-independent and already cached from Stage 1 -- so it
+    passes sides=("transformed",) to avoid re-rendering the identical
+    original side once per magnitude for no reason."""
     new_scene, transform_record = apply_transform(scene, transform_name, transform_cfg)
 
     pair_dir = Path(out_dir)
     pair_dir.mkdir(parents=True, exist_ok=True)
 
     for dir_name, s in [("original", scene), ("transformed", new_scene)]:
+        if dir_name not in sides:
+            continue
         trajectory, clip = _render_repeated(s, num_frames=num_frames, fps=fps, resolution=resolution)
         save_ground_truth(s, trajectory, clip, pair_dir, resolution, dir_name=dir_name)
 

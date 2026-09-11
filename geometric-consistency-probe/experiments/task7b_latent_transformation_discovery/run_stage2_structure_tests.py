@@ -93,10 +93,16 @@ def render_and_encode_magnitude(magnitude: float, scene_ids: list, scenes_by_id:
     mag_dir = RENDER_DIR / f"mag_{magnitude:g}"
     for sid in scene_ids:
         pair_dir = mag_dir / sid
-        if not (pair_dir / "transformation.json").exists():
+        if not (pair_dir / "transformed" / "rgb.npy").exists():
+            # Transformed side only: the original is magnitude-independent
+            # and already in z_cache_primary.npz from Stage 1 -- rendering
+            # it again here per magnitude would double this stage's cost
+            # for output that's discarded (render_and_encode_magnitude
+            # below only ever reads the transformed side).
             generate_pair_fast(
                 scenes_by_id[sid], data.TRANSFORM_NAME, pair_dir,
                 transform_cfg=cfg, num_frames=enc_cfg["num_frames"], fps=enc_cfg["fps"], resolution=enc_cfg["resolution"],
+                sides=("transformed",),
             )
         trans_rgb = np.load(pair_dir / "transformed" / "rgb.npy")
         out[sid] = mean_pool(encoder.encode(trans_rgb))
