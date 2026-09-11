@@ -1,0 +1,143 @@
+{
+  "selected_model_key": "M4_full_linear",
+  "selected_hyperparams": {
+    "alpha": 100.0
+  },
+  "structure_test_train_size": 256,
+  "structure_test_internal_val_size": 56,
+  "structure_test_fit_size": 200,
+  "composition": [
+    {
+      "theta1": -10.0,
+      "theta2": -10.0,
+      "theta_sum": -20.0,
+      "output_space_agreement": {
+        "r2": 0.8729198922357913,
+        "mse": 0.03522104397416115,
+        "relative_l2_error": 0.10001638080586134,
+        "cosine_similarity": 0.9946556490149177,
+        "n_samples": 220
+      },
+      "applicable": true,
+      "normalized_frobenius_operator_discrepancy": 0.6580911355122755
+    },
+    {
+      "theta1": -30.0,
+      "theta2": 60.0,
+      "theta_sum": 30.0,
+      "output_space_agreement": {
+        "r2": 0.6227444196341354,
+        "mse": 0.10379066318273544,
+        "relative_l2_error": 0.1727633658613789,
+        "cosine_similarity": 0.9840898373125488,
+        "n_samples": 220
+      },
+      "applicable": true,
+      "normalized_frobenius_operator_discrepancy": 0.9544697874376111
+    },
+    {
+      "theta1": -20.0,
+      "theta2": -10.0,
+      "theta_sum": -30.0,
+      "output_space_agreement": {
+        "r2": 0.859508065339026,
+        "mse": 0.03663339093327522,
+        "relative_l2_error": 0.10350595050460253,
+        "cosine_similarity": 0.9943786567080539,
+        "n_samples": 220
+      },
+      "applicable": true,
+      "normalized_frobenius_operator_discrepancy": 0.6482062002146854
+    },
+    {
+      "theta1": -10.0,
+      "theta2": -20.0,
+      "theta_sum": -30.0,
+      "output_space_agreement": {
+        "r2": 0.8590620747896783,
+        "mse": 0.03674968332052231,
+        "relative_l2_error": 0.1032898019058718,
+        "cosine_similarity": 0.994359051851458,
+        "n_samples": 220
+      },
+      "applicable": true,
+      "normalized_frobenius_operator_discrepancy": 0.690717805466208
+    },
+    {
+      "theta1": 30.0,
+      "theta2": 30.0,
+      "theta_sum": 60.0,
+      "output_space_agreement": {
+        "r2": 0.6860203137029547,
+        "mse": 0.07239659875631332,
+        "relative_l2_error": 0.14602163217583886,
+        "cosine_similarity": 0.9888437821864617,
+        "n_samples": 220
+      },
+      "applicable": true,
+      "normalized_frobenius_operator_discrepancy": 0.8144558496161814
+    }
+  ],
+  "inverse": [
+    {
+      "theta": 10.0,
+      "output_space_agreement": {
+        "r2": 0.7515492499694203,
+        "mse": 0.11137861758470535,
+        "relative_l2_error": 0.17544616118362244,
+        "cosine_similarity": 0.9838192845172835,
+        "n_samples": 220
+      },
+      "applicable": true,
+      "normalized_frobenius_operator_discrepancy": 0.9862311210090656
+    },
+    {
+      "theta": 30.0,
+      "output_space_agreement": {
+        "r2": 0.5366159100430783,
+        "mse": 0.20773164927959442,
+        "relative_l2_error": 0.2386981847256039,
+        "cosine_similarity": 0.9695564616085839,
+        "n_samples": 220
+      },
+      "applicable": true,
+      "normalized_frobenius_operator_discrepancy": 1.0009248772095898
+    },
+    {
+      "theta": 60.0,
+      "output_space_agreement": {
+        "r2": 0.43666648611007663,
+        "mse": 0.25253820419311523,
+        "relative_l2_error": 0.2626036978696508,
+        "cosine_similarity": 0.9628316469349982,
+        "n_samples": 220
+      },
+      "applicable": true,
+      "normalized_frobenius_operator_discrepancy": 1.0032607207209798
+    }
+  ],
+  "identity": {
+    "output_space_agreement": {
+      "r2": 0.9169279894591806,
+      "mse": 0.037240561097860336,
+      "relative_l2_error": 0.10257941106544415,
+      "cosine_similarity": 0.9945890376587456,
+      "n_samples": 220
+    },
+    "applicable": true,
+    "normalized_frobenius_w_discrepancy": 0.9485841727267269
+  },
+  "interpolation": {
+    "rule": "output_space_linear_interpolation",
+    "lambda": 0.5,
+    "exploratory_continuous_generator_analysis": false,
+    "metrics_vs_true_interior_magnitude": {
+      "r2": 0.5697270660375962,
+      "mse": 0.19347022473812103,
+      "relative_l2_error": 0.23105197136037783,
+      "cosine_similarity": 0.9717464350864501,
+      "n_samples": 220
+    },
+    "applicable": true
+  }
+}

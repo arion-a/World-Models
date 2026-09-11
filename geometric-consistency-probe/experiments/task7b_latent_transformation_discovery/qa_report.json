@@ -1,0 +1,35 @@
+{
+  "passed": true,
+  "layers": [
+    {
+      "name": "All required artifacts exist on disk",
+      "passed": true,
+      "details": []
+    },
+    {
+      "name": "Historical Task 7 / audit / diagnostic artifacts untouched",
+      "passed": true,
+      "details": []
+    },
+    {
+      "name": "Stage 1 data-validation QA passed",
+      "passed": true,
+      "details": []
+    },
+    {
+      "name": "Sealed test artifact is clean and complete",
+      "passed": true,
+      "details": []
+    },
+    {
+      "name": "Every predeclared structure test resolved (result or NOT_APPLICABLE)",
+      "passed": true,
+      "details": []
+    },
+    {
+      "name": "Full repo test suite passes (`pytest -m \"not slow\"`)",
+      "passed": true,
+      "details": []
+    }
+  ]
+}
