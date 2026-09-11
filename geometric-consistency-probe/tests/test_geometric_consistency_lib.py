@@ -13,6 +13,7 @@ synthetic representation vectors.
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -192,6 +193,44 @@ def test_pixel_diff_stats_computes_mean_absolute_difference(tmp_path, monkeypatc
     assert len(stats["per_scene_mean_abs_pixel_diff"]) == 2
 
 
+# --- encode_all_pairs_pooled / build_pixel_baseline_encoder (Task 10) ------
+
+
+def test_encode_all_pairs_pooled_only_reads_rendered_rgb_never_scene_state(monkeypatch):
+    """Task 10 leakage check: the generic pooled-encoding helper used for
+    the pixel-statistics/random-encoder baselines must call `encode_fn`
+    on rendered RGB arrays only -- never touch the SceneState objects it
+    is also handed (research/RESEARCH_INVARIANTS.md invariant 7)."""
+    scenes = [_scene(seed=1), _scene(seed=2)]
+    seen_args = []
+
+    def fake_load_pair(pair_dir):
+        orig = np.full((2, 4, 4, 3), 7, dtype=np.uint8)
+        trans = np.full((2, 4, 4, 3), 9, dtype=np.uint8)
+        return {"original": (None, orig, None, None), "transformed": (None, trans, None, None)}
+
+    monkeypatch.setattr(gclib, "load_pair", fake_load_pair)
+
+    def encode_fn(rgb):
+        seen_args.append(rgb)
+        assert isinstance(rgb, np.ndarray)  # never a SceneState or a path
+        return rgb.astype(np.float32).mean(axis=(0, 1, 2), keepdims=False)  # (3,)
+
+    reps = gclib.encode_all_pairs_pooled(scenes, Path("unused_dir"), encode_fn)
+    assert set(reps.keys()) == {s.scene_id for s in scenes}
+    assert len(seen_args) == 2 * len(scenes)  # original + transformed per scene
+    for scene in scenes:
+        assert reps[scene.scene_id]["Z"].shape == (3,)
+        assert reps[scene.scene_id]["Z_prime"].shape == (3,)
+
+
+def test_build_pixel_baseline_encoder_returns_the_scaffolded_pixel_baseline():
+    from encoders.pixel_baseline import PixelStatisticsBaseline
+
+    enc = gclib.build_pixel_baseline_encoder()
+    assert isinstance(enc, PixelStatisticsBaseline)
+
+
 # --- evaluate_transform (synthetic Z arrays, no torch needed) --------------
 
 
@@ -209,6 +248,71 @@ def test_evaluate_transform_returns_all_required_keys_and_finite_values():
         assert set(method_metrics.keys()) == {"r2", "mean_cosine_similarity", "mean_relative_l2_error"}
         for value in method_metrics.values():
             assert np.isfinite(value)
+
+
+def test_evaluate_transform_without_pixel_random_args_matches_core_three_directly():
+    """Task 10 parity requirement: evaluate_transform's original 4-key
+    behavior (used by every pre-Task-10 caller: Task 6/7's own scripts,
+    the Task 7 forensic-audit scripts) must be bit-identical after the
+    Task 10 refactor -- checked by reproducing it via
+    baselines.run_baselines_core_three directly.
+    """
+    from baselines.run_all_baselines import run_baselines_core_three
+
+    rng = np.random.default_rng(1)
+    Z_train = rng.normal(size=(20, 8))
+    Zp_train = Z_train + rng.normal(scale=0.1, size=(20, 8))
+    Z_test = rng.normal(size=(5, 8))
+    Zp_test = Z_test + rng.normal(scale=0.1, size=(5, 8))
+
+    block = gclib.evaluate_transform(
+        "camera_rotation", Z_train, Zp_train, Z_test, Zp_test, ridge_alpha=10.0, shuffled_pairing_seed=0
+    )
+    core = run_baselines_core_three("camera_rotation", Z_train, Zp_train, Z_test, Zp_test, alpha=10.0, seed=0)
+
+    assert block["persistence_baseline"]["r2"] == core["persistence"].r2
+    assert block["mean_baseline"]["r2"] == core["mean"].r2
+    assert block["random_pair_control"]["r2"] == core["shuffled_pairing"].r2
+
+
+def test_evaluate_transform_with_pixel_and_random_args_adds_two_more_baselines():
+    rng = np.random.default_rng(2)
+    Z_train = rng.normal(size=(20, 8))
+    Zp_train = Z_train + rng.normal(scale=0.1, size=(20, 8))
+    Z_test = rng.normal(size=(5, 8))
+    Zp_test = Z_test + rng.normal(scale=0.1, size=(5, 8))
+    pixel = {k: rng.normal(size=s) for k, s in [("train", (20, 3)), ("ptrain", (20, 3)), ("test", (5, 3)), ("ptest", (5, 3))]}
+    rand = {k: rng.normal(size=s) for k, s in [("train", (20, 3)), ("ptrain", (20, 3)), ("test", (5, 3)), ("ptest", (5, 3))]}
+
+    block = gclib.evaluate_transform(
+        "camera_rotation", Z_train, Zp_train, Z_test, Zp_test, ridge_alpha=10.0, shuffled_pairing_seed=0,
+        pixel_Z_train=pixel["train"], pixel_Zp_train=pixel["ptrain"], pixel_Z_test=pixel["test"], pixel_Zp_test=pixel["ptest"],
+        random_Z_train=rand["train"], random_Zp_train=rand["ptrain"], random_Z_test=rand["test"], random_Zp_test=rand["ptest"],
+    )
+    assert set(block.keys()) == {
+        "learned_W_T", "persistence_baseline", "mean_baseline", "random_pair_control",
+        "pixel_statistics_baseline", "random_encoder_baseline",
+    }
+    for method_metrics in block.values():
+        for value in method_metrics.values():
+            assert np.isfinite(value)
+
+
+def test_evaluate_transform_rejects_a_partial_pixel_random_arg_set():
+    """No silent skip: supplying only SOME of the eight pixel_*/random_*
+    arrays must raise, never quietly fall back to the 4-key result."""
+    rng = np.random.default_rng(3)
+    Z_train = rng.normal(size=(20, 8))
+    Zp_train = Z_train + rng.normal(scale=0.1, size=(20, 8))
+    Z_test = rng.normal(size=(5, 8))
+    Zp_test = Z_test + rng.normal(scale=0.1, size=(5, 8))
+    pixel_Z_train = rng.normal(size=(20, 3))
+
+    with pytest.raises(ValueError):
+        gclib.evaluate_transform(
+            "camera_rotation", Z_train, Zp_train, Z_test, Zp_test, ridge_alpha=10.0, shuffled_pairing_seed=0,
+            pixel_Z_train=pixel_Z_train,
+        )
 
 
 # --- provenance helpers -------------------------------------------------

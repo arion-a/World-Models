@@ -54,6 +54,7 @@ import yaml
 from sklearn.linear_model import Ridge
 
 import experiments.geometric_consistency_lib as gclib
+from baselines.run_all_baselines import run_probe_baselines
 from generation import state_features
 from generation.ground_truth import load_ground_truth
 from generation.scene import SceneState
@@ -346,14 +347,19 @@ def evaluate_variable(variable: str, arrays: dict, ridge_alpha: float, shuffled_
     real_pred = _fit_and_predict(Z_train, y_train, Z_test, ridge_alpha)
     real_block = _block(real_pred)
 
-    # Shuffled-label control: identical probe, scene-shuffled train labels.
+    # Shuffled-label control + mean-prediction baseline: Task 10's
+    # consolidated baselines.run_all_baselines.run_probe_baselines
+    # (same math as before the Task 10 refactor -- see that function's
+    # docstring; this call site owns generating the permutation and the
+    # fit+predict step, run_probe_baselines only broadcasts/applies them).
     perm = shuffled_label_permutation(len(y_train), shuffled_label_seed)
-    shuffled_pred = _fit_and_predict(Z_train, y_train[perm], Z_test, ridge_alpha)
-    shuffled_block = _block(shuffled_pred)
-
-    # Mean-prediction baseline: y_hat = mean(y_train), ignores Z entirely.
-    mean_pred = np.broadcast_to(y_train.mean(axis=0), y_test.shape)
-    mean_block = _block(mean_pred)
+    probe_baselines = run_probe_baselines(
+        Z_train, y_train, Z_test, y_test,
+        predict_fn=lambda zt, yt, zte: _fit_and_predict(zt, yt, zte, ridge_alpha),
+        permutation=perm,
+    )
+    shuffled_block = _block(probe_baselines["shuffled_label"])
+    mean_block = _block(probe_baselines["mean"])
 
     label_diversity = {
         "min": float(np.min(raw_train.tolist() + raw_test.tolist()) if raw_train.ndim == 1 else np.min(np.vstack([raw_train, raw_test]))),

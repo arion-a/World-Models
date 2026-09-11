@@ -27,9 +27,7 @@ from pathlib import Path
 
 import numpy as np
 
-from baselines.identity_baseline import evaluate_identity_baseline
-from baselines.mean_baseline import evaluate_mean_baseline
-from baselines.shuffled_pairing_baseline import evaluate_shuffled_pairing_baseline
+from baselines.run_all_baselines import run_all_baselines, run_baselines_core_three
 from generation.scene import SceneState
 from generation.scene_sampler import SceneSamplerConfig, sample_scene
 from metrics.equivariance import evaluate_equivariance
@@ -288,15 +286,57 @@ def encode_all_pairs(scenes: list[SceneState], out_dir: Path, encoder) -> dict[s
     """
     from encoders.vjepa import mean_pool
 
+    return encode_all_pairs_pooled(scenes, out_dir, lambda video: mean_pool(encoder.encode(video)))
+
+
+def encode_all_pairs_pooled(
+    scenes: list[SceneState], out_dir: Path, encode_fn
+) -> dict[str, dict[str, np.ndarray]]:
+    """Like `encode_all_pairs`, generalized to any already-pooled
+    `encode_fn(rgb: np.ndarray) -> (D,) vector` -- used by Task 10's
+    pixel-statistics (`encoders.pixel_baseline.PixelStatisticsBaseline.
+    encode_video`) and randomly-initialized-encoder
+    (`mean_pool . VJEPAEncoder(pretrained=False).encode`) baselines, so
+    they read the SAME rendered `rgb.npy` arrays the primary encoder
+    used -- never ground-truth `SceneState` (research/
+    RESEARCH_INVARIANTS.md invariant 7; Task 10's "no baseline may
+    receive privileged ground-truth information").
+    """
     reps: dict[str, dict[str, np.ndarray]] = {}
     for scene in scenes:
         loaded = load_pair(out_dir / scene.scene_id)
         _, orig_rgb, _, _ = loaded["original"]
         _, trans_rgb, _, _ = loaded["transformed"]
-        z = mean_pool(encoder.encode(orig_rgb))
-        z_prime = mean_pool(encoder.encode(trans_rgb))
-        reps[scene.scene_id] = {"Z": z, "Z_prime": z_prime}
+        reps[scene.scene_id] = {"Z": encode_fn(orig_rgb), "Z_prime": encode_fn(trans_rgb)}
     return reps
+
+
+def build_pixel_baseline_encoder():
+    """Task 10's non-learned pixel-statistics baseline encoder
+    (DESIGN.md Sec 12 item 3) -- `encoders/pixel_baseline.py`, inspected
+    and reused unmodified, not reimplemented.
+    """
+    from encoders.pixel_baseline import PixelStatisticsBaseline
+
+    return PixelStatisticsBaseline()
+
+
+def build_random_encoder(checkpoint: str | None, device: str | None, fallback_seed: int):
+    """Task 10's matched-architecture, randomly-initialized encoder
+    baseline (DESIGN.md Sec 12 item 4) -- the SAME `VJEPAEncoder` class
+    the primary encoder uses, `pretrained=False`, which builds the
+    identical architecture (`VITL16_CONFIG_KWARGS`) with fresh, seeded
+    (hence reproducible) random weights and never touches the network
+    (no `from_pretrained` call on this path -- see `encoders/vjepa.py`).
+    """
+    from encoders.vjepa import DEFAULT_CHECKPOINT, VJEPAEncoder
+
+    return VJEPAEncoder(
+        checkpoint=checkpoint or DEFAULT_CHECKPOINT,
+        pretrained=False,
+        device=device,
+        fallback_seed=fallback_seed,
+    )
 
 
 def pixel_diff_stats(scenes: list[SceneState], out_dir: Path) -> dict:
@@ -356,6 +396,14 @@ def build_full_arrays(scenes: list[SceneState], reps: dict[str, dict[str, np.nda
 # --- fit W_T + evaluate + the three required controls, one transform -------
 
 
+def _metrics_dict(result) -> dict:
+    return {
+        "r2": result.r2,
+        "mean_cosine_similarity": result.mean_cosine_similarity,
+        "mean_relative_l2_error": result.mean_relative_l2_error,
+    }
+
+
 def evaluate_transform(
     transform_name: str,
     Z_train: np.ndarray,
@@ -364,35 +412,81 @@ def evaluate_transform(
     Zp_test: np.ndarray,
     ridge_alpha: float,
     shuffled_pairing_seed: int,
+    *,
+    pixel_Z_train: np.ndarray | None = None,
+    pixel_Zp_train: np.ndarray | None = None,
+    pixel_Z_test: np.ndarray | None = None,
+    pixel_Zp_test: np.ndarray | None = None,
+    random_Z_train: np.ndarray | None = None,
+    random_Zp_train: np.ndarray | None = None,
+    random_Z_test: np.ndarray | None = None,
+    random_Zp_test: np.ndarray | None = None,
 ) -> dict:
+    """Fit+evaluate the primary encoder's learned W_T, plus Task 10's
+    consolidated baseline framework (`baselines.run_all_baselines`).
+
+    The `pixel_*`/`random_*` arrays are optional: when ALL EIGHT are
+    supplied, this returns the full five-baseline comparison (via
+    `run_all_baselines`, DESIGN.md Sec 12's complete baseline set --
+    required for Task 6/7's flagship `camera_rotation` comparison). When
+    none are supplied, this returns the original three required
+    controls only (via `run_baselines_core_three`) -- unchanged
+    call signature/behavior for every pre-Task-10 caller (Task 6/7's own
+    scripts pre-refactor, `tests/test_geometric_consistency_lib.py`, the
+    Task 7 forensic-audit scripts), with bit-identical numbers (same
+    underlying baseline functions, same arguments). Supplying only SOME
+    of the eight `pixel_*`/`random_*` arrays raises -- a partial
+    baseline set would be exactly the "missing baseline silently
+    skipped" failure mode Task 10 exists to prevent.
+    """
     equiv_result, _rho = evaluate_equivariance(transform_name, Z_train, Zp_train, Z_test, Zp_test, alpha=ridge_alpha)
-    persistence_result = evaluate_identity_baseline(transform_name, Z_test, Zp_test)
-    mean_result = evaluate_mean_baseline(transform_name, Zp_train, Zp_test)
-    random_pair_result = evaluate_shuffled_pairing_baseline(
-        transform_name, Z_train, Zp_train, Z_test, Zp_test, alpha=ridge_alpha, seed=shuffled_pairing_seed
-    )
-    return {
+
+    pixel_args = (pixel_Z_train, pixel_Zp_train, pixel_Z_test, pixel_Zp_test)
+    random_args = (random_Z_train, random_Zp_train, random_Z_test, random_Zp_test)
+    supplied = [a is not None for a in pixel_args + random_args]
+    if any(supplied) and not all(supplied):
+        raise ValueError(
+            "evaluate_transform: pixel_*/random_* baseline arrays must be supplied ALL EIGHT together or not at "
+            "all -- a partial set would silently skip one of Task 10's required baselines."
+        )
+
+    result = {
         "learned_W_T": {
             "r2": equiv_result.r2,
             "mean_cosine_similarity": equiv_result.mean_cosine_similarity,
             "mean_relative_l2_error": equiv_result.mean_relative_l2_error,
         },
-        "persistence_baseline": {
-            "r2": persistence_result.r2,
-            "mean_cosine_similarity": persistence_result.mean_cosine_similarity,
-            "mean_relative_l2_error": persistence_result.mean_relative_l2_error,
-        },
-        "mean_baseline": {
-            "r2": mean_result.r2,
-            "mean_cosine_similarity": mean_result.mean_cosine_similarity,
-            "mean_relative_l2_error": mean_result.mean_relative_l2_error,
-        },
-        "random_pair_control": {
-            "r2": random_pair_result.r2,
-            "mean_cosine_similarity": random_pair_result.mean_cosine_similarity,
-            "mean_relative_l2_error": random_pair_result.mean_relative_l2_error,
-        },
     }
+
+    if all(supplied):
+        baselines = run_all_baselines(
+            Z_train,
+            Zp_train,
+            Z_test,
+            Zp_test,
+            transform_name,
+            alpha=ridge_alpha,
+            seed=shuffled_pairing_seed,
+            pixel_Z_train=pixel_Z_train,
+            pixel_Zp_train=pixel_Zp_train,
+            pixel_Z_test=pixel_Z_test,
+            pixel_Zp_test=pixel_Zp_test,
+            random_Z_train=random_Z_train,
+            random_Zp_train=random_Zp_train,
+            random_Z_test=random_Z_test,
+            random_Zp_test=random_Zp_test,
+        )
+        result["pixel_statistics_baseline"] = _metrics_dict(baselines["pixel_statistics"])
+        result["random_encoder_baseline"] = _metrics_dict(baselines["random_encoder"])
+    else:
+        baselines = run_baselines_core_three(
+            transform_name, Z_train, Zp_train, Z_test, Zp_test, alpha=ridge_alpha, seed=shuffled_pairing_seed
+        )
+
+    result["persistence_baseline"] = _metrics_dict(baselines["persistence"])
+    result["mean_baseline"] = _metrics_dict(baselines["mean"])
+    result["random_pair_control"] = _metrics_dict(baselines["shuffled_pairing"])
+    return result
 
 
 # --- provenance / reproducibility helpers -----------------------------------

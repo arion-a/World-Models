@@ -11,12 +11,13 @@
     8,
     9
   ],
-  "status": "READY",
+  "status": "PASSED",
   "attempts": {
     "6": 1,
     "7": 2,
     "8": 1,
-    "9": 1
+    "9": 1,
+    "10": 2
   },
   "commits": {
     "6": "3bc16304b57b4fe8138490b8d554457380ecce64",
@@ -196,6 +197,51 @@
           "details": []
         }
       ]
+    },
+    "10": {
+      "task": 10,
+      "passed": true,
+      "layers": [
+        {
+          "name": "A. SOFTWARE CORRECTNESS",
+          "passed": true,
+          "details": [
+            "test command ['pytest', '-m', 'not slow', '-q'] exited 0"
+          ]
+        },
+        {
+          "name": "B. TASK ACCEPTANCE",
+          "passed": true,
+          "details": []
+        },
+        {
+          "name": "C. SCIENTIFIC VALIDITY",
+          "passed": true,
+          "details": []
+        },
+        {
+          "name": "D. RESEARCH ALIGNMENT",
+          "passed": true,
+          "details": []
+        },
+        {
+          "name": "E. DATA LEAKAGE",
+          "passed": true,
+          "details": [
+            "not applicable to this task (no train/test split declared by spec)"
+          ]
+        },
+        {
+          "name": "F. REPRODUCIBILITY",
+          "passed": true,
+          "details": []
+        },
+        {
+          "name": "G. REGRESSION",
+          "passed": true,
+          "details": []
+        }
+      ]
     }
   },
   "sync": {
@@ -216,6 +262,12 @@
       "path": "/home/user/World-Models/geometric-consistency-probe/tasks/09_appearance_invariance.md",
       "title": "Appearance invariance controls",
       "timestamp": "2026-09-11T14:28:28+00:00"
+    },
+    "10": {
+      "changed": true,
+      "path": "/home/user/World-Models/geometric-consistency-probe/tasks/10_baselines.md",
+      "title": "Baseline framework",
+      "timestamp": "2026-09-11T14:39:52+00:00"
     }
   },
   "blockers": {},
@@ -650,7 +702,79 @@
       "to_status": "READY",
       "task": 9,
       "commit": "8c3a2649a51b2f7884c19be7e87bb428877c0527"
+    },
+    {
+      "event": "sync",
+      "timestamp": "2026-09-11T14:39:52+00:00",
+      "task": 10,
+      "changed": true
+    },
+    {
+      "event": "transition",
+      "timestamp": "2026-09-11T14:39:52+00:00",
+      "from_status": "READY",
+      "to_status": "RUNNING",
+      "task": 10
+    },
+    {
+      "event": "attempt",
+      "timestamp": "2026-09-11T14:39:52+00:00",
+      "task": 10,
+      "attempt": 1
+    },
+    {
+      "event": "transition",
+      "timestamp": "2026-09-11T14:56:59+00:00",
+      "from_status": "RUNNING",
+      "to_status": "QA",
+      "task": 10
+    },
+    {
+      "event": "qa",
+      "timestamp": "2026-09-11T14:59:14+00:00",
+      "task": 10,
+      "passed": false
+    },
+    {
+      "event": "transition",
+      "timestamp": "2026-09-11T14:59:14+00:00",
+      "from_status": "QA",
+      "to_status": "FIXING",
+      "task": 10
+    },
+    {
+      "event": "transition",
+      "timestamp": "2026-09-11T14:59:14+00:00",
+      "from_status": "FIXING",
+      "to_status": "RUNNING",
+      "task": 10
+    },
+    {
+      "event": "attempt",
+      "timestamp": "2026-09-11T14:59:14+00:00",
+      "task": 10,
+      "attempt": 2
+    },
+    {
+      "event": "transition",
+      "timestamp": "2026-09-11T15:17:03+00:00",
+      "from_status": "RUNNING",
+      "to_status": "QA",
+      "task": 10
+    },
+    {
+      "event": "qa",
+      "timestamp": "2026-09-11T15:19:16+00:00",
+      "task": 10,
+      "passed": true
+    },
+    {
+      "event": "transition",
+      "timestamp": "2026-09-11T15:19:16+00:00",
+      "from_status": "QA",
+      "to_status": "PASSED",
+      "task": 10
     }
   ],
-  "updated_at": "2026-09-11T14:35:56+00:00"
+  "updated_at": "2026-09-11T15:19:16+00:00"
 }
