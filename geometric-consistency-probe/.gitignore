@@ -7,3 +7,15 @@ data/
 *.egg-info/
 .DS_Store
 logs/
+
+# Task 7B raw rendered pixel arrays (regeneratable from protocol.json +
+# fast_render.py) and its live stdout log: excluded for the same reason
+# *.npz caches already are project-wide -- reproducible intermediate
+# data, not a required git artifact, and at this task's N=1024/1463-scene
+# scale (~1.6GB projected) committing it while Stage 1 is still actively
+# rendering would mean repeated multi-hundred-MB diffs. The actual
+# required artifacts (protocol.json/md, split_manifest.json,
+# stage1_data_manifest.json, learning curve/selection/sealed-test/
+# structure-test JSON results) are plain JSON and are committed normally.
+experiments/task7b_latent_transformation_discovery/rendered/
+experiments/task7b_latent_transformation_discovery/*.log

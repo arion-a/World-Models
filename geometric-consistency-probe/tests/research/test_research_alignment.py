@@ -117,9 +117,19 @@ def test_at_least_task_6_spec_exists():
 
 
 def test_no_task_spec_files_out_of_declared_range():
+    """NN_name.md (the main Tasks 6-18 pipeline) or NNX_name.md, a single
+    uppercase-letter-suffixed sub-task explicitly scoped as a narrower
+    follow-up to task NN (e.g. tasks/07B_latent_transformation_discovery.md,
+    Task 7B -- has its own separate orchestrator state machine in
+    experiments/task7b_latent_transformation_discovery/state.py, is never
+    advanced by orchestrator/run.py, and orchestrator/sync.py's own
+    tasks_dir.glob(f"{task:02d}_*.md") for task=7 does not match an
+    "07B_..." filename, so this does not collide with or get mistaken for
+    the main pipeline's own Task 7 spec). Still guards against a stray or
+    out-of-range file: the leading digits must name a real task number."""
     for path in TASKS_DIR.glob("*.md"):
-        match = re.match(r"^(\d+)_", path.name)
-        assert match, f"{path.name} does not follow the NN_name.md convention"
+        match = re.match(r"^(\d+)([A-Z]?)_", path.name)
+        assert match, f"{path.name} does not follow the NN_name.md or NNX_name.md convention"
         n = int(match.group(1))
         assert n in TASK_NUMBERS, f"{path.name} has a task number ({n}) outside the declared 6-18 pipeline"
 

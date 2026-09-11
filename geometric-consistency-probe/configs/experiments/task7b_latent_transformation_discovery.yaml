@@ -1,0 +1,74 @@
+# Task 7B config: Discovery of Latent Geometric Transformation Structure.
+#
+# Documents the exact frozen-protocol parameters this task's own module
+# constants define (experiments/task7b_latent_transformation_discovery/
+# data.py and protocol.py) -- the authoritative, machine-checked source
+# of truth is protocol.json (content-hashed, written by
+# protocol.freeze_protocol() at the start of every real run), not this
+# file; this file exists as the required, human-readable config artifact
+# and must be kept in sync with data.py's constants by hand if they ever
+# change (a protocol change after a sealed test exists is refused
+# regardless of what this file says -- see protocol.py's freeze guard).
+#
+# Task 7B is a NEW, independent study: its own freshly-sampled master
+# population, never Task 7's 40 scenes, and never written into
+# state/task_07_result.json or experiments/geometric_consistency/.
+
+transform:
+  family: camera_rotation
+  fixed_elevation_deg: 0.0  # pure single-axis yaw -- verified composition law, tests/test_task7b_composition_law.py
+  magnitudes_deg: [-60.0, -30.0, -20.0, -10.0, 0.0, 10.0, 20.0, 30.0, 60.0]
+  primary_magnitude_deg: 30.0            # used for the Stage 1 learning curve
+  interpolation_reserved_magnitude_deg: 20.0  # never directly fit
+
+encoder:
+  name: VJEPAEncoder
+  checkpoint: facebook/vjepa2-vitl-fpc64-256
+  pretrained: true
+  frozen: true
+  pooling: mean_pool
+  declared_dimension_D: 1024
+  resolution: 128
+  num_frames: 4
+  fps: 4.0
+  fallback_seed: 0
+
+split:
+  train_pool_size: 1024          # == max(n_train_schedule) -- the full pool IS the N=1024 point
+  train_fraction: 0.70
+  val_fraction: 0.15
+  test_fraction: 0.15
+  min_test_scenes: 64
+  base_seed: 0                   # scene sampling + split-permutation seed
+
+n_train_schedule: [64, 128, 256, 512, 1024]
+seeds_per_n: 5
+
+stage2_structure_test_train_size: 256   # bounded subset for compute-budget reasons, see run_stage2_structure_tests.py
+
+model_grid:
+  M0_persistence: {}
+  M1_scalar: {}
+  M2_diagonal:
+    alpha_grid: [0.01, 0.1, 1.0, 10.0, 100.0]
+  M3_low_rank_residual:
+    ranks: [2, 4, 8, 16, 32]
+    alpha_grid: [0.01, 0.1, 1.0, 10.0, 100.0]
+  M4_full_linear:
+    alpha_grid: [1.0, 10.0, 100.0, 300.0, 1000.0, 3000.0]
+  M5_affine:
+    alpha_grid: [1.0, 10.0, 100.0, 300.0, 1000.0, 3000.0]
+  M6_residual_mlp:
+    hidden_sizes: [8, 16, 32]
+    optimizer: Adam
+    max_epochs: 3000
+    early_stopping_patience: 100
+
+selection:
+  rule: "highest mean validation R^2; ties within 0.01 -> fewer parameters, then earlier hierarchy position"
+  stopping_rule: "final two scheduled points differ by <0.02 mean R^2 AND 95% seed-bootstrap CIs overlap"
+
+paths:
+  output_dir: experiments/task7b_latent_transformation_discovery
+  result_path: state/task_07b_result.json
+  protocol_path: experiments/task7b_latent_transformation_discovery/protocol.json

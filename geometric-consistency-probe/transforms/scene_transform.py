@@ -65,6 +65,21 @@ class TransformConfig:
     camera_translation_range: tuple[float, float] = (0.5, 1.5)
     camera_rotation_azimuth_deg_range: tuple[float, float] = (10.0, 35.0)
     camera_rotation_elevation_deg_range: tuple[float, float] = (-10.0, 10.0)
+    # Additive, backward-compatible extension (Task 7B): when set, bypasses
+    # the random range+sign draw below and uses this EXACT signed azimuth
+    # for every scene -- required for Task 7B's magnitude sweep and
+    # algebraic structure tests (composition/inverse/interpolation), which
+    # need a controlled, externally-chosen theta rather than a randomly
+    # signed sample. None (the default) reproduces Task 6/7's original
+    # behavior byte-for-byte. fixed_elevation_deg similarly overrides the
+    # elevation draw -- Task 7B pins it to 0.0 so camera_rotation is a pure
+    # single-axis yaw, the one parameterization whose composition law
+    # (R(a)R(b) = R(a+b)) is exactly guaranteed by orbit_rotation_matrix's
+    # own math (verified numerically in
+    # tests/test_task7b_composition_law.py before any latent-space claim
+    # relies on it), rather than assumed.
+    fixed_azimuth_deg: float | None = None
+    fixed_elevation_deg: float | None = None
     object_translation_range: tuple[float, float] = (0.4, 1.0)
     object_rotation_deg_range: tuple[float, float] = (30.0, 150.0)
     light_energy_scale_range: tuple[float, float] = (0.3, 2.5)
@@ -156,8 +171,17 @@ def apply_camera_translation(scene: SceneState, cfg: TransformConfig) -> tuple[S
 
 def apply_camera_rotation(scene: SceneState, cfg: TransformConfig) -> tuple[SceneState, dict]:
     rng = _rng_for(scene, "camera_rotation")
+    # rng draws happen unconditionally (even when a fixed value overrides
+    # the result) so that a scene's random stream position is identical
+    # whether or not fixed_azimuth_deg/fixed_elevation_deg are set --
+    # avoids the fixed-magnitude path silently perturbing any OTHER
+    # transform's independent rng stream for the same scene.
     az_deg = float(rng.uniform(*cfg.camera_rotation_azimuth_deg_range)) * rng.choice([-1.0, 1.0])
     el_deg = float(rng.uniform(*cfg.camera_rotation_elevation_deg_range))
+    if cfg.fixed_azimuth_deg is not None:
+        az_deg = float(cfg.fixed_azimuth_deg)
+    if cfg.fixed_elevation_deg is not None:
+        el_deg = float(cfg.fixed_elevation_deg)
     pivot = np.zeros(3)
     old_position = np.array(scene.camera.position)
 
