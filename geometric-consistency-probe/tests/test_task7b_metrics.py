@@ -9,6 +9,7 @@ import pytest
 from experiments.task7b_latent_transformation_discovery.metrics import (
     UNDEFINED,
     bootstrap_ci,
+    bootstrap_ci_over_scenes,
     cosine_similarity,
     evaluate,
     mse,
@@ -97,3 +98,43 @@ def test_bootstrap_ci_handles_all_undefined_gracefully():
     result = bootstrap_ci([UNDEFINED, UNDEFINED], n_resamples=100, seed=0)
     assert result["mean"] == UNDEFINED
     assert result["n"] == 0
+
+
+def test_per_sample_r2_is_always_undefined_this_is_why_scene_resampling_exists():
+    """Documents the exact bug bootstrap_ci_over_scenes was added to fix:
+    slicing a single row and calling multi_output_r2 on it can NEVER
+    produce a numeric value, for any pred/target, because a 1-sample
+    baseline mean always equals that sample -> ss_tot==0 identically."""
+    rng = np.random.default_rng(0)
+    pred, target = rng.normal(size=(10, 5)), rng.normal(size=(10, 5))
+    for i in range(10):
+        assert multi_output_r2(pred[i : i + 1], target[i : i + 1]) == UNDEFINED
+
+
+def test_bootstrap_ci_over_scenes_recovers_high_r2_for_a_good_model():
+    rng = np.random.default_rng(0)
+    target = rng.normal(size=(100, 8))
+    pred = target + rng.normal(size=(100, 8)) * 0.01  # near-perfect
+    result = bootstrap_ci_over_scenes(pred, target, n_resamples=300, seed=0)
+    assert result["point"] > 0.99
+    assert result["low"] <= result["mean"] <= result["high"]
+    assert result["n_resamples_defined"] == 300
+
+
+def test_bootstrap_ci_over_scenes_matches_point_estimate_on_average():
+    rng = np.random.default_rng(1)
+    target = rng.normal(size=(200, 4))
+    pred = target * 0.6 + rng.normal(size=(200, 4)) * 0.5
+    result = bootstrap_ci_over_scenes(pred, target, n_resamples=1000, seed=0)
+    point = multi_output_r2(pred, target)
+    assert result["point"] == pytest.approx(point)
+    assert abs(result["mean"] - point) < 0.05
+
+
+def test_bootstrap_ci_over_scenes_handles_constant_target_gracefully():
+    target = np.ones((20, 3)) * 5.0
+    pred = np.random.default_rng(0).normal(size=(20, 3))
+    result = bootstrap_ci_over_scenes(pred, target, n_resamples=50, seed=0)
+    assert result["point"] == UNDEFINED
+    assert result["mean"] == UNDEFINED
+    assert result["n_resamples_defined"] == 0

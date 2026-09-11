@@ -28,7 +28,7 @@ from pathlib import Path
 import numpy as np
 
 from experiments.task7b_latent_transformation_discovery import learning_curve, models
-from experiments.task7b_latent_transformation_discovery.metrics import bootstrap_ci, evaluate
+from experiments.task7b_latent_transformation_discovery.metrics import bootstrap_ci_over_scenes, evaluate, relative_l2_error, cosine_similarity
 
 OUT_DIR = Path(__file__).resolve().parent
 SEALED_TEST_PATH = OUT_DIR / "sealed_test_result.json"
@@ -73,14 +73,25 @@ def run_sealed_test(
         "control_shuffled_pair": evaluate(shuffled.predict(Z_test), Zp_test).to_dict(),
     }
 
-    # per-scene metrics + bootstrap CI over scenes (contract's explicit
-    # "report per-scene metrics" + "95% bootstrap CIs over scenes")
-    per_scene_r2 = []
+    # Per-scene metrics (contract's explicit "report per-scene metrics"):
+    # relative_l2_error and cosine_similarity are pointwise and well-defined
+    # for a single scene. R^2 is NOT -- multi_output_r2's denominator is a
+    # baseline variance across samples, so on exactly one sample it is
+    # identically zero and the metric is "undefined" for EVERY scene, by
+    # construction, regardless of model quality (an earlier version of
+    # this function tried to report a per-scene R^2 this way; it was
+    # always "undefined", silently producing a useless n=0 bootstrap CI).
+    # The 95% bootstrap CI over scenes for R^2 instead resamples scene
+    # rows and recomputes the SAME set-level R^2 statistic on each
+    # resample -- see metrics.bootstrap_ci_over_scenes.
     pred_test = selected.predict(Z_test)
-    for i, scene_id in enumerate(test_ids):
-        r2_i = evaluate(pred_test[i : i + 1], Zp_test[i : i + 1]).to_dict()["r2"]
-        per_scene_r2.append(r2_i)
-    scene_ci = bootstrap_ci(per_scene_r2, seed=0)
+    per_scene_relative_l2_error = [
+        relative_l2_error(pred_test[i : i + 1], Zp_test[i : i + 1]) for i in range(len(test_ids))
+    ]
+    per_scene_cosine_similarity = [
+        cosine_similarity(pred_test[i : i + 1], Zp_test[i : i + 1]) for i in range(len(test_ids))
+    ]
+    scene_ci = bootstrap_ci_over_scenes(pred_test, Zp_test, seed=0)
 
     result = {
         "task": "7B",
@@ -105,7 +116,15 @@ def run_sealed_test(
             if isinstance(selected_metrics["r2"], (int, float))
             else "undefined"
         ),
-        "per_scene_r2": per_scene_r2,
+        "per_scene_relative_l2_error": per_scene_relative_l2_error,
+        "per_scene_cosine_similarity": per_scene_cosine_similarity,
+        "per_scene_r2_note": (
+            "Per-scene R^2 is not reported: multi_output_r2 on a single sample has a "
+            "zero-variance baseline by construction and is always 'undefined', for any "
+            "model or dataset -- see bootstrap_ci_over_scenes below for the scene-level "
+            "uncertainty on R^2 instead, which resamples scenes and recomputes the "
+            "set-level statistic."
+        ),
         "bootstrap_ci_over_scenes": scene_ci,
         "test_scene_ids": list(test_ids),
         "fit_seconds": time.time() - t0,

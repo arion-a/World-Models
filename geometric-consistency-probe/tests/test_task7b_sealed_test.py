@@ -59,12 +59,21 @@ def test_sealed_test_force_rerun_is_available_but_explicit(tmp_path, monkeypatch
 
 
 def test_sealed_test_reports_per_scene_metrics_and_ci(tmp_path, monkeypatch):
+    """R^2 cannot be computed per single scene (a 1-sample baseline mean
+    is always itself, so ss_tot==0 identically -- see
+    tests/test_task7b_metrics.py::test_per_sample_r2_is_always_undefined_this_is_why_scene_resampling_exists).
+    Per-scene reporting therefore uses relative_l2_error/cosine_similarity
+    (both well-defined per sample); the R^2 uncertainty is instead a
+    scene-resampled bootstrap CI on the set-level statistic."""
     monkeypatch.setattr(sealed_test, "SEALED_TEST_PATH", tmp_path / "sealed_test_result.json")
     Z, Zp, all_ids = _synthetic_representations(70, D=6, seed=3)
     train_ids, val_ids, test_ids = all_ids[:40], all_ids[40:50], all_ids[50:]
     result = sealed_test.run_sealed_test("M5_affine", {"alpha": 1.0}, train_ids, val_ids, test_ids, Z, Zp, seed=0)
-    assert len(result["per_scene_r2"]) == len(test_ids)
+    assert len(result["per_scene_relative_l2_error"]) == len(test_ids)
+    assert len(result["per_scene_cosine_similarity"]) == len(test_ids)
     assert "mean" in result["bootstrap_ci_over_scenes"]
+    assert "point" in result["bootstrap_ci_over_scenes"]
+    assert result["bootstrap_ci_over_scenes"]["point"] == pytest.approx(result["selected_config_test_metrics"]["r2"])
 
 
 def test_sealed_test_result_file_is_valid_json(tmp_path, monkeypatch):

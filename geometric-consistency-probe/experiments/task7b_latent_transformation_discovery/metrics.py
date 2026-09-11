@@ -88,10 +88,18 @@ def evaluate(pred: np.ndarray, target: np.ndarray) -> MetricBundle:
 def bootstrap_ci(
     values: list[float], n_resamples: int = 2000, ci: float = 0.95, seed: int = 0
 ) -> dict:
-    """95% bootstrap CI (percentile method) over a list of per-seed (or
-    per-scene) scalar metric values. `values` must exclude any
+    """95% bootstrap CI (percentile method) over a list of ALREADY-COMPUTED,
+    independent scalar point estimates -- e.g. one R^2 value per seed
+    (learning_curve.aggregate_over_seeds's use). `values` must exclude any
     "undefined" entries (caller's responsibility -- an "undefined" R^2 has
-    no numeric value to bootstrap)."""
+    no numeric value to bootstrap).
+
+    NOT for per-scene R^2 values: multi_output_r2 on a single sample is
+    mathematically always "undefined" (its own baseline mean equals
+    itself, so ss_tot==0 identically) -- there is no such thing as a
+    valid "per-scene R^2" to resample here. Use bootstrap_ci_over_scenes
+    below instead, which resamples SCENES and recomputes the multi-output
+    metric on each resampled set."""
     arr = np.asarray([v for v in values if isinstance(v, (int, float))], dtype=np.float64)
     if len(arr) == 0:
         return {"mean": UNDEFINED, "low": UNDEFINED, "high": UNDEFINED, "n": 0}
@@ -100,3 +108,34 @@ def bootstrap_ci(
     alpha = (1.0 - ci) / 2
     low, high = np.quantile(resample_means, [alpha, 1 - alpha])
     return {"mean": float(arr.mean()), "low": float(low), "high": float(high), "n": int(len(arr))}
+
+
+def bootstrap_ci_over_scenes(
+    pred: np.ndarray, target: np.ndarray, n_resamples: int = 2000, ci: float = 0.95, seed: int = 0,
+) -> dict:
+    """95% bootstrap CI over SCENES for the multi-output R^2 metric
+    (contract Sec. 3's "95% bootstrap CIs over seeds/scenes"). Resamples
+    scene rows (with replacement) and recomputes multi_output_r2 on each
+    resampled (pred, target) set -- unlike a per-scene R^2 (which cannot
+    exist: a single-sample R^2 always has a zero-variance baseline, hence
+    always "undefined"), this recomputes the SAME set-level statistic
+    reported as the point estimate, just over resampled scene sets, which
+    is the standard, well-defined way to bootstrap a metric that requires
+    more than one sample."""
+    pred = np.asarray(pred, dtype=np.float64)
+    target = np.asarray(target, dtype=np.float64)
+    n = target.shape[0]
+    point = multi_output_r2(pred, target)
+    rng = np.random.default_rng(seed)
+    resampled = []
+    for _ in range(n_resamples):
+        idx = rng.integers(0, n, size=n)
+        v = multi_output_r2(pred[idx], target[idx])
+        if isinstance(v, (int, float)):
+            resampled.append(v)
+    if not resampled:
+        return {"point": point, "mean": UNDEFINED, "low": UNDEFINED, "high": UNDEFINED, "n_resamples_defined": 0}
+    arr = np.asarray(resampled, dtype=np.float64)
+    alpha = (1.0 - ci) / 2
+    low, high = np.quantile(arr, [alpha, 1 - alpha])
+    return {"point": point, "mean": float(arr.mean()), "low": float(low), "high": float(high), "n_resamples_defined": int(len(arr))}

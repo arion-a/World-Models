@@ -1,0 +1,162 @@
+{
+  "final_n_train": 1024,
+  "curve_status": "NOT_STABILIZED",
+  "selected_model_key": "M4_full_linear",
+  "selected_hyperparams": {
+    "alpha": 100.0
+  },
+  "selected_n_params": 1048576,
+  "selected_seed": 1,
+  "selection_rule": "At each N, choose the candidate/hyperparameter combo with highest mean VALIDATION R^2. Ties within 0.01 -> lower parameter count wins, then earlier position in the M0-M6 hierarchy.",
+  "all_candidates_at_final_n_across_seeds": [
+    {
+      "seed": 1,
+      "best_key": "M4_full_linear::{\"alpha\": 100.0}",
+      "best_entry": {
+        "model_key": "M4_full_linear",
+        "hyperparams": {
+          "alpha": 100.0
+        },
+        "n_params": 1048576,
+        "status": "ok",
+        "val_metrics": {
+          "r2": 0.5618687817109211,
+          "mse": 0.20907001197338104,
+          "relative_l2_error": 0.23918706216026198,
+          "cosine_similarity": 0.9696028564398083,
+          "n_samples": 219
+        },
+        "fit_seconds": 0.16816496849060059
+      }
+    },
+    {
+      "seed": 2,
+      "best_key": "M4_full_linear::{\"alpha\": 100.0}",
+      "best_entry": {
+        "model_key": "M4_full_linear",
+        "hyperparams": {
+          "alpha": 100.0
+        },
+        "n_params": 1048576,
+        "status": "ok",
+        "val_metrics": {
+          "r2": 0.5618684068793374,
+          "mse": 0.20907019078731537,
+          "relative_l2_error": 0.23918713599478453,
+          "cosine_similarity": 0.9696028105395768,
+          "n_samples": 219
+        },
+        "fit_seconds": 0.12872552871704102
+      }
+    },
+    {
+      "seed": 3,
+      "best_key": "M4_full_linear::{\"alpha\": 100.0}",
+      "best_entry": {
+        "model_key": "M4_full_linear",
+        "hyperparams": {
+          "alpha": 100.0
+        },
+        "n_params": 1048576,
+        "status": "ok",
+        "val_metrics": {
+          "r2": 0.561868248684172,
+          "mse": 0.20907025039196014,
+          "relative_l2_error": 0.2391871991702837,
+          "cosine_similarity": 0.9696027995425918,
+          "n_samples": 219
+        },
+        "fit_seconds": 0.19654488563537598
+      }
+    },
+    {
+      "seed": 0,
+      "best_key": "M4_full_linear::{\"alpha\": 100.0}",
+      "best_entry": {
+        "model_key": "M4_full_linear",
+        "hyperparams": {
+          "alpha": 100.0
+        },
+        "n_params": 1048576,
+        "status": "ok",
+        "val_metrics": {
+          "r2": 0.5618681980910349,
+          "mse": 0.20907029509544373,
+          "relative_l2_error": 0.23918711139175236,
+          "cosine_similarity": 0.9696028053381814,
+          "n_samples": 219
+        },
+        "fit_seconds": 0.183502197265625
+      }
+    },
+    {
+      "seed": 4,
+      "best_key": "M4_full_linear::{\"alpha\": 100.0}",
+      "best_entry": {
+        "model_key": "M4_full_linear",
+        "hyperparams": {
+          "alpha": 100.0
+        },
+        "n_params": 1048576,
+        "status": "ok",
+        "val_metrics": {
+          "r2": 0.5618674399647701,
+          "mse": 0.20907066762447357,
+          "relative_l2_error": 0.23918740609889405,
+          "cosine_similarity": 0.9696027414216053,
+          "n_samples": 219
+        },
+        "fit_seconds": 0.3077974319458008
+      }
+    }
+  ],
+  "rejected_candidates_summary": {
+    "M0_persistence::{}": 0.1708892345990246,
+    "M1_scalar::{}": 0.19235340358774733,
+    "M2_diagonal::{\"alpha\": 0.01}": 0.24626550879311937,
+    "M2_diagonal::{\"alpha\": 0.1}": 0.24626418228134472,
+    "M2_diagonal::{\"alpha\": 1.0}": 0.24624671919070584,
+    "M2_diagonal::{\"alpha\": 10.0}": 0.24573417458200275,
+    "M2_diagonal::{\"alpha\": 100.0}": 0.22936616141435728,
+    "M3_low_rank_r2::{\"alpha\": 0.01, \"r\": 2}": -0.46672610602351683,
+    "M3_low_rank_r2::{\"alpha\": 0.1, \"r\": 2}": 0.04379870917020878,
+    "M3_low_rank_r2::{\"alpha\": 1.0, \"r\": 2}": 0.17428989862056266,
+    "M3_low_rank_r2::{\"alpha\": 10.0, \"r\": 2}": 0.22657720830791317,
+    "M3_low_rank_r2::{\"alpha\": 100.0, \"r\": 2}": 0.2516096979656193,
+    "M3_low_rank_r4::{\"alpha\": 0.01, \"r\": 4}": -0.8330713905790037,
+    "M3_low_rank_r4::{\"alpha\": 0.1, \"r\": 4}": -0.005619659261897558,
+    "M3_low_rank_r4::{\"alpha\": 1.0, \"r\": 4}": 0.2099164955447005,
+    "M3_low_rank_r4::{\"alpha\": 10.0, \"r\": 4}": 0.2917477151206197,
+    "M3_low_rank_r4::{\"alpha\": 100.0, \"r\": 4}": 0.328250627832974,
+    "M3_low_rank_r8::{\"alpha\": 0.01, \"r\": 8}": -1.1643905623804796,
+    "M3_low_rank_r8::{\"alpha\": 0.1, \"r\": 8}": -0.05649453253597292,
+    "M3_low_rank_r8::{\"alpha\": 1.0, \"r\": 8}": 0.24877667662313796,
+    "M3_low_rank_r8::{\"alpha\": 10.0, \"r\": 8}": 0.3668316150432741,
+    "M3_low_rank_r8::{\"alpha\": 100.0, \"r\": 8}": 0.4082924861660867,
+    "M3_low_rank_r16::{\"alpha\": 0.01, \"r\": 16}": -1.510942332539897,
+    "M3_low_rank_r16::{\"alpha\": 0.1, \"r\": 16}": -0.11341484085752329,
+    "M3_low_rank_r16::{\"alpha\": 1.0, \"r\": 16}": 0.2719905607157954,
+    "M3_low_rank_r16::{\"alpha\": 10.0, \"r\": 16}": 0.42077351102258853,
+    "M3_low_rank_r16::{\"alpha\": 100.0, \"r\": 16}": 0.4683253603697608,
+    "M3_low_rank_r32::{\"alpha\": 0.01, \"r\": 32}": -1.8153719398793076,
+    "M3_low_rank_r32::{\"alpha\": 0.1, \"r\": 32}": -0.16074282568318776,
+    "M3_low_rank_r32::{\"alpha\": 1.0, \"r\": 32}": 0.3031968091677516,
+    "M3_low_rank_r32::{\"alpha\": 10.0, \"r\": 32}": 0.46568603351705073,
+    "M3_low_rank_r32::{\"alpha\": 100.0, \"r\": 32}": 0.5082710994445037,
+    "M4_full_linear::{\"alpha\": 1.0}": 0.31698326044208125,
+    "M4_full_linear::{\"alpha\": 10.0}": 0.5134147952253376,
+    "M4_full_linear::{\"alpha\": 100.0}": 0.5618687817109211,
+    "M4_full_linear::{\"alpha\": 300.0}": 0.5544580053731306,
+    "M4_full_linear::{\"alpha\": 1000.0}": 0.5283932242098943,
+    "M4_full_linear::{\"alpha\": 3000.0}": 0.48836929479317526,
+    "M5_affine::{\"alpha\": 1.0}": 0.317166279842911,
+    "M5_affine::{\"alpha\": 10.0}": 0.5132494147609288,
+    "M5_affine::{\"alpha\": 100.0}": 0.5616503558397655,
+    "M5_affine::{\"alpha\": 300.0}": 0.554346874850937,
+    "M5_affine::{\"alpha\": 1000.0}": 0.5284177003930184,
+    "M5_affine::{\"alpha\": 3000.0}": 0.48856112472345226,
+    "M6_residual_mlp_h8::{\"h\": 8}": 0.3878035313483862,
+    "M6_residual_mlp_h16::{\"h\": 16}": 0.44679259651858494,
+    "M6_residual_mlp_h32::{\"h\": 32}": 0.4698237809645599
+  }
+}

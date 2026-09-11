@@ -1,5 +1,5 @@
 {
-  "status": "DATA_VALIDATED",
+  "status": "TEST_EVALUATED",
   "protocol_hash": null,
   "history": [
     {
@@ -12,7 +12,26 @@
       "from": "PROTOCOL_FROZEN",
       "to": "DATA_VALIDATED",
       "timestamp": "2026-09-11T10:53:58+00:00"
+    },
+    {
+      "from": "DATA_VALIDATED",
+      "to": "LEARNING_CURVE_COMPLETE",
+      "timestamp": "2026-09-11T11:03:46+00:00",
+      "curve_status": "NOT_STABILIZED",
+      "n_points": 25
+    },
+    {
+      "from": "LEARNING_CURVE_COMPLETE",
+      "to": "MODEL_SELECTED",
+      "timestamp": "2026-09-11T11:03:46+00:00",
+      "selected_model_key": "M4_full_linear"
+    },
+    {
+      "from": "MODEL_SELECTED",
+      "to": "TEST_EVALUATED",
+      "timestamp": "2026-09-11T11:03:46+00:00",
+      "sealed_test_r2": 0.5571096447462491
     }
   ],
-  "updated_at": "2026-09-11T10:53:58+00:00"
+  "updated_at": "2026-09-11T11:03:46+00:00"
 }
