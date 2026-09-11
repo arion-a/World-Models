@@ -122,6 +122,28 @@ wheel; if it's unavailable for your platform, everything except
 rendering (transforms, metrics, probes) still works and is still tested
 via `pytest -m "not slow"`.
 
+### Optional: RunPod GPU pods via MCP
+
+Full-scale runs (`configs/default.yaml` -- 100 scenes, real pretrained
+`facebook/vjepa2-vitl-fpc64-256` weights) are much faster with a GPU than
+on CPU. This repo checks in a project-scoped `.mcp.json` (at the repo
+root, alongside this project directory) that registers RunPod's hosted
+MCP server, so a Claude Code session opened against this repo can
+provision/manage a RunPod GPU pod directly instead of you doing it by
+hand in the RunPod console.
+
+One-time, per machine (the server config is shared via `.mcp.json`, but
+the OAuth login itself is local and not something that can be checked
+into the repo):
+
+```bash
+claude mcp login runpod
+```
+
+This is unrelated to the `bpy` renderer, which stays CPU-bound Blender
+regardless of where it runs -- the GPU pod is only useful for the
+`encoders`/`representations` forward-pass steps.
+
 ## Running the V0 experiment
 
 ```bash
