@@ -45,9 +45,10 @@ ORIGINAL_RENDER_DIR = REPO_ROOT / "experiments" / "geometric_consistency" / "cam
 DIAGNOSTIC_RENDER_DIR = OUT_DIR / "rendered" / "camera_rotation"
 
 TRANSFORM_NAME = "camera_rotation"
-N_TRAIN_TARGETS = [32, 64, 128]  # extended to 256 only if the timed rate allows -- see main()
+N_TRAIN_TARGETS = [32, 64, 128, 256]  # 512 was not attempted -- see diagnostic_report.md's compute-budget note
 SEEDS_PER_N = 5
 RIDGE_ALPHA = 10.0
+Z_CACHE_PATH_TEMPLATE = "z_cache.npz"  # persists encoded reps across runs so extending N_TRAIN_TARGETS never re-encodes
 
 
 def r_squared(pred, target):
@@ -137,11 +138,27 @@ def main():
     Z_cache: dict[str, np.ndarray] = {}
     Zp_cache: dict[str, np.ndarray] = {}
 
+    cache_path = OUT_DIR / Z_CACHE_PATH_TEMPLATE
+    if cache_path.exists():
+        npz = np.load(cache_path)
+        for key in npz.files:
+            if key.startswith("Z__"):
+                Z_cache[key[len("Z__"):]] = npz[key]
+            elif key.startswith("Zp__"):
+                Zp_cache[key[len("Zp__"):]] = npz[key]
+        print(f"Loaded {len(Z_cache)} cached representations from {cache_path}")
+
+    def save_cache():
+        payload = {f"Z__{k}": v for k, v in Z_cache.items()}
+        payload.update({f"Zp__{k}": v for k, v in Zp_cache.items()})
+        np.savez(cache_path, **payload)
+
     # test set first (fixed, small, always needed)
     t0 = time.time()
     for sid in test_ids:
         ensure_scene_rendered_and_encoded(scenes_by_id[sid], transform_cfg, encoder, cfg, Z_cache, Zp_cache)
     print(f"test set ready ({len(test_ids)} scenes) in {time.time() - t0:.0f}s")
+    save_cache()
     Z_test = np.stack([Z_cache[sid] for sid in test_ids])
     Zp_test = np.stack([Zp_cache[sid] for sid in test_ids])
 
@@ -166,6 +183,8 @@ def main():
             for sid in subset_ids:
                 ensure_scene_rendered_and_encoded(scenes_by_id[sid], transform_cfg, encoder, cfg, Z_cache, Zp_cache)
             elapsed = time.time() - t0
+            if elapsed > 1.0:
+                save_cache()
 
             Z_train = np.stack([Z_cache[sid] for sid in subset_ids])
             Zp_train = np.stack([Zp_cache[sid] for sid in subset_ids])

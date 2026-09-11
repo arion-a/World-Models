@@ -1,0 +1,4 @@
+Sampling scene pool: need 264 scenes total (256 train-pool candidates + 8 fixed test).
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Loading weights:   0%|          | 0/587 [00:00<?, ?it/s]Loading weights:  27%|██▋       | 158/587 [00:00<00:00, 1570.09it/s]Loading weights:  54%|█████▍    | 316/587 [00:00<00:00, 1541.25it/s]Loading weights: 100%|██████████| 587/587 [00:00<00:00, 2092.14it/s]
+test set ready (8 scenes) in 24s
