@@ -1,0 +1,35 @@
+{
+  "passed": true,
+  "layers": [
+    {
+      "name": "Scene-level split exclusivity",
+      "passed": true,
+      "details": []
+    },
+    {
+      "name": "Every scene rendered exactly once, scene_id matches directory",
+      "passed": true,
+      "details": []
+    },
+    {
+      "name": "Transform type and magnitude correct for every scene",
+      "passed": true,
+      "details": []
+    },
+    {
+      "name": "Video shape/preprocessing correct (sampled)",
+      "passed": true,
+      "details": []
+    },
+    {
+      "name": "Render determinism (within-clip frame identity, sampled)",
+      "passed": true,
+      "details": []
+    },
+    {
+      "name": "Representation cache covers every scene, correct D, finite",
+      "passed": true,
+      "details": []
+    }
+  ]
+}

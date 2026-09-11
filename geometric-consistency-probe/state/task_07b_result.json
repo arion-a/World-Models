@@ -1,0 +1,18 @@
+{
+  "status": "DATA_VALIDATED",
+  "protocol_hash": null,
+  "history": [
+    {
+      "from": "NOT_STARTED",
+      "to": "PROTOCOL_FROZEN",
+      "timestamp": "2026-09-11T10:53:57+00:00",
+      "protocol_hash": "44bff5c8c1aea7a53f3b97b785ba9eb57dd5ff50b6ff637b847a3c2d7faef3e2"
+    },
+    {
+      "from": "PROTOCOL_FROZEN",
+      "to": "DATA_VALIDATED",
+      "timestamp": "2026-09-11T10:53:58+00:00"
+    }
+  ],
+  "updated_at": "2026-09-11T10:53:58+00:00"
+}
