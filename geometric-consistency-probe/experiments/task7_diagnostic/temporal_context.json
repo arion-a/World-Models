@@ -1,0 +1,49 @@
+{
+  "transform": "camera_rotation",
+  "train_scene_ids": [
+    "scene_0000",
+    "scene_0001",
+    "scene_0002",
+    "scene_0003",
+    "scene_0004",
+    "scene_0006",
+    "scene_0008",
+    "scene_0009",
+    "scene_0010"
+  ],
+  "test_scene_ids": [
+    "scene_0005",
+    "scene_0007",
+    "scene_0014"
+  ],
+  "ridge_alpha": 10.0,
+  "results_by_num_frames": {
+    "4": {
+      "num_frames": 4,
+      "n_train": 9,
+      "n_test": 3,
+      "wall_time_seconds": 45.30099582672119,
+      "learned_W_T_r2": -0.8555455628233768,
+      "learned_W_T_cosine": 0.9086105170424185,
+      "persistence_baseline_r2": -0.029921650886535645
+    },
+    "16": {
+      "num_frames": 16,
+      "n_train": 9,
+      "n_test": 3,
+      "wall_time_seconds": 309.1443166732788,
+      "learned_W_T_r2": -1.0116009277062679,
+      "learned_W_T_cosine": 0.901612353167908,
+      "persistence_baseline_r2": -0.008878707885742188
+    },
+    "32": {
+      "num_frames": 32,
+      "n_train": 9,
+      "n_test": 3,
+      "wall_time_seconds": 667.3564245700836,
+      "learned_W_T_r2": -0.9013308365490911,
+      "learned_W_T_cosine": 0.9045199513312524,
+      "persistence_baseline_r2": -0.014190912246704102
+    }
+  }
+}
