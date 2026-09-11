@@ -9,10 +9,11 @@
     6,
     7
   ],
-  "status": "READY",
+  "status": "PASSED",
   "attempts": {
     "6": 1,
-    "7": 2
+    "7": 2,
+    "8": 1
   },
   "commits": {
     "6": "3bc16304b57b4fe8138490b8d554457380ecce64",
@@ -104,6 +105,49 @@
           "details": []
         }
       ]
+    },
+    "8": {
+      "task": 8,
+      "passed": true,
+      "layers": [
+        {
+          "name": "A. SOFTWARE CORRECTNESS",
+          "passed": true,
+          "details": [
+            "test command ['pytest', '-m', 'not slow', '-q'] exited 0"
+          ]
+        },
+        {
+          "name": "B. TASK ACCEPTANCE",
+          "passed": true,
+          "details": []
+        },
+        {
+          "name": "C. SCIENTIFIC VALIDITY",
+          "passed": true,
+          "details": []
+        },
+        {
+          "name": "D. RESEARCH ALIGNMENT",
+          "passed": true,
+          "details": []
+        },
+        {
+          "name": "E. DATA LEAKAGE",
+          "passed": true,
+          "details": []
+        },
+        {
+          "name": "F. REPRODUCIBILITY",
+          "passed": true,
+          "details": []
+        },
+        {
+          "name": "G. REGRESSION",
+          "passed": true,
+          "details": []
+        }
+      ]
     }
   },
   "sync": {
@@ -112,6 +156,12 @@
       "path": "/home/user/World-Models/geometric-consistency-probe/tasks/07_geometric_consistency.md",
       "title": "Multiple geometric transformations",
       "timestamp": "2026-09-10T22:30:09+00:00"
+    },
+    "8": {
+      "changed": true,
+      "path": "/home/user/World-Models/geometric-consistency-probe/tasks/08_physical_state.md",
+      "title": "Physical-state accessibility",
+      "timestamp": "2026-09-11T12:50:41+00:00"
     }
   },
   "blockers": {},
@@ -341,7 +391,46 @@
       "to_status": "READY",
       "task": 7,
       "commit": "0367ff8ee585d115bece7f9cf2fa440b06129c94"
+    },
+    {
+      "event": "sync",
+      "timestamp": "2026-09-11T12:50:41+00:00",
+      "task": 8,
+      "changed": true
+    },
+    {
+      "event": "transition",
+      "timestamp": "2026-09-11T12:50:41+00:00",
+      "from_status": "READY",
+      "to_status": "RUNNING",
+      "task": 8
+    },
+    {
+      "event": "attempt",
+      "timestamp": "2026-09-11T12:50:41+00:00",
+      "task": 8,
+      "attempt": 1
+    },
+    {
+      "event": "transition",
+      "timestamp": "2026-09-11T13:04:12+00:00",
+      "from_status": "RUNNING",
+      "to_status": "QA",
+      "task": 8
+    },
+    {
+      "event": "qa",
+      "timestamp": "2026-09-11T13:06:23+00:00",
+      "task": 8,
+      "passed": true
+    },
+    {
+      "event": "transition",
+      "timestamp": "2026-09-11T13:06:23+00:00",
+      "from_status": "QA",
+      "to_status": "PASSED",
+      "task": 8
     }
   ],
-  "updated_at": "2026-09-10T23:18:16+00:00"
+  "updated_at": "2026-09-11T13:06:23+00:00"
 }

@@ -1,0 +1,220 @@
+{
+  "task": 8,
+  "implementation_status": "COMPLETE",
+  "scientific_result": "Across the 4 physical-state variables probed (camera_azimuth_deg, camera_elevation_deg, camera_distance, primary_object_position_xy), evaluated with an identical scene set, scene-level train/test split, encoder, pooling, and linear ridge probe: 2/4 variables showed the real probe's held-out R^2 exceeding the best of the required shuffled-label and mean-prediction baselines (camera_elevation_deg, camera_distance). This does NOT confirm the hypothesis as stated (camera azimuth plus at least one additional variable both linearly decodable above baseline) -- a valid negative/mixed result: a low linear-probe score here is evidence the quantity is not LINEARLY accessible under this setup, not evidence it is absent from Z in some non-linearly-decodable form (DESIGN.md Sec 13; tasks/08_physical_state.md's interpretation limits). Reported plainly rather than adjusted (e.g. via a nonlinear probe) to force a positive-looking result.\n\nPer-variable detail:\n- camera_azimuth_deg (sin_cos): real probe R^2=-0.781, angular_error_deg=88.59 did not exceed best of {shuffled-label, mean} baselines R^2=-0.036\n- camera_elevation_deg (raw): real probe R^2=0.227 exceeded best of {shuffled-label, mean} baselines R^2=-0.378\n- camera_distance (raw): real probe R^2=0.349 exceeded best of {shuffled-label, mean} baselines R^2=0.253\n- primary_object_position_xy (raw): real probe R^2=-1.653 did not exceed best of {shuffled-label, mean} baselines R^2=-0.204",
+  "variables_probed": [
+    "camera_azimuth_deg",
+    "camera_elevation_deg",
+    "camera_distance",
+    "primary_object_position_xy"
+  ],
+  "pose_convention": "World frame is right-handed, Z-up (Blender convention; see generation/COORDINATE_SYSTEM.md). camera_azimuth_deg = degrees(atan2(camera.position.y, camera.position.x)), i.e. the angle of the camera's position in the world XY-plane, range (-180, 180]; camera_elevation_deg = degrees(atan2(z, hypot(x, y))); camera_distance = ||camera.position||_2, scene units; primary_object_position_xy = (x, y) of objects[0] (the object always present regardless of per-scene object count), scene units. camera_azimuth_deg is sampled uniformly over the FULL (0, 360) degree range (generation/scene_sampler.py's camera_azimuth_range_deg default), i.e. genuinely wraps around -- it is therefore probed via its (sin, cos) components (sin(radians(azimuth)), cos(radians(azimuth))), decoded back with atan2(sin, cos) only to report an interpretable angular error in degrees. The other three variables are sampled over ranges with no wraparound (elevation (20, 50) deg, distance (6, 8) scene units, object position +-1.6 scene units) and are probed directly as raw scalars/vectors.",
+  "dataset": {
+    "num_scenes": 40,
+    "train_scene_ids": [
+      "scene_0000",
+      "scene_0001",
+      "scene_0002",
+      "scene_0003",
+      "scene_0004",
+      "scene_0006",
+      "scene_0008",
+      "scene_0009",
+      "scene_0010",
+      "scene_0011",
+      "scene_0012",
+      "scene_0013",
+      "scene_0016",
+      "scene_0017",
+      "scene_0018",
+      "scene_0019",
+      "scene_0020",
+      "scene_0021",
+      "scene_0022",
+      "scene_0023",
+      "scene_0024",
+      "scene_0025",
+      "scene_0026",
+      "scene_0027",
+      "scene_0028",
+      "scene_0030",
+      "scene_0032",
+      "scene_0034",
+      "scene_0035",
+      "scene_0036",
+      "scene_0037",
+      "scene_0038"
+    ],
+    "test_scene_ids": [
+      "scene_0005",
+      "scene_0007",
+      "scene_0014",
+      "scene_0015",
+      "scene_0029",
+      "scene_0031",
+      "scene_0033",
+      "scene_0039"
+    ],
+    "train_fraction": 0.8,
+    "base_seed": 0,
+    "reused_task6_7_scene_sampling_convention": true,
+    "render_source": "reused_task7_cache",
+    "render_dir": "experiments/geometric_consistency/camera_rotation"
+  },
+  "encoder": {
+    "name": "VJEPAEncoder",
+    "checkpoint": "facebook/vjepa2-vitl-fpc64-256",
+    "pretrained": true,
+    "frozen": true,
+    "pooling": "mean_pool"
+  },
+  "fitting": {
+    "method": "ridge",
+    "alpha": 10.0
+  },
+  "metrics": {
+    "camera_azimuth_deg": {
+      "probe_encoding": "sin_cos",
+      "target_dim": 2,
+      "real_probe": {
+        "r2": -0.7810913324356079,
+        "mae": 0.7592793703079224,
+        "rmse": 0.9145573377609253,
+        "angular_error_deg": 88.58759511625522
+      },
+      "shuffled_label_control": {
+        "r2": -0.979688286781311,
+        "mae": 0.8120715022087097,
+        "rmse": 0.9641980528831482,
+        "angular_error_deg": 87.17668263506022
+      },
+      "mean_baseline": {
+        "r2": -0.036383748054504395,
+        "mae": 0.5764520764350891,
+        "rmse": 0.6976348161697388,
+        "angular_error_deg": 75.33523030125775
+      },
+      "label_diversity": {
+        "min": -178.7889724006808,
+        "max": 165.959807742752,
+        "std": 103.04668555254051
+      }
+    },
+    "camera_elevation_deg": {
+      "probe_encoding": "raw",
+      "target_dim": 1,
+      "real_probe": {
+        "r2": 0.2272244691848755,
+        "mae": 5.520110130310059,
+        "rmse": 6.45120096206665
+      },
+      "shuffled_label_control": {
+        "r2": -5.342911243438721,
+        "mae": 11.103553771972656,
+        "rmse": 13.880355834960938
+      },
+      "mean_baseline": {
+        "r2": -0.3782508373260498,
+        "mae": 5.4800519943237305,
+        "rmse": 6.986846446990967
+      },
+      "label_diversity": {
+        "min": 20.63981705516903,
+        "max": 49.78224883209778,
+        "std": 8.403783557237595
+      }
+    },
+    "camera_distance": {
+      "probe_encoding": "raw",
+      "target_dim": 1,
+      "real_probe": {
+        "r2": 0.3489624857902527,
+        "mae": 0.5864853262901306,
+        "rmse": 0.7080387473106384
+      },
+      "shuffled_label_control": {
+        "r2": 0.2525542378425598,
+        "mae": 0.5631686449050903,
+        "rmse": 0.6629477739334106
+      },
+      "mean_baseline": {
+        "r2": -0.0052340030670166016,
+        "mae": 0.5507215261459351,
+        "rmse": 0.6037482023239136
+      },
+      "label_diversity": {
+        "min": 6.002399367173657,
+        "max": 7.9821312440827965,
+        "std": 0.5585919883226877
+      }
+    },
+    "primary_object_position_xy": {
+      "probe_encoding": "raw",
+      "target_dim": 2,
+      "real_probe": {
+        "r2": -1.6531763076782227,
+        "mae": 1.001021146774292,
+        "rmse": 1.273315668106079
+      },
+      "shuffled_label_control": {
+        "r2": -1.1823055744171143,
+        "mae": 0.9140196442604065,
+        "rmse": 1.1548107862472534
+      },
+      "mean_baseline": {
+        "r2": -0.2042635679244995,
+        "mae": 0.7178618907928467,
+        "rmse": 0.8578548431396484
+      },
+      "label_diversity": {
+        "min": -1.5990015268325806,
+        "max": 1.5592858791351318,
+        "std": 0.915019409025092
+      }
+    }
+  },
+  "scene_render_alignment_check": {
+    "verified": true,
+    "max_camera_position_abs_diff": 0.0,
+    "tolerance": 0.0001,
+    "note": "Camera position from each scene's own SceneState (used to compute the probe label) compared directly against the camera position recorded in that scene's rendered clip's metadata.json (used to compute Z) -- confirms the label and the representation describe the same physical configuration, not merely the same scene_id."
+  },
+  "comparison_table_markdown": "| variable | encoding | real probe R^2 | shuffled-label R^2 | mean-baseline R^2 |\n|---|---|---|---|---|\n| camera_azimuth_deg | sin_cos | -0.7811 | -0.9797 | -0.0364 |\n| camera_elevation_deg | raw | 0.2272 | -5.3429 | -0.3783 |\n| camera_distance | raw | 0.3490 | 0.2526 | -0.0052 |\n| primary_object_position_xy | raw | -1.6532 | -1.1823 | -0.2043 |\n",
+  "shuffled_label_seed": 0,
+  "tests": {
+    "passed": 578,
+    "failed": 0,
+    "returncode": 0
+  },
+  "artifacts": [
+    "experiments/physical_state/manifest.json",
+    "experiments/physical_state/report.md"
+  ],
+  "config": {
+    "num_scenes": 40,
+    "train_fraction": 0.8,
+    "base_seed": 0,
+    "result_path": "state/task_08_result.json",
+    "reuse_render_dir": "experiments/geometric_consistency/camera_rotation",
+    "own_render_dir": "experiments/physical_state/original_renders",
+    "own_render_transform": "camera_rotation",
+    "resolution": 128,
+    "num_frames": 4,
+    "fps": 4.0,
+    "ridge_alpha": 10.0,
+    "shuffled_label_seed": 0,
+    "num_objects_min": 1,
+    "num_objects_max": 3,
+    "pretrained": true,
+    "checkpoint": "facebook/vjepa2-vitl-fpc64-256",
+    "device": null,
+    "fallback_seed": 0,
+    "alignment_tolerance": 0.0001
+  },
+  "seed": 0,
+  "software_versions": {
+    "python": "3.11.15",
+    "torch": "2.14.0+cu130",
+    "transformers": "5.17.0"
+  }
+}
