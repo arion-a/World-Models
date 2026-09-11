@@ -1,0 +1,192 @@
+{
+  "audit_of": "state/task_07_result.json",
+  "audit_of_checkpoint": "0367ff8ee585",
+  "ordered_by": "user, before allowing the pipeline to proceed to Task 8",
+  "protocol_unchanged": true,
+  "result_json_unchanged": true,
+  "no_result_optimization_performed": true,
+  "reproducibility_check": {
+    "method": "from-scratch re-encoding of all 480 real cached rgb.npy files with a freshly built VJEPAEncoder, re-running the exact same evaluate_transform code, diffed against state/task_07_result.json",
+    "max_absolute_difference_across_all_72_recomputed_numbers": 0.0,
+    "artifact": "reproduction_diff.json"
+  },
+  "findings": [
+    {
+      "id": 1,
+      "section": "Pairing integrity",
+      "classification": "LIKELY_NOT_A_PROBLEM",
+      "evidence": "24 sampled pairs 24/24 internally consistent (scene_id, seed, transform type); extended to all 480 clips (metadata scene_id + transformation.json type both match directory in every case); new test file tests/test_task7_pairing_integrity.py (6 tests) proves scene_id-dict-keyed pairing structurally.",
+      "affected_code": ["experiments/geometric_consistency_lib.py:encode_all_pairs", "experiments/geometric_consistency_lib.py:build_arrays", "transforms/pairs.py:generate_pair", "transforms/pairs.py:load_pair"],
+      "scientific_consequence": "A pairing bug would fully explain a negative result; ruled out.",
+      "confidence": "high",
+      "recommended_action": "None required; keep the new regression test in the suite."
+    },
+    {
+      "id": 2,
+      "section": "Transformation integrity",
+      "classification": "LIKELY_NOT_A_PROBLEM",
+      "evidence": "24 sampled pairs: 0 failures across fixed-variable-unchanged and changed-variable-differs checks (7-18 fixed vars, 1-3 changed vars checked per sample).",
+      "affected_code": ["transforms/scene_transform.py:apply_transform"],
+      "scientific_consequence": "An uncontrolled confound (transform touching undeclared variables) would invalidate the geometric-vs-control comparison; ruled out for the sample checked, and already guarded at render time by verify_transform_ground_truth for all 480.",
+      "confidence": "high",
+      "recommended_action": "None required."
+    },
+    {
+      "id": 3,
+      "section": "Video pair integrity",
+      "classification": "LIKELY_NOT_A_PROBLEM",
+      "evidence": "All 480 clips: single distinct resolution {128}, fps {4.0}, frame_count {4}, dtype {uint8}, shape {(4,128,128,3)}. 0 issues.",
+      "affected_code": ["generation/bpy_renderer.py", "transforms/pairs.py"],
+      "scientific_consequence": "None found.",
+      "confidence": "high",
+      "recommended_action": "None required."
+    },
+    {
+      "id": 4,
+      "section": "Render determinism",
+      "classification": "LIKELY_NOT_A_PROBLEM",
+      "evidence": "Two independent renders of the same scene: bit-identical RGB (max_abs_pixel_diff=0). Original-side rendering bit-identical across all 6 transform folders for all 40 scenes (240-way check).",
+      "affected_code": ["generation/bpy_renderer.py"],
+      "scientific_consequence": "None found.",
+      "confidence": "high",
+      "recommended_action": "Consider explicitly pinning Cycles' RNG seed for future robustness against a Blender-version change, though not required by this finding."
+    },
+    {
+      "id": 5,
+      "section": "Encoder determinism",
+      "classification": "LIKELY_NOT_A_PROBLEM",
+      "evidence": "Same-clip repeat-encode: bit-identical tokens (relative_l2_diff=0.0, cosine=1.0). model.training=False, all params requires_grad=False confirmed on the live model object. Cross-scene cosine (0.495) clearly below same-clip cosine (1.0) -- not collapsed.",
+      "affected_code": ["encoders/vjepa.py:VJEPAEncoder.encode"],
+      "scientific_consequence": "None found for determinism itself.",
+      "confidence": "high",
+      "recommended_action": "None required."
+    },
+    {
+      "id": 6,
+      "section": "Temporal-context mismatch (encoder inspection side finding)",
+      "classification": "MAJOR",
+      "evidence": "Checkpoint config.json: frames_per_clip=64, tubelet_size=2 (32 native temporal tubelets). This project renders 4-frame clips -> 2 temporal tubelets used = 6.25% of native temporal context. Confirmed via transformers source (VJEPA2RopeAttention.get_position_ids computes positions from actual runtime token count, not a fixed buffer) that this does not crash or misindex, only shifts the model far outside its pretraining distribution.",
+      "affected_code": ["encoders/vjepa.py", "transformers/models/vjepa2/modeling_vjepa2.py (upstream, read-only)"],
+      "scientific_consequence": "Plausible, untested contributor to degraded representation quality independent of any code bug.",
+      "confidence": "high that the mismatch exists and does not crash; untested whether it materially changes results",
+      "recommended_action": "Follow-up task: compare against clips closer to the native 64-frame length."
+    },
+    {
+      "id": 7,
+      "section": "Representation statistics",
+      "classification": "MAJOR",
+      "evidence": "Effective rank ~=17-19 of ambient dim 1024 for Z and every Z' (all six transforms). Mean pairwise cosine similarity ~=0.86-0.88 (narrow-cone anisotropy). Transform effect size (mean ||Z'-Z||/||Z||) ranges 0.121-0.308 across transforms -- real, non-negligible. Strong NEGATIVE correlation (r=-0.89) between effect size and learned_W_T test R^2 across the six transforms.",
+      "affected_code": ["encoders/vjepa.py:mean_pool (produces the Z/Z' analyzed)"],
+      "scientific_consequence": "Anisotropy narrows the effective fitting problem to ~20-50 dims, materially informing section 8's revised conclusion. The effect-size/R^2 anti-correlation is itself evidence the transforms' effects on Z are scene-idiosyncratic rather than governed by one shared linear rule -- consistent with a genuine (not artifactual) absence of shared linear equivariance, though this cannot be fully disentangled from the power limitations in findings 6/8/9.",
+      "confidence": "high (full N=40 per transform, exact re-derivation)",
+      "recommended_action": "Report anisotropy and the effect-size/R^2 anti-correlation explicitly alongside any future interpretation of this result."
+    },
+    {
+      "id": 8,
+      "section": "Regression conditioning",
+      "classification": "MAJOR",
+      "evidence": "N_train=32, D=1024 (D^2~=1.05M nominal parameters). Ridge (not OLS) used throughout. Isotropic synthetic recovery test at this exact shape: FAILS (R^2=-0.149) regardless of alpha (0.01 or 10.0 both catastrophic); easy D=8 control: succeeds (R^2=0.998), proving the fitting code itself is correct. Sample-size sweep (isotropic): reliable recovery needs N_train~1000-2000. REVISED test using the REAL anisotropic Z data with a known synthetic linear map at the same N_train=32: recovers with R^2=0.614, cosine=0.978, clearly beating baselines (best baseline R^2=-0.14) -- real headroom below the ~0.95+ ceiling a larger sample would give, but not the total blindness the isotropic-only test would suggest.",
+      "affected_code": ["probes/linear_rep_transform.py", "metrics/equivariance.py", "experiments/geometric_consistency_lib.py:evaluate_transform"],
+      "related_invariant": "research/RESEARCH_INVARIANTS.md invariant 8 (exhaust regularization strength AND pooling choice before treating a linear null as final) -- alpha was swept by this audit and found not to be the limiting factor; pooling choice was never varied by Task 7 itself (see finding 11).",
+      "scientific_consequence": "Real, quantified, but not total, reduction in statistical power -- enough to plausibly miss a partial/weak true effect, not enough to fully explain away the entire observed negative result on its own.",
+      "confidence": "high for both synthetic results (exact code path, directly measured); the real-world implication for V-JEPA's 'true' signal strength is a bound, not a certainty",
+      "recommended_action": "Increase num_scenes substantially in a follow-up task and report a learning curve (R^2 vs N_train) rather than a single N."
+    },
+    {
+      "id": 9,
+      "section": "Normalization",
+      "classification": "LIKELY_NOT_A_PROBLEM",
+      "evidence": "Video preprocessing uses fixed ImageNet constants (no data-dependent fitting). Ridge(fit_intercept=True) centers using training data only (sklearn internal, verified via source/docs). mean_baseline explicitly uses only Z_prime_train (research/RESEARCH_INVARIANTS.md invariant 16, cited in its own docstring). No separate/duplicate normalization step exists anywhere in the pipeline.",
+      "affected_code": ["encoders/vjepa.py:_preprocess", "probes/linear_rep_transform.py", "baselines/mean_baseline.py"],
+      "scientific_consequence": "None found.",
+      "confidence": "high (full code trace)",
+      "recommended_action": "None required."
+    },
+    {
+      "id": 10,
+      "section": "Metric audit",
+      "classification": "LIKELY_NOT_A_PROBLEM",
+      "evidence": "r_squared() uses the evaluation set's own mean for SS_tot (documented, standard for a fixed held-out set) -- verified correct via the identity-baseline synthetic test (R^2=1.0 exactly when Z'=Z) and consistent across all four result blocks (same function called every time). The historical 1D/2D reshape bug documented in metrics/common.py's own docstring is fixed and covered by tests/test_metrics.py.",
+      "affected_code": ["metrics/common.py"],
+      "scientific_consequence": "None found; the R^2 convention (vs. own-mean, not train-mean) is a documented, legitimate choice, not a silent trap for the comparisons made in this report.",
+      "confidence": "high",
+      "recommended_action": "None required; consider a one-line note for readers outside this codebase about the R^2 convention used."
+    },
+    {
+      "id": 11,
+      "section": "Baseline audit",
+      "classification": "LIKELY_NOT_A_PROBLEM",
+      "evidence": "Persistence uses only Z_test (no fitting). Mean uses only Z_prime_train. Random-pair control fits the SAME LinearRepTransform/ridge code on deliberately shuffled train correspondences -- a genuine negative control, not a strawman. All four methods (including learned W_T) share one evaluate_transform call with identical input arrays -- no differential preprocessing.",
+      "affected_code": ["baselines/identity_baseline.py", "baselines/mean_baseline.py", "baselines/shuffled_pairing_baseline.py"],
+      "scientific_consequence": "None found.",
+      "confidence": "high",
+      "recommended_action": "None required."
+    },
+    {
+      "id": 12,
+      "section": "Synthetic sanity tests (Z'=AZ, Z'=Z)",
+      "classification": "LIKELY_NOT_A_PROBLEM",
+      "evidence": "Easy D=8 case: R^2=0.998 recovery. Identity case: persistence baseline R^2=1.0 exactly. See finding 8 for the real-shape and real-Z-anisotropy results.",
+      "affected_code": ["probes/linear_rep_transform.py", "metrics/common.py"],
+      "scientific_consequence": "Confirms the fitting/evaluation code is correct in principle.",
+      "confidence": "high",
+      "recommended_action": "None required."
+    },
+    {
+      "id": 13,
+      "section": "Known-transformation sanity test (Z'=2Z style)",
+      "classification": "LIKELY_NOT_A_PROBLEM",
+      "evidence": "Covered by finding 12/8's linear-recovery tests (a known exact linear map, not literally 2Z but equivalent in kind) -- code correctly recovers known linear maps when the problem is well-determined or when using the real data's actual anisotropic structure.",
+      "affected_code": ["probes/linear_rep_transform.py"],
+      "scientific_consequence": "None found.",
+      "confidence": "high",
+      "recommended_action": "None required."
+    },
+    {
+      "id": 14,
+      "section": "Pooled vs. dense representation",
+      "classification": "MAJOR",
+      "evidence": "mean_pool collapses the full (512, 1024) token sequence (2 temporal tubelets x 16x16 spatial patches) to (1024,) via an unweighted mean over all 512 positions together. 511/512 tokens' individual spatial/temporal identity is discarded.",
+      "affected_code": ["encoders/vjepa.py:mean_pool", "experiments/geometric_consistency_lib.py:encode_all_pairs"],
+      "scientific_consequence": "A geometric transform's dominant effect (content rearranging across the spatial grid) is specifically the kind of signal mean-pooling is insensitive to -- a real, specific, non-generic methodological limitation, not a claim that pooling is simply 'wrong.'",
+      "confidence": "high that pooling discards this information; untested whether it changes Task 7's conclusion (out of scope for this audit)",
+      "recommended_action": "Follow-up task: a pre-registered comparison against a spatially/temporally-structure-preserving representation, not a re-run of Task 7 to seek a better number."
+    },
+    {
+      "id": 15,
+      "section": "Training sample size",
+      "classification": "MAJOR",
+      "evidence": "N_train=32, N_test=8, D=1024 -- confirmed against both state/task_07_result.json and the 40 scene directories on disk.",
+      "affected_code": [],
+      "scientific_consequence": "Same root cause as finding 8; stated separately per the audit's required section structure.",
+      "confidence": "high",
+      "recommended_action": "Same as finding 8."
+    }
+  ],
+  "blocker_count": 0,
+  "major_count": 5,
+  "minor_count": 0,
+  "likely_not_a_problem_count": 10,
+  "final_decision": "C_INCONCLUSIVE",
+  "final_decision_rationale": "No BLOCKER was found: pairing, transform application, video integrity, render determinism, encoder determinism, normalization, metrics, and baselines all verified correct, and a from-scratch reproduction matched the recorded numbers exactly (max abs diff 0.0 across all 72 values). This rules out A confident 'B: implementation/methodology failure invalidates the result' verdict. However, four MAJOR, quantified power/representational limitations (temporal-context mismatch, representation anisotropy, regression conditioning at N=32/D=1024, and mean-pooling's loss of spatial/temporal structure) were found and were not accounted for or caveated in the original result. The regression-conditioning finding is nuanced: a synthetic test using the REAL anisotropic Z data (not an idealized isotropic assumption) showed this exact N=32 protocol CAN detect a strong known linear signal (R^2=0.614), so the pipeline is not blind to any real effect -- but it also falls well short of the ~0.95+ recovery ceiling more data would give, leaving real headroom for a genuine but weaker/partial effect to go undetected. This is why neither 'A: valid negative result' (would overstate confidence given the demonstrated power limits) nor 'B: methodology failure' (no defect was found; the pipeline is proven correct via bit-exact reproduction and synthetic ground-truth recovery) is fully justified.",
+  "recommended_next_action": "A follow-up task (not performed here, and not a re-run of Task 7 to obtain a different number) that (a) substantially increases num_scenes and reports a learning curve (R^2 vs N_train), and (b) as a separate pre-registered comparison, evaluates equivariance on a spatially/temporally-structure-preserving representation alongside the pooled one.",
+  "artifacts": [
+    "audit_report.md",
+    "pairing_integrity_sample.json",
+    "transform_integrity_sample.json",
+    "original_render_cross_transform_identity.json",
+    "render_determinism.json",
+    "encoder_determinism.json",
+    "synthetic_sanity.json",
+    "sample_size_threshold.json",
+    "real_Z_synthetic_A_test.json",
+    "representation_statistics.json",
+    "reproduction_diff.json",
+    "recomputed_results.json",
+    "recomputed_representations.npz",
+    "full_reproduction_stdout.log",
+    "../../tests/test_task7_pairing_integrity.py"
+  ],
+  "state_task_07_result_json_modified": false,
+  "task_8_may_proceed": "left to the user's explicit decision -- this audit does not itself unblock or advance the orchestrator; state/progress.json was not touched"
+}

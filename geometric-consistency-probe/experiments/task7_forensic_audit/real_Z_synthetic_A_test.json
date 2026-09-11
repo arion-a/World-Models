@@ -1,0 +1,22 @@
+{
+  "learned_W_T": {
+    "r2": 0.6136329087266879,
+    "mean_cosine_similarity": 0.9784272105059669,
+    "mean_relative_l2_error": 0.205035831816924
+  },
+  "persistence_baseline": {
+    "r2": -17.673034558381605,
+    "mean_cosine_similarity": -0.022150530644910994,
+    "mean_relative_l2_error": 1.4359081674197542
+  },
+  "mean_baseline": {
+    "r2": -0.13781951143726423,
+    "mean_cosine_similarity": 0.9354174374145507,
+    "mean_relative_l2_error": 0.35001270698235265
+  },
+  "random_pair_control": {
+    "r2": -0.7900393014612184,
+    "mean_cosine_similarity": 0.9045807126236218,
+    "mean_relative_l2_error": 0.4397563234094902
+  }
+}

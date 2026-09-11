@@ -1,0 +1,377 @@
+{
+  "max_abs_diff": 0.0,
+  "per_transform": {
+    "camera_translation": {
+      "learned_W_T.r2": {
+        "recorded": 0.19755029678344727,
+        "recomputed": 0.19755029678344727,
+        "abs_diff": 0.0
+      },
+      "learned_W_T.mean_cosine_similarity": {
+        "recorded": 0.9584792256355286,
+        "recomputed": 0.9584792256355286,
+        "abs_diff": 0.0
+      },
+      "learned_W_T.mean_relative_l2_error": {
+        "recorded": 0.2795242369174957,
+        "recomputed": 0.2795242369174957,
+        "abs_diff": 0.0
+      },
+      "persistence_baseline.r2": {
+        "recorded": 0.6377502679824829,
+        "recomputed": 0.6377502679824829,
+        "abs_diff": 0.0
+      },
+      "persistence_baseline.mean_cosine_similarity": {
+        "recorded": 0.9811273217201233,
+        "recomputed": 0.9811273217201233,
+        "abs_diff": 0.0
+      },
+      "persistence_baseline.mean_relative_l2_error": {
+        "recorded": 0.18854403495788574,
+        "recomputed": 0.18854403495788574,
+        "abs_diff": 0.0
+      },
+      "mean_baseline.r2": {
+        "recorded": -0.16444337368011475,
+        "recomputed": -0.16444337368011475,
+        "abs_diff": 0.0
+      },
+      "mean_baseline.mean_cosine_similarity": {
+        "recorded": 0.9378401041030884,
+        "recomputed": 0.9378401041030884,
+        "abs_diff": 0.0
+      },
+      "mean_baseline.mean_relative_l2_error": {
+        "recorded": 0.34157779812812805,
+        "recomputed": 0.34157779812812805,
+        "abs_diff": 0.0
+      },
+      "random_pair_control.r2": {
+        "recorded": -1.0099210739135742,
+        "recomputed": -1.0099210739135742,
+        "abs_diff": 0.0
+      },
+      "random_pair_control.mean_cosine_similarity": {
+        "recorded": 0.8993494510650635,
+        "recomputed": 0.8993494510650635,
+        "abs_diff": 0.0
+      },
+      "random_pair_control.mean_relative_l2_error": {
+        "recorded": 0.44764581322669983,
+        "recomputed": 0.44764581322669983,
+        "abs_diff": 0.0
+      }
+    },
+    "camera_rotation": {
+      "learned_W_T.r2": {
+        "recorded": -0.1757209300994873,
+        "recomputed": -0.1757209300994873,
+        "abs_diff": 0.0
+      },
+      "learned_W_T.mean_cosine_similarity": {
+        "recorded": 0.9292762875556946,
+        "recomputed": 0.9292762875556946,
+        "abs_diff": 0.0
+      },
+      "learned_W_T.mean_relative_l2_error": {
+        "recorded": 0.36760464310646057,
+        "recomputed": 0.36760464310646057,
+        "abs_diff": 0.0
+      },
+      "persistence_baseline.r2": {
+        "recorded": 0.07888507843017578,
+        "recomputed": 0.07888507843017578,
+        "abs_diff": 0.0
+      },
+      "persistence_baseline.mean_cosine_similarity": {
+        "recorded": 0.9445741176605225,
+        "recomputed": 0.9445741176605225,
+        "abs_diff": 0.0
+      },
+      "persistence_baseline.mean_relative_l2_error": {
+        "recorded": 0.3181622326374054,
+        "recomputed": 0.3181622326374054,
+        "abs_diff": 0.0
+      },
+      "mean_baseline.r2": {
+        "recorded": -0.22539830207824707,
+        "recomputed": -0.22539830207824707,
+        "abs_diff": 0.0
+      },
+      "mean_baseline.mean_cosine_similarity": {
+        "recorded": 0.92397540807724,
+        "recomputed": 0.92397540807724,
+        "abs_diff": 0.0
+      },
+      "mean_baseline.mean_relative_l2_error": {
+        "recorded": 0.38119441270828247,
+        "recomputed": 0.38119441270828247,
+        "abs_diff": 0.0
+      },
+      "random_pair_control.r2": {
+        "recorded": -0.8977000713348389,
+        "recomputed": -0.8977000713348389,
+        "abs_diff": 0.0
+      },
+      "random_pair_control.mean_cosine_similarity": {
+        "recorded": 0.8874539732933044,
+        "recomputed": 0.8874539732933044,
+        "abs_diff": 0.0
+      },
+      "random_pair_control.mean_relative_l2_error": {
+        "recorded": 0.4728347063064575,
+        "recomputed": 0.4728347063064575,
+        "abs_diff": 0.0
+      }
+    },
+    "object_translation": {
+      "learned_W_T.r2": {
+        "recorded": 0.381194531917572,
+        "recomputed": 0.381194531917572,
+        "abs_diff": 0.0
+      },
+      "learned_W_T.mean_cosine_similarity": {
+        "recorded": 0.9654080271720886,
+        "recomputed": 0.9654080271720886,
+        "abs_diff": 0.0
+      },
+      "learned_W_T.mean_relative_l2_error": {
+        "recorded": 0.25917330384254456,
+        "recomputed": 0.25917330384254456,
+        "abs_diff": 0.0
+      },
+      "persistence_baseline.r2": {
+        "recorded": 0.8065166920423508,
+        "recomputed": 0.8065166920423508,
+        "abs_diff": 0.0
+      },
+      "persistence_baseline.mean_cosine_similarity": {
+        "recorded": 0.9892630577087402,
+        "recomputed": 0.9892630577087402,
+        "abs_diff": 0.0
+      },
+      "persistence_baseline.mean_relative_l2_error": {
+        "recorded": 0.13934680819511414,
+        "recomputed": 0.13934680819511414,
+        "abs_diff": 0.0
+      },
+      "mean_baseline.r2": {
+        "recorded": -0.12436115741729736,
+        "recomputed": -0.12436115741729736,
+        "abs_diff": 0.0
+      },
+      "mean_baseline.mean_cosine_similarity": {
+        "recorded": 0.9358382225036621,
+        "recomputed": 0.9358382225036621,
+        "abs_diff": 0.0
+      },
+      "mean_baseline.mean_relative_l2_error": {
+        "recorded": 0.34876760840415955,
+        "recomputed": 0.34876760840415955,
+        "abs_diff": 0.0
+      },
+      "random_pair_control.r2": {
+        "recorded": -0.9250136613845825,
+        "recomputed": -0.9250136613845825,
+        "abs_diff": 0.0
+      },
+      "random_pair_control.mean_cosine_similarity": {
+        "recorded": 0.8969770073890686,
+        "recomputed": 0.8969770073890686,
+        "abs_diff": 0.0
+      },
+      "random_pair_control.mean_relative_l2_error": {
+        "recorded": 0.45230141282081604,
+        "recomputed": 0.45230141282081604,
+        "abs_diff": 0.0
+      }
+    },
+    "object_rotation": {
+      "learned_W_T.r2": {
+        "recorded": -0.19475507736206055,
+        "recomputed": -0.19475507736206055,
+        "abs_diff": 0.0
+      },
+      "learned_W_T.mean_cosine_similarity": {
+        "recorded": 0.9469591379165649,
+        "recomputed": 0.9469591379165649,
+        "abs_diff": 0.0
+      },
+      "learned_W_T.mean_relative_l2_error": {
+        "recorded": 0.31635618209838867,
+        "recomputed": 0.31635618209838867,
+        "abs_diff": 0.0
+      },
+      "persistence_baseline.r2": {
+        "recorded": 0.38524967432022095,
+        "recomputed": 0.38524967432022095,
+        "abs_diff": 0.0
+      },
+      "persistence_baseline.mean_cosine_similarity": {
+        "recorded": 0.973089337348938,
+        "recomputed": 0.973089337348938,
+        "abs_diff": 0.0
+      },
+      "persistence_baseline.mean_relative_l2_error": {
+        "recorded": 0.21310535073280334,
+        "recomputed": 0.21310535073280334,
+        "abs_diff": 0.0
+      },
+      "mean_baseline.r2": {
+        "recorded": -0.21838760375976562,
+        "recomputed": -0.21838760375976562,
+        "abs_diff": 0.0
+      },
+      "mean_baseline.mean_cosine_similarity": {
+        "recorded": 0.9452271461486816,
+        "recomputed": 0.9452271461486816,
+        "abs_diff": 0.0
+      },
+      "mean_baseline.mean_relative_l2_error": {
+        "recorded": 0.32422131299972534,
+        "recomputed": 0.32422131299972534,
+        "abs_diff": 0.0
+      },
+      "random_pair_control.r2": {
+        "recorded": -0.9807968139648438,
+        "recomputed": -0.9807968139648438,
+        "abs_diff": 0.0
+      },
+      "random_pair_control.mean_cosine_similarity": {
+        "recorded": 0.9151662588119507,
+        "recomputed": 0.9151662588119507,
+        "abs_diff": 0.0
+      },
+      "random_pair_control.mean_relative_l2_error": {
+        "recorded": 0.411626935005188,
+        "recomputed": 0.411626935005188,
+        "abs_diff": 0.0
+      }
+    },
+    "lighting_change": {
+      "learned_W_T.r2": {
+        "recorded": 0.06997692584991455,
+        "recomputed": 0.06997692584991455,
+        "abs_diff": 0.0
+      },
+      "learned_W_T.mean_cosine_similarity": {
+        "recorded": 0.953987181186676,
+        "recomputed": 0.953987181186676,
+        "abs_diff": 0.0
+      },
+      "learned_W_T.mean_relative_l2_error": {
+        "recorded": 0.3004664182662964,
+        "recomputed": 0.3004664182662964,
+        "abs_diff": 0.0
+      },
+      "persistence_baseline.r2": {
+        "recorded": 0.4666025638580322,
+        "recomputed": 0.4666025638580322,
+        "abs_diff": 0.0
+      },
+      "persistence_baseline.mean_cosine_similarity": {
+        "recorded": 0.9742307662963867,
+        "recomputed": 0.9742307662963867,
+        "abs_diff": 0.0
+      },
+      "persistence_baseline.mean_relative_l2_error": {
+        "recorded": 0.21801826357841492,
+        "recomputed": 0.21801826357841492,
+        "abs_diff": 0.0
+      },
+      "mean_baseline.r2": {
+        "recorded": -0.1608123779296875,
+        "recomputed": -0.1608123779296875,
+        "abs_diff": 0.0
+      },
+      "mean_baseline.mean_cosine_similarity": {
+        "recorded": 0.9416624307632446,
+        "recomputed": 0.9416624307632446,
+        "abs_diff": 0.0
+      },
+      "mean_baseline.mean_relative_l2_error": {
+        "recorded": 0.33313921093940735,
+        "recomputed": 0.33313921093940735,
+        "abs_diff": 0.0
+      },
+      "random_pair_control.r2": {
+        "recorded": -1.1923909187316895,
+        "recomputed": -1.1923909187316895,
+        "abs_diff": 0.0
+      },
+      "random_pair_control.mean_cosine_similarity": {
+        "recorded": 0.8964130878448486,
+        "recomputed": 0.8964130878448486,
+        "abs_diff": 0.0
+      },
+      "random_pair_control.mean_relative_l2_error": {
+        "recorded": 0.45316386222839355,
+        "recomputed": 0.45316386222839355,
+        "abs_diff": 0.0
+      }
+    },
+    "texture_change": {
+      "learned_W_T.r2": {
+        "recorded": 0.42588913440704346,
+        "recomputed": 0.42588913440704346,
+        "abs_diff": 0.0
+      },
+      "learned_W_T.mean_cosine_similarity": {
+        "recorded": 0.9691794514656067,
+        "recomputed": 0.9691794514656067,
+        "abs_diff": 0.0
+      },
+      "learned_W_T.mean_relative_l2_error": {
+        "recorded": 0.24409997463226318,
+        "recomputed": 0.24409997463226318,
+        "abs_diff": 0.0
+      },
+      "persistence_baseline.r2": {
+        "recorded": 0.8699676096439362,
+        "recomputed": 0.8699676096439362,
+        "abs_diff": 0.0
+      },
+      "persistence_baseline.mean_cosine_similarity": {
+        "recorded": 0.9930896162986755,
+        "recomputed": 0.9930896162986755,
+        "abs_diff": 0.0
+      },
+      "persistence_baseline.mean_relative_l2_error": {
+        "recorded": 0.11428184807300568,
+        "recomputed": 0.11428184807300568,
+        "abs_diff": 0.0
+      },
+      "mean_baseline.r2": {
+        "recorded": -0.14221417903900146,
+        "recomputed": -0.14221417903900146,
+        "abs_diff": 0.0
+      },
+      "mean_baseline.mean_cosine_similarity": {
+        "recorded": 0.9377384781837463,
+        "recomputed": 0.9377384781837463,
+        "abs_diff": 0.0
+      },
+      "mean_baseline.mean_relative_l2_error": {
+        "recorded": 0.3446153700351715,
+        "recomputed": 0.3446153700351715,
+        "abs_diff": 0.0
+      },
+      "random_pair_control.r2": {
+        "recorded": -0.8333108425140381,
+        "recomputed": -0.8333108425140381,
+        "abs_diff": 0.0
+      },
+      "random_pair_control.mean_cosine_similarity": {
+        "recorded": 0.9061062335968018,
+        "recomputed": 0.9061062335968018,
+        "abs_diff": 0.0
+      },
+      "random_pair_control.mean_relative_l2_error": {
+        "recorded": 0.43513911962509155,
+        "recomputed": 0.43513911962509155,
+        "abs_diff": 0.0
+      }
+    }
+  }
+}

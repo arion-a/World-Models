@@ -85,3 +85,17 @@ Encoding transformed side for 'object_rotation'...
   done in 62s
 
 Encoding transformed side for 'lighting_change'...
+  done in 60s
+
+Encoding transformed side for 'texture_change'...
+  done in 59s
+
+=== REPRODUCTION DIFF: max abs diff across all transforms/methods/metrics = 0.000e+00 ===
+  camera_translation: worst=learned_W_T.r2 recorded=0.197550 recomputed=0.197550 diff=0.00e+00
+  camera_rotation: worst=learned_W_T.r2 recorded=-0.175721 recomputed=-0.175721 diff=0.00e+00
+  object_translation: worst=learned_W_T.r2 recorded=0.381195 recomputed=0.381195 diff=0.00e+00
+  object_rotation: worst=learned_W_T.r2 recorded=-0.194755 recomputed=-0.194755 diff=0.00e+00
+  lighting_change: worst=learned_W_T.r2 recorded=0.069977 recomputed=0.069977 diff=0.00e+00
+  texture_change: worst=learned_W_T.r2 recorded=0.425889 recomputed=0.425889 diff=0.00e+00
+
+Total wall time: 573s
