@@ -1,0 +1,64 @@
+{
+  "passed": true,
+  "layers": [
+    {
+      "name": "A. Task 7 original result/protocol untouched",
+      "passed": true,
+      "details": []
+    },
+    {
+      "name": "B. Fixed test set consistent across every diagnostic script",
+      "passed": true,
+      "details": [
+        "learning_curve.json's fixed_test_scene_ids matches Task 7's recorded test_scene_ids exactly",
+        "temporal_context.json's test_scene_ids are a subset of Task 7's recorded test_scene_ids (by design -- a smaller fixed subset for compute-budget reasons)"
+      ]
+    },
+    {
+      "name": "C. No test-set scene ever appears in a .fit(...)/fitting call",
+      "passed": true,
+      "details": [
+        "regression_conditioning.py: no .fit(...) call found with a test-labeled argument",
+        "representation_geometry.py: no .fit(...) call found with a test-labeled argument",
+        "sample_scaling.py: no .fit(...) call found with a test-labeled argument",
+        "temporal_context.py: no .fit(...) call found with a test-labeled argument",
+        "pooling_diagnostic.py: no .fit(...) call found with a test-labeled argument",
+        "dual_ridge_predict's fitted quantities (K, alpha_term) are computed from Xc/Yc (train) only in every script that defines it"
+      ]
+    },
+    {
+      "name": "D. sample_scaling seed=0/N=32 reproduces Task 7's recorded camera_rotation R^2",
+      "passed": true,
+      "details": [
+        "recorded=-0.175721 diagnostic_seed0=-0.175721 abs_diff=5.35e-08"
+      ]
+    },
+    {
+      "name": "E. RidgeCV alpha selection is train-only",
+      "passed": true,
+      "details": [
+        "RidgeCV.fit(Z_train, Zp_train) -- train-only, confirmed by source inspection"
+      ]
+    },
+    {
+      "name": "F. Required output files present and valid",
+      "passed": true,
+      "details": [
+        "regression_conditioning.json: present, valid JSON",
+        "representation_geometry.json: present, valid JSON",
+        "pooling_diagnostic.json: present, valid JSON",
+        "learning_curve.json: present, valid JSON",
+        "diagnostic_results.json: present, valid JSON",
+        "diagnostic_report.md: present (17347 bytes)"
+      ]
+    },
+    {
+      "name": "G. No undeclared protocol drift (only the intended variable changes per script)",
+      "passed": true,
+      "details": [
+        "sample_scaling.py: ridge_alpha unchanged (10.0) -- only N_train varies, as intended",
+        "temporal_context.py: ridge_alpha unchanged (10.0) -- only num_frames varies, as intended"
+      ]
+    }
+  ]
+}

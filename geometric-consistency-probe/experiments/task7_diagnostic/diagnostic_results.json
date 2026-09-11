@@ -1,0 +1,113 @@
+{
+  "diagnostic_of": "state/task_07_result.json",
+  "ordered_by": "user, as a direct follow-up to experiments/task7_forensic_audit/",
+  "purpose": "Determine whether sample size, regression conditioning, temporal context, or mean pooling explains Task 7's negative result -- NOT to optimize for a positive result.",
+  "protocol_unchanged": true,
+  "result_json_unchanged": true,
+  "no_result_optimization_performed": true,
+  "investigations": {
+    "A_training_sample_scaling": {
+      "transform": "camera_rotation",
+      "fixed_test_scene_ids": "Task 7's own recorded 8 test_scene_ids, unchanged across every N_train condition",
+      "ridge_alpha": 10.0,
+      "n_train_targets": [32, 64, 128, 256],
+      "seeds_per_n": 5,
+      "results": {
+        "32": {"r2_mean": -0.1527, "r2_min": -0.2082, "r2_max": -0.0615, "n_seeds": 5},
+        "64": {"r2_mean": -0.1151, "r2_min": -0.1896, "r2_max": -0.0368, "n_seeds": 5},
+        "128": {"r2_mean": -0.0091, "r2_min": -0.0749, "r2_max": 0.0916, "n_seeds": 5},
+        "256": {"r2_mean": 0.0419, "r2_min": 0.0419, "r2_max": 0.0419, "n_seeds": 1, "note": "full pool, only one possible subset"}
+      },
+      "original_recorded_r2": -0.1757,
+      "original_best_baseline_r2": 0.0789,
+      "artifact": "learning_curve.json",
+      "finding": "Clean, monotonic, unsaturated learning curve crossing from negative to positive between N_train=64 and N_train=128, continuing to approach (not yet reaching) the original baseline by N_train=256. Strong evidence the original N_train=32 result had not converged.",
+      "compute_budget_note": "N_train=512 not attempted; 256 took 1141s wall time (19 min) including rendering 224 new scenes."
+    },
+    "B_regression_conditioning": {
+      "method": "Compare original fixed alpha=10.0 against OLS (alpha=0) and RidgeCV with alpha selected by 4-fold CV on the 32 train scenes only",
+      "alpha_grid_tested": [0.001, 0.01, 0.1, 1.0, 3.0, 10.0, 30.0, 100.0, 300.0, 1000.0, 3000.0, 10000.0],
+      "results_by_transform": {
+        "camera_translation": {"fixed_alpha_10_r2": 0.1976, "ols_r2": 0.1553, "cv_selected_alpha": 300.0, "cv_r2": 0.2730, "best_baseline_r2": 0.638},
+        "camera_rotation": {"fixed_alpha_10_r2": -0.1757, "ols_r2": -0.2594, "cv_selected_alpha": 1000.0, "cv_r2": 0.0015, "best_baseline_r2": 0.079},
+        "object_translation": {"fixed_alpha_10_r2": 0.3812, "ols_r2": 0.3529, "cv_selected_alpha": 100.0, "cv_r2": 0.4161, "best_baseline_r2": 0.807},
+        "object_rotation": {"fixed_alpha_10_r2": -0.1948, "ols_r2": -0.3005, "cv_selected_alpha": 300.0, "cv_r2": 0.1083, "best_baseline_r2": 0.385},
+        "lighting_change": {"fixed_alpha_10_r2": 0.0700, "ols_r2": 0.0336, "cv_selected_alpha": 300.0, "cv_r2": 0.1392, "best_baseline_r2": 0.467},
+        "texture_change": {"fixed_alpha_10_r2": 0.4259, "ols_r2": 0.4077, "cv_selected_alpha": 100.0, "cv_r2": 0.4505, "best_baseline_r2": 0.870}
+      },
+      "artifact": "regression_conditioning.json",
+      "finding": "Train-only CV consistently selects alpha 10-100x higher than the original fixed value and measurably improves absolute R^2, most for the worst performers, but does NOT change the qualitative below-baseline outcome for any transform. Regularization strength is not, by itself, the bottleneck."
+    },
+    "C_temporal_context": {
+      "transform": "camera_rotation",
+      "scene_subset": "9 train / 3 test, fixed subset of Task 7's original scenes (scaled down from 32/8 for compute-budget reasons)",
+      "frame_counts_tested": [4, 16, 32, 64],
+      "results": {
+        "4": {"learned_W_T_r2": -0.8555, "persistence_baseline_r2": -0.0299, "wall_time_seconds": 45.3},
+        "16": {"learned_W_T_r2": -1.0116, "persistence_baseline_r2": -0.0089, "wall_time_seconds": 309.1},
+        "32": {"learned_W_T_r2": -0.9013, "persistence_baseline_r2": -0.0142, "wall_time_seconds": 667.4},
+        "64": {"learned_W_T_r2": -1.0070, "persistence_baseline_r2": -0.1110, "wall_time_seconds": 1989.9}
+      },
+      "artifact": "temporal_context.json",
+      "finding": "INCONCLUSIVE. No clear trend across frame counts; the persistence baseline itself (no fitted parameters) swings from -0.030 to -0.111 purely from n_test=3 sampling noise. The test set is too small to distinguish a real temporal-context effect from noise.",
+      "compute_budget_note": "64-frame clip cost ~44x a 4-frame clip's wall time (attention scales quadratically with token count: 8192 vs 512 tokens). Full 32/8-scale sweep was not attempted (estimated ~2.75 hours for this step alone)."
+    },
+    "D_pooling_diagnostic": {
+      "transforms": ["camera_rotation", "object_translation"],
+      "poolings_compared": {
+        "global_mean": {"dim": 1024, "description": "Task 7's original: mean over all 512 tokens"},
+        "spatial_grid_mean": {"dim": 262144, "description": "mean over 2 temporal tubelets only, 16x16 spatial grid retained"},
+        "quadrant_mean": {"dim": 4096, "description": "mean over temporal and 2x2 spatial quadrants"}
+      },
+      "results": {
+        "camera_rotation": {"global_mean_r2": -0.1757, "spatial_grid_mean_r2": -0.1684, "quadrant_mean_r2": -0.1599},
+        "object_translation": {"global_mean_r2": 0.3812, "spatial_grid_mean_r2": -0.1042, "quadrant_mean_r2": 0.2890}
+      },
+      "artifact": "pooling_diagnostic.json",
+      "implementation_note": "spatial_grid_mean's 262144-dim output required a memory-safe dual-ridge formulation (verified exact match to sklearn.Ridge to floating-point precision) since a naive primal Ridge would need an infeasible 262144x262144 coefficient matrix.",
+      "finding": "Preserving spatial structure does NOT improve R^2 for either transform -- it makes things worse, and more spatial resolution retained makes the degradation worse (spatial_grid_mean is worst of the three for both transforms). Evidence AGAINST mean-pooling's information loss being the primary driver of the original negative result; consistent with dimensionality/overfitting at N_train=32 dominating over any positional-information gain."
+    },
+    "E_representation_geometry": {
+      "method": "PCA/whitening fit on the 32 TRAIN scenes only, applied (not re-fit) to test; k=16 components selected via a test-blind >=90%-train-variance rule",
+      "train_only_effective_rank": 15.7,
+      "k_components_selected": 16,
+      "results_by_transform": {
+        "camera_translation": {"raw_r2": 0.198, "pca_r2": 0.294, "whitened_r2": 0.277, "best_baseline_r2": 0.638},
+        "camera_rotation": {"raw_r2": -0.176, "pca_r2": -0.052, "whitened_r2": -0.025, "best_baseline_r2": 0.079},
+        "object_translation": {"raw_r2": 0.381, "pca_r2": 0.373, "whitened_r2": 0.363, "best_baseline_r2": 0.807},
+        "object_rotation": {"raw_r2": -0.195, "pca_r2": 0.065, "whitened_r2": 0.094, "best_baseline_r2": 0.385},
+        "lighting_change": {"raw_r2": 0.070, "pca_r2": 0.087, "whitened_r2": 0.130, "best_baseline_r2": 0.467},
+        "texture_change": {"raw_r2": 0.426, "pca_r2": 0.388, "whitened_r2": 0.370, "best_baseline_r2": 0.870}
+      },
+      "artifact": "representation_geometry.json",
+      "finding": "Whitening/PCA-reduction nudges the two worst performers substantially toward zero and mildly helps one control, but mildly hurts the two already-better performers. No transform crosses its baseline under either transformation. Converges with finding B: addressing conditioning/anisotropy recovers some headroom but does not close the gap -- consistent with sample size being the dominant remaining factor."
+    }
+  },
+  "synthesis": {
+    "1_insufficient_sample_size": "CONFIRMED as the dominant, load-bearing factor -- diagnostic A's monotonic, unsaturated learning curve.",
+    "2_regression_conditioning": "RULED OUT as an independent driver -- diagnostic B.",
+    "3_temporal_context_mismatch": "INCONCLUSIVE -- diagnostic C was underpowered (n_test=3) given compute constraints.",
+    "4_information_loss_from_pooling": "EVIDENCE AGAINST as the primary driver -- diagnostic D.",
+    "5_representation_anisotropy": "A contributing, not independent, factor -- diagnostic E's whitening result overlaps with B's regularization result.",
+    "6_genuinely_weak_geometric_consistency": "Cannot be fully ruled out, and is not the most parsimonious explanation given the clear sample-size trend, but this diagnostic did not reach a large enough N to positively confirm the map would exceed baseline."
+  },
+  "final_classification": "METHODOLOGICALLY_LIMITED",
+  "final_classification_rationale": "Not VALID_NEGATIVE: diagnostic A directly falsifies stability with respect to sample size -- the result at N_train=32 is measurably, monotonically different from N_train=256, with no sign of convergence. Not INCONCLUSIVE in the no-informative-evidence sense: this diagnostic positively identifies sample size (with anisotropy as a related contributor) as the dominant factor and rules out regularization strength and naive spatial-structure preservation as independent explanations. METHODOLOGICALLY_LIMITED captures both: the original number was computed correctly (per the forensic audit) but the protocol (N_train=32 against D=1024) was too small to yield a stable, interpretable estimate; whether more data would eventually exceed baseline remains a well-supported but unconfirmed extrapolation.",
+  "recommended_next_action": "A follow-up task with num_scenes substantially larger than 40 (continuing the learning curve toward N~500-1000) reporting a full learning curve as its primary result rather than a single N, and a properly powered (full 32/8-scale) repeat of the temporal-context comparison to resolve finding C's inconclusive result. Not performed here, and explicitly not proposed as a way to seek a better-looking number -- as a way to obtain a convergent, interpretable estimate.",
+  "artifacts": [
+    "diagnostic_report.md",
+    "learning_curve.json",
+    "regression_conditioning.json",
+    "temporal_context.json",
+    "pooling_diagnostic.json",
+    "representation_geometry.json",
+    "qa_report.md",
+    "qa_report.json",
+    "sample_scaling_stdout_v2.log",
+    "temporal_context_stdout.log",
+    "rendered/ (264 scenes' camera_rotation renders for diagnostic A)",
+    "rendered_temporal/ (12 scenes x 3 additional frame counts for diagnostic C)"
+  ],
+  "state_task_07_result_json_modified": false,
+  "task_8_may_proceed": "Not recommended by this diagnostic without further work -- the result is scientifically interpretable as METHODOLOGICALLY_LIMITED (a specific, identified, and partially-quantified limitation), which is a valid basis to decide how to proceed, but is left to the user's explicit decision. This diagnostic does not itself unblock or advance the orchestrator; state/progress.json was not touched."
+}
