@@ -102,6 +102,18 @@ Hard requirements, on top of anything the task specification says:
    -- do not adjust the experiment, the scene count, the metric, or the
    framing to manufacture a more positive-looking number. Record it
    honestly and move on; do not ask whether a negative result is okay.
+6. This is a SINGLE-TURN, non-interactive invocation (`claude -p`) --
+   there is no later turn in which a background job's completion could
+   ever reach you. Never run anything the task depends on (rendering,
+   encoding, fitting, the experiment itself) with a backgrounded/detached
+   Bash call and end your turn planning to "check in later" or
+   "finalize once it completes" -- once this process exits, any such
+   background job is killed outright, and state/task_{task:02d}_result.json
+   will never get written. Run every command the task's completion
+   depends on synchronously, in the foreground, within this turn, no
+   matter how long it takes (up to this invocation's own timeout) --
+   waiting on a long-running foreground command is correct and expected
+   here; backgrounding it is not.
 
 The external orchestrator will independently re-verify everything after
 you finish -- your own "tests"/"implementation_status" fields are one
@@ -172,6 +184,13 @@ weaken or remove a test to make it pass. Do not remove a required
 control or baseline. Do not change the scientific objective, the
 train/test methodology, or the interpretation rules to dodge a failing
 check. Do not start over from scratch -- fix what's broken.
+
+Reminder: this is a SINGLE-TURN, non-interactive invocation. If the
+result JSON is missing because a previous attempt backgrounded the
+actual experiment and ended its turn expecting to "check in later" --
+that background job was killed the moment that process exited, and
+there is no later turn here either. Run everything the task depends on
+synchronously in the foreground this time, however long it takes.
 
 If, in the course of fixing this, you determine the QA failure actually
 reflects a genuine scientific-protocol conflict, a required destructive
