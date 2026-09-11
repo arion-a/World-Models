@@ -147,7 +147,7 @@ def main():
     # --- TEST_EVALUATED (sealed, once) --------------------------------------
     train_ids_final = data.nested_train_subset(train_pool_ids, final_n, seed=winning_point["seed"])
     result = sealed_test.run_sealed_test(
-        winning_entry["model_key"], winning_entry["hyperparams"], list(train_ids_final), test_ids, Z, Zp, seed=winning_point["seed"],
+        winning_entry["model_key"], winning_entry["hyperparams"], list(train_ids_final), val_ids, test_ids, Z, Zp, seed=winning_point["seed"],
     )
     print(f"\nSealed test: r2={result['selected_config_test_metrics']['r2']}, "
           f"diff_vs_best_control={result['difference_vs_best_control_r2']}")

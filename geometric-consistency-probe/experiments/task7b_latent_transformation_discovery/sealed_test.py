@@ -6,6 +6,18 @@ Contamination guard: refuses to run if a sealed_test_result.json already
 exists (a rerun is permitted only for a documented software failure
 discovered BEFORE result inspection -- that is an explicit,
 human-reviewed override, never this function's default path).
+
+Validation set for the final refit: the selected (model, hyperparameter)
+configuration is refit on `train_ids` before being evaluated on
+`test_ids`. If that configuration is M6 (residual MLP), refitting needs
+a genuine held-out slice for early stopping -- this MUST be the
+protocol's own fixed `val_ids` (already used during Stage 1 model
+selection, so reusing it here adds no new information the model/
+hyperparameter choice wasn't already exposed to), and MUST NOT be
+`test_ids`. Passing Z_test/Zp_test as the val arguments here would mean
+the sealed test's own early stopping is tuned against the test set --
+exactly the leakage this whole protocol exists to prevent -- so
+`val_ids` is a required argument, not optional.
 """
 from __future__ import annotations
 
@@ -26,6 +38,7 @@ def run_sealed_test(
     selected_model_key: str,
     selected_hyperparams: dict,
     train_ids: list[str],
+    val_ids: list[str],
     test_ids: list[str],
     Z: dict,
     Zp: dict,
@@ -40,10 +53,13 @@ def run_sealed_test(
         )
 
     Z_train, Zp_train = learning_curve._stack(train_ids, Z, Zp)
+    Z_val, Zp_val = learning_curve._stack(val_ids, Z, Zp)
     Z_test, Zp_test = learning_curve._stack(test_ids, Z, Zp)
 
     t0 = time.time()
-    selected = learning_curve._fit_candidate(selected_model_key, selected_hyperparams, Z_train, Zp_train, Z_test, Zp_test, seed)
+    # val_ids (never test_ids) supplies early stopping for M6 -- M0-M5
+    # ignore the val arguments entirely, per learning_curve._fit_candidate.
+    selected = learning_curve._fit_candidate(selected_model_key, selected_hyperparams, Z_train, Zp_train, Z_val, Zp_val, seed)
     selected_metrics = evaluate(selected.predict(Z_test), Zp_test).to_dict()
 
     control_alpha = selected_hyperparams.get("alpha", 10.0)
@@ -72,6 +88,7 @@ def run_sealed_test(
         "selected_model_key": selected_model_key,
         "selected_hyperparams": selected_hyperparams,
         "n_train": len(train_ids),
+        "n_val": len(val_ids),
         "n_test": len(test_ids),
         "seed": seed,
         "selected_config_test_metrics": selected_metrics,
@@ -92,7 +109,7 @@ def run_sealed_test(
         "bootstrap_ci_over_scenes": scene_ci,
         "test_scene_ids": list(test_ids),
         "fit_seconds": time.time() - t0,
-        "contamination_status": "CLEAN -- test scenes were not accessed by any fitting, normalization, or selection step before this call",
+        "contamination_status": "CLEAN -- test scenes were not accessed by any fitting, normalization, early-stopping, or selection step before this call (early stopping, where applicable, used val_ids only)",
     }
 
     SEALED_TEST_PATH.write_text(json.dumps(result, indent=2))
