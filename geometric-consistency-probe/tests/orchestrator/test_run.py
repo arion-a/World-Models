@@ -329,6 +329,59 @@ def test_resume_from_fixing_status_sends_a_fix_prompt_not_initial_prompt(repo, m
     assert resumed.attempts["6"] == 2
 
 
+def test_resume_from_qa_status_reruns_qa_without_reinvoking_claude(repo, monkeypatch):
+    """Simulates a crash DURING qa.run_qa itself (Claude's attempt-1 work
+    already finished and status moved to QA, but the QA subprocess was
+    killed before recording a result): resuming must re-run QA on the
+    attempt already sitting in the working tree, never re-invoke Claude
+    for a new attempt -- both to avoid wasting an attempt with no QA
+    report to build a fix prompt from, and because this exact resume
+    path used to crash (see the next test)."""
+    write_valid_result(repo, task=6)
+    s = state.OrchestratorState.bootstrap()
+    s.transition(state.RUNNING, task=6)
+    s.record_attempt(6)  # attempt 1 already used
+    s.transition(state.QA, task=6)
+    # No record_qa call -- the crash happened before QA finished.
+    state.save(s, repo / "state" / "progress.json")
+
+    monkeypatch.setattr(run.claude_client, "invoke_claude", _fake_claude_factory([]))  # must not be called
+    exit_code = run.main(["--repo-root", str(repo), "--allow-dirty"])
+    assert exit_code == 0
+
+    resumed = state.load(repo / "state" / "progress.json")
+    assert resumed.current_task == 7
+    assert 6 in resumed.completed_tasks
+    assert resumed.attempts["6"] == 1  # never incremented for a phantom new attempt
+
+
+def test_resume_from_qa_status_then_later_claude_error_does_not_crash(repo, monkeypatch):
+    """Regression test for the exact crash this fixes: resuming mid-QA,
+    that re-run QA correctly fails (an ordinary QA failure, not a
+    declared blocker), the loop proceeds to a genuinely NEW attempt, and
+    THAT invocation raises ClaudeInvocationError. Before the fix, the
+    resumed attempt's status was still nominally QA when the new
+    invoke_claude call was made, so the except-block's
+    transition(FAILED) raised StateError (QA -> FAILED is not an
+    allowed transition) instead of failing cleanly."""
+    s = state.OrchestratorState.bootstrap()
+    s.transition(state.RUNNING, task=6)
+    s.record_attempt(6)  # attempt 1 already used, no valid result written
+    s.transition(state.QA, task=6)
+    state.save(s, repo / "state" / "progress.json")
+
+    def raise_error(prompt, repo_root, config=None, log_path=None):
+        raise claude_client.ClaudeInvocationError("timed out after 3600s")
+
+    monkeypatch.setattr(run.claude_client, "invoke_claude", raise_error)
+    exit_code = run.main(["--repo-root", str(repo), "--allow-dirty", "--max-fix-attempts", "3"])
+    assert exit_code == 2
+
+    resumed = state.load(repo / "state" / "progress.json")
+    assert resumed.status == state.FAILED
+    assert resumed.attempts["6"] == 2  # attempt 1 (skipped-invoke) + the new attempt 2
+
+
 def test_resume_completed_task_is_a_pure_skip(tmp_path, monkeypatch):
     """If progress.json already shows a later task as current (task 6
     completed by a previous, separate run), starting the orchestrator

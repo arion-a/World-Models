@@ -301,39 +301,74 @@ def _run_one_task(current_state: state.OrchestratorState, repo_root: Path, paths
     attempts_already_made = current_state.attempts.get(str(task), 0)
     last_qa_dict = current_state.last_qa.get(str(task))
 
-    for attempt in range(attempts_already_made + 1, max_attempts + 1):
-        if current_state.status == state.FIXING:
-            current_state.transition(state.RUNNING, task=task)
+    # Resuming exactly mid-QA (interrupted after Claude's attempt already
+    # finished and status moved to QA, but before qa.run_qa completed):
+    # that attempt's work is already sitting in the working tree, so the
+    # first loop iteration must re-run QA for THAT SAME attempt number
+    # instead of invoking Claude again for a new one -- both because it
+    # would waste an attempt with no QA report to build a fix prompt
+    # from, and because a status of QA cannot legally transition to QA
+    # again or to FAILED (ALLOWED_TRANSITIONS[QA] is only {PASSED,
+    # FIXING, BLOCKED}) -- invoking Claude here and hitting a
+    # ClaudeInvocationError used to crash with a StateError for exactly
+    # this reason.
+    #
+    # Known limitation: status==QA on resume is also left behind by a
+    # DIFFERENT case this can't distinguish from the one above -- a
+    # later attempt's own invoke_claude call raising (e.g. a timeout)
+    # before it could ever transition status away from QA, so nothing
+    # from that attempt actually landed in the tree. Skip-and-verify
+    # then just re-checks whatever the PRIOR attempt left behind, which
+    # can only under-count progress (relabeling a redo as the same
+    # attempt number) or fail QA again -- both fall through to the
+    # ordinary fix-prompt retry loop just like any other QA failure, so
+    # this never produces an incorrect PASS, only a possibly-wasted
+    # iteration within the existing attempt budget. Precisely
+    # distinguishing the two would need a same-attempt "Claude actually
+    # produced new output" signal this state machine doesn't track;
+    # not worth the added complexity for what degrades gracefully.
+    resuming_mid_qa = current_state.status == state.QA
+    loop_start = attempts_already_made if resuming_mid_qa else attempts_already_made + 1
+
+    for attempt in range(loop_start, max_attempts + 1):
+        skip_invoke = resuming_mid_qa and attempt == loop_start
+        resuming_mid_qa = False  # only the first iteration can skip
+
+        if not skip_invoke:
+            if current_state.status == state.FIXING:
+                current_state.transition(state.RUNNING, task=task)
+                state.save(current_state, paths["state"])
+
+            current_state.record_attempt(task)
             state.save(current_state, paths["state"])
 
-        current_state.record_attempt(task)
-        state.save(current_state, paths["state"])
+            if attempt == 1:
+                prompt = render_task_prompt(
+                    task,
+                    sync_result.path,
+                    render_state_summary(current_state.to_dict(), task, attempt, max_attempts),
+                    render_previous_result_summary(prev_result, prev_task),
+                    prev_task,
+                )
+            else:
+                prior_report = qa.render_report(last_qa_dict) if last_qa_dict else "(no prior QA report available -- resumed after interruption)"
+                prompt = render_fix_prompt(task, sync_result.path, prior_report, attempt, max_attempts)
 
-        if attempt == 1:
-            prompt = render_task_prompt(
-                task,
-                sync_result.path,
-                render_state_summary(current_state.to_dict(), task, attempt, max_attempts),
-                render_previous_result_summary(prev_result, prev_task),
-                prev_task,
-            )
+            print(f"Task {task}, attempt {attempt}/{max_attempts}: invoking Claude...")
+            try:
+                claude_result = claude_client.invoke_claude(prompt, repo_root, config=claude_config, log_path=log_path)
+            except claude_client.ClaudeInvocationError as exc:
+                print(f"FATAL: Claude invocation failed: {exc}", file=sys.stderr)
+                current_state.transition(state.FAILED, task=task, reason=str(exc))
+                state.save(current_state, paths["state"])
+                return 2
+
+            print(f"Task {task}, attempt {attempt}: Claude exited {claude_result.returncode} in {claude_result.duration_seconds:.1f}s")
+
+            current_state.transition(state.QA, task=task)
+            state.save(current_state, paths["state"])
         else:
-            prior_report = qa.render_report(last_qa_dict) if last_qa_dict else "(no prior QA report available -- resumed after interruption)"
-            prompt = render_fix_prompt(task, sync_result.path, prior_report, attempt, max_attempts)
-
-        print(f"Task {task}, attempt {attempt}/{max_attempts}: invoking Claude...")
-        try:
-            claude_result = claude_client.invoke_claude(prompt, repo_root, config=claude_config, log_path=log_path)
-        except claude_client.ClaudeInvocationError as exc:
-            print(f"FATAL: Claude invocation failed: {exc}", file=sys.stderr)
-            current_state.transition(state.FAILED, task=task, reason=str(exc))
-            state.save(current_state, paths["state"])
-            return 2
-
-        print(f"Task {task}, attempt {attempt}: Claude exited {claude_result.returncode} in {claude_result.duration_seconds:.1f}s")
-
-        current_state.transition(state.QA, task=task)
-        state.save(current_state, paths["state"])
+            print(f"Task {task}: resuming mid-QA for attempt {attempt} -- Claude's work for this attempt already completed before the interruption, re-running QA without re-invoking Claude.")
 
         print(f"Task {task}, attempt {attempt}: running independent QA...")
         qa_result = qa.run_qa(task, repo_root, result_path=result_path, pre_task_commit=pre_task_commit, config=q_config)
