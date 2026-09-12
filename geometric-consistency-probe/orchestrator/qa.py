@@ -393,16 +393,23 @@ def _layer_c_scientific_validity(task: int, result_json: dict | None) -> LayerRe
         details.append("'scientific_result' is missing or too short to be a genuine finding")
 
     if task in SPLIT_BEARING_TASKS:
-        metrics = result_json.get("metrics")
-        if not isinstance(metrics, dict) or not metrics:
+        # Look for a 'metrics' key ANYWHERE in the document, not just at
+        # the top level -- a task with multiple independent experimental
+        # points (e.g. Task 11's scale_points[i].runs[j].metrics, one
+        # per scene-count/seed) has no single top-level metrics block by
+        # design; result_json.get("metrics") alone would report every
+        # such task as missing metrics regardless of how much real,
+        # correctly-structured metrics content it actually contains.
+        metrics_occurrences = [(p, v) for p, v in _find_all_paths(result_json, "metrics") if isinstance(v, dict) and v]
+        if not metrics_occurrences:
             passed = False
-            details.append("no 'metrics' block found for an experiment-type task")
+            details.append("no non-empty 'metrics' block found anywhere in the result JSON for an experiment-type task")
         else:
-            metrics_text = json.dumps(metrics).lower()
-            has_baseline = any(word in metrics_text for word in ("baseline", "control", "persistence", "random"))
+            combined_text = json.dumps([v for _, v in metrics_occurrences]).lower()
+            has_baseline = any(word in combined_text for word in ("baseline", "control", "persistence", "random"))
             if not has_baseline:
                 passed = False
-                details.append("'metrics' has no identifiable baseline/control comparison (invariant 14)")
+                details.append("no 'metrics' block has an identifiable baseline/control comparison (invariant 14)")
 
     return LayerResult("C. SCIENTIFIC VALIDITY", passed, details)
 
@@ -479,14 +486,37 @@ def _layer_e_data_leakage(task: int, result_json: dict | None) -> LayerResult:
             details.append(f"{test_path} is empty or not a list")
 
     # Pair up train/test occurrences that live at the same nesting level
-    # (same parent path) and check disjointness there; also check every
-    # train set against every test set globally, since a scene leaking
-    # between ANY declared train set and ANY declared test set anywhere
-    # in the document is a leakage bug regardless of nesting.
+    # (same parent path) and check disjointness there ONLY -- a task
+    # with multiple independent declared splits (e.g. Task 11's
+    # scale_points[i].runs[j].{train,test}_scene_ids, one fresh
+    # scene-level split per scale point/seed) legitimately reuses scene
+    # IDs ACROSS those splits; only overlap between a single split's own
+    # train and test is leakage. A prior version of this check also
+    # compared every train set against every test set globally
+    # regardless of nesting, which is correct only when a task has
+    # exactly one declared split -- for Task 11 it flagged every
+    # cross-scale-point/cross-seed scene reuse as "leakage", which is
+    # exactly what tasks/11_scale.md's own leakage-checks section says
+    # is NOT a bug ("overlap across different scale points is not
+    # itself a leakage bug -- only overlap between a single scale
+    # point's own train and test is"), and blocked several real,
+    # correct implementations before this was traced back to here
+    # rather than the task's own code.
+    def _parent_of(path: str, key_name: str) -> str:
+        suffix = f".{key_name}"
+        if path.endswith(suffix):
+            return path[: -len(suffix)]
+        return ""  # path == key_name itself: a top-level (root) split
+
+    test_by_parent: dict[str, list[tuple[str, object]]] = {}
+    for test_path, test_ids in test_occurrences:
+        test_by_parent.setdefault(_parent_of(test_path, "test_scene_ids"), []).append((test_path, test_ids))
+
     for train_path, train_ids in train_occurrences:
         if not isinstance(train_ids, list):
             continue
-        for test_path, test_ids in test_occurrences:
+        parent = _parent_of(train_path, "train_scene_ids")
+        for test_path, test_ids in test_by_parent.get(parent, []):
             if not isinstance(test_ids, list):
                 continue
             overlap = set(train_ids) & set(test_ids)

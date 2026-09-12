@@ -251,6 +251,67 @@ def test_infra_task_is_exempt_from_leakage_layer():
     assert layer.passed
 
 
+def test_multiple_independent_splits_do_not_leak_across_each_other(repo):
+    """Regression test for a real bug that blocked a genuinely correct
+    Task 11 implementation for 3 straight attempts: a task with several
+    INDEPENDENT declared splits (Task 11's scale_points[i].runs[j], one
+    fresh scene-level split per scale point/seed) legitimately reuses
+    scene IDs across those splits -- tasks/11_scale.md's leakage-checks
+    section says so explicitly ("overlap across different scale points
+    is not itself a leakage bug -- only overlap between a single scale
+    point's own train and test is"). Only overlap WITHIN one
+    scale_points[i].runs[j] pair is a real leak."""
+    result = {
+        "task": 11,
+        "scale_points": [
+            {"runs": [{"train_scene_ids": ["s0", "s1"], "test_scene_ids": ["s2", "s3"]}]},
+            {"runs": [{"train_scene_ids": ["s2", "s3"], "test_scene_ids": ["s0", "s1"]}]},  # shares IDs with point 0 -- fine
+        ],
+    }
+    layer = qa._layer_e_data_leakage(11, result)
+    assert layer.passed, layer.details
+
+    # Now introduce a REAL leak: scale_points[1].runs[0]'s own train and
+    # test overlap with each other.
+    result["scale_points"][1]["runs"][0]["test_scene_ids"].append("s2")
+    layer = qa._layer_e_data_leakage(11, result)
+    assert not layer.passed
+    assert any("leakage" in d for d in layer.details)
+
+
+def test_nested_per_scale_point_metrics_satisfy_layer_c(repo):
+    """Regression test for the second bug in the same Task 11 failure:
+    layer C only checked a single TOP-LEVEL 'metrics' key, but a task
+    with multiple independent experimental points reports metrics
+    nested per-point (tasks/11_scale.md: 'scale_points: [{... metrics
+    for learned map and all Task 10 baselines ...}]'), never one flat
+    top-level block -- this must not be reported as 'missing metrics'
+    when real, correctly-structured, baseline-bearing metrics exist
+    nested in the document."""
+    result = {
+        "task": 11,
+        "scientific_result": "the flagship transform's advantage over baselines weakens with scale",
+        "scale_points": [
+            {"runs": [{"metrics": {"learned_W_T": {"r2": 0.1}, "persistence_baseline": {"r2": 0.4}}}]},
+        ],
+    }
+    layer = qa._layer_c_scientific_validity(11, result)
+    assert layer.passed, layer.details
+
+
+def test_top_level_only_metrics_still_works_for_single_split_tasks(repo):
+    """The fix to search anywhere in the document (not just the top
+    level) must not regress the common case: a single flat top-level
+    'metrics' block, as Tasks 6-9 use, still satisfies layer C."""
+    result = {
+        "task": 6,
+        "scientific_result": "the learned map beats every required baseline on held-out scenes",
+        "metrics": {"learned_W_T": {"r2": 0.6}, "persistence_baseline": {"r2": 0.1}},
+    }
+    layer = qa._layer_c_scientific_validity(6, result)
+    assert layer.passed, layer.details
+
+
 # --- Layer F: reproducibility --------------------------------------------------
 
 
