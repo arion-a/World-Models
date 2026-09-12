@@ -1,0 +1,35 @@
+# Task 11 config: scale experiment.
+#
+# The flagship transform (camera_rotation, shared with Tasks 6/7/10) run
+# independently at 3 scene-count points (15, 40, 100 scenes), 2 seeds
+# each, through the identical render->encode->fit->evaluate protocol and
+# full five-baseline set Task 10 established. See
+# experiments/task11_scale.py's Task11Config.scale_budget_justification
+# text (also written into state/task_11_result.json) for why the ladder
+# tops out at 100 scenes rather than the ~1000 tasks/11_scale.md
+# mentions as an upper aspiration "if computationally feasible" -- this
+# machine's CPU-only render+encode throughput, measured empirically
+# before picking this ladder, does not fit a 1000-scene point (even at
+# just 2 seeds) inside one non-interactive invocation's timeout.
+
+scale_ladder: [15, 40, 100]
+seeds: [0, 1]
+train_fraction: 0.8
+output_dir: experiments/scale
+result_path: state/task_11_result.json
+
+resolution: 128
+num_frames: 4
+fps: 4.0
+
+camera_rotation_azimuth_deg: 30.0
+ridge_alpha: 10.0
+shuffled_pairing_seed: 0
+
+num_objects_min: 1
+num_objects_max: 3
+
+pretrained: true
+checkpoint: facebook/vjepa2-vitl-fpc64-256
+device: null
+fallback_seed: 0

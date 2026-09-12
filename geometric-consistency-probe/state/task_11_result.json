@@ -1,0 +1,1321 @@
+{
+  "task": 11,
+  "implementation_status": "COMPLETE",
+  "scientific_result": "Task 11 scale experiment: the flagship transform (camera_rotation, per Task 6/7's convention) run independently at 3 scene-count points ([15, 40, 100]), 2 seeds each, through the identical Task 6/10-consolidated render->encode->fit->evaluate protocol (same encoder, same transform magnitude, same 80/20 split fraction, same full five-baseline set) held constant across every point.\n\nPer scale point (mean R^2 across seeds, learned_W_T vs. the best of Task 10's five baselines):\n  n=  15 (seeds succeeded 2/2): learned_W_T R^2=-0.0504 (std=0.1243) vs. best baseline 'random_encoder_baseline' R^2=0.7479\n  n=  40 (seeds succeeded 2/2): learned_W_T R^2=-0.1626 (std=0.0575) vs. best baseline 'random_encoder_baseline' R^2=0.6737\n  n= 100 (seeds succeeded 2/2): learned_W_T R^2=-0.0204 (std=0.0454) vs. best baseline 'random_encoder_baseline' R^2=0.7093\n\nExplicit scale-trend conclusion: the equivariance margin (learned_W_T R^2 minus best-baseline R^2) STRENGTHENS across this ladder. learned_W_T R^2 minus best-baseline R^2 (the 'margin') across the tested scale ladder [15, 40, 100]: [-0.7983, -0.8363, -0.7297]. Classified as 'strengthens' using a fixed +/-0.03 R^2 tolerance for 'materially changed', decided before computing these numbers.\n\nInterpretation limits (tasks/11_scale.md): this is a trend across 3 scale points on ONE synthetic scene distribution and ONE transform (camera_rotation) -- suggestive, not an asymptotic scaling law, and not extrapolated beyond the tested range. It says nothing about the other five transforms (Task 7's matrix) at scale, which remains untested here.",
+  "metrics": {
+    "n_15": {
+      "learned_W_T": {
+        "r2": -0.05040809512138367,
+        "mean_cosine_similarity": 0.9345323145389557,
+        "mean_relative_l2_error": 0.35653921961784363
+      },
+      "persistence_baseline": {
+        "r2": 0.4442926198244095,
+        "mean_cosine_similarity": 0.9650460779666901,
+        "mean_relative_l2_error": 0.24824832379817963
+      },
+      "mean_baseline": {
+        "r2": -0.22053885459899902,
+        "mean_cosine_similarity": 0.9223695993423462,
+        "mean_relative_l2_error": 0.3807274103164673
+      },
+      "random_pair_control": {
+        "r2": -0.7878801822662354,
+        "mean_cosine_similarity": 0.8871612846851349,
+        "mean_relative_l2_error": 0.45683489739894867
+      },
+      "pixel_statistics_baseline": {
+        "r2": 0.3929462134838104,
+        "mean_cosine_similarity": 0.9922381043434143,
+        "mean_relative_l2_error": 0.12738379836082458
+      },
+      "random_encoder_baseline": {
+        "r2": 0.7478978782892227,
+        "mean_cosine_similarity": 0.989687591791153,
+        "mean_relative_l2_error": 0.12643100321292877
+      }
+    },
+    "n_40": {
+      "learned_W_T": {
+        "r2": -0.16263514757156372,
+        "mean_cosine_similarity": 0.9298677444458008,
+        "mean_relative_l2_error": 0.3576192706823349
+      },
+      "persistence_baseline": {
+        "r2": -0.015086472034454346,
+        "mean_cosine_similarity": 0.9405372142791748,
+        "mean_relative_l2_error": 0.3315642327070236
+      },
+      "mean_baseline": {
+        "r2": -0.17176634073257446,
+        "mean_cosine_similarity": 0.9286216497421265,
+        "mean_relative_l2_error": 0.364923357963562
+      },
+      "random_pair_control": {
+        "r2": -0.9368468523025513,
+        "mean_cosine_similarity": 0.883590966463089,
+        "mean_relative_l2_error": 0.4674162268638611
+      },
+      "pixel_statistics_baseline": {
+        "r2": 0.3385278880596161,
+        "mean_cosine_similarity": 0.9892999529838562,
+        "mean_relative_l2_error": 0.15594470500946045
+      },
+      "random_encoder_baseline": {
+        "r2": 0.6736777275800705,
+        "mean_cosine_similarity": 0.9828034341335297,
+        "mean_relative_l2_error": 0.1620272547006607
+      }
+    },
+    "n_100": {
+      "learned_W_T": {
+        "r2": -0.0203896164894104,
+        "mean_cosine_similarity": 0.9360690712928772,
+        "mean_relative_l2_error": 0.35149073600769043
+      },
+      "persistence_baseline": {
+        "r2": 0.08236673474311829,
+        "mean_cosine_similarity": 0.9429916441440582,
+        "mean_relative_l2_error": 0.3281303644180298
+      },
+      "mean_baseline": {
+        "r2": -0.05356937646865845,
+        "mean_cosine_similarity": 0.9318006932735443,
+        "mean_relative_l2_error": 0.36041830480098724
+      },
+      "random_pair_control": {
+        "r2": -0.8133958578109741,
+        "mean_cosine_similarity": 0.886156290769577,
+        "mean_relative_l2_error": 0.46781398355960846
+      },
+      "pixel_statistics_baseline": {
+        "r2": 0.45838266611099243,
+        "mean_cosine_similarity": 0.9905233085155487,
+        "mean_relative_l2_error": 0.13410503417253494
+      },
+      "random_encoder_baseline": {
+        "r2": 0.7093371003866196,
+        "mean_cosine_similarity": 0.9892729222774506,
+        "mean_relative_l2_error": 0.12827151641249657
+      }
+    }
+  },
+  "protected_files_justification": "None -- no Tasks 1-5 file (generation/, transforms/, encoders/, DESIGN.md, IMPLEMENTATION_NOTES.md, configs/config.py) was modified. This task's implementation lives entirely in experiments/task11_scale.py (new), configs/experiments/task11_scale.yaml (new), and tests/test_task11_scale.py (new) -- it only calls existing public functions of experiments/geometric_consistency_lib.py (Task 7/10's shared library, unmodified) and baselines/run_all_baselines.py (Task 10's consolidated baseline set, unmodified).",
+  "transform": "camera_rotation",
+  "scale_ladder": [
+    15,
+    40,
+    100
+  ],
+  "seeds": [
+    0,
+    1
+  ],
+  "train_fraction": 0.8,
+  "scale_budget_justification": "Empirically measured on this machine (CPU-only, no CUDA, 4 cores) before choosing the ladder: ~2.7s/scene-pair to render (bpy/Cycles, resolution=128, 4 frames) and ~1.18s per single-clip forward pass through the frozen ViT-L/16 encoder (measured directly, not assumed) -- each scene requires 4 such forward passes (2 for the primary encoder's Z/Z', 2 for the matched-architecture random-encoder baseline's Z/Z'; the pixel-statistics baseline is comparatively free), for a measured ~7.4s/scene all-in. A full ~1000-scene point at even 2 seeds would need ~4 CPU-hours, which does not fit this task's single, non-interactive invocation timeout budget -- so the ladder tops out at 100 scenes rather than 1000, per tasks/11_scale.md's explicit 'if computationally feasible' / 'budget permitting' framing for the 1000-scene point. This is a resource constraint of this run's compute environment, not a scientific methodology change, and does not affect what is held constant across the scale points that WERE run.",
+  "scale_points": [
+    {
+      "num_scenes": 15,
+      "seeds": [
+        0,
+        1
+      ],
+      "num_seeds_requested": 2,
+      "num_seeds_succeeded": 2,
+      "runs": [
+        {
+          "num_scenes": 15,
+          "seed": 0,
+          "base_seed": 15,
+          "status": "ok",
+          "error": null,
+          "train_scene_ids": [
+            "n0015_seed0_scene_0000",
+            "n0015_seed0_scene_0002",
+            "n0015_seed0_scene_0003",
+            "n0015_seed0_scene_0004",
+            "n0015_seed0_scene_0005",
+            "n0015_seed0_scene_0006",
+            "n0015_seed0_scene_0007",
+            "n0015_seed0_scene_0008",
+            "n0015_seed0_scene_0010",
+            "n0015_seed0_scene_0011",
+            "n0015_seed0_scene_0012",
+            "n0015_seed0_scene_0014"
+          ],
+          "test_scene_ids": [
+            "n0015_seed0_scene_0001",
+            "n0015_seed0_scene_0009",
+            "n0015_seed0_scene_0013"
+          ],
+          "num_train": 12,
+          "num_test": 3,
+          "metrics": {
+            "learned_W_T": {
+              "r2": 0.07390457391738892,
+              "mean_cosine_similarity": 0.951444149017334,
+              "mean_relative_l2_error": 0.31101199984550476
+            },
+            "pixel_statistics_baseline": {
+              "r2": 0.3820365071296692,
+              "mean_cosine_similarity": 0.9920136332511902,
+              "mean_relative_l2_error": 0.12662054598331451
+            },
+            "random_encoder_baseline": {
+              "r2": 0.8425097763538361,
+              "mean_cosine_similarity": 0.9924297332763672,
+              "mean_relative_l2_error": 0.11158210039138794
+            },
+            "persistence_baseline": {
+              "r2": 0.5525225102901459,
+              "mean_cosine_similarity": 0.9767022132873535,
+              "mean_relative_l2_error": 0.2150164246559143
+            },
+            "mean_baseline": {
+              "r2": -0.19329607486724854,
+              "mean_cosine_similarity": 0.9363210797309875,
+              "mean_relative_l2_error": 0.3496421277523041
+            },
+            "random_pair_control": {
+              "r2": -0.6502699851989746,
+              "mean_cosine_similarity": 0.9129858613014221,
+              "mean_relative_l2_error": 0.4062627851963043
+            }
+          },
+          "primary_encoder_frozen_verified": true,
+          "random_encoder_frozen_verified": true,
+          "wall_clock_seconds": 134.4052140712738,
+          "render_dir": "experiments/scale/n0015_seed0"
+        },
+        {
+          "num_scenes": 15,
+          "seed": 1,
+          "base_seed": 1000015,
+          "status": "ok",
+          "error": null,
+          "train_scene_ids": [
+            "n0015_seed1_scene_0000",
+            "n0015_seed1_scene_0001",
+            "n0015_seed1_scene_0003",
+            "n0015_seed1_scene_0004",
+            "n0015_seed1_scene_0005",
+            "n0015_seed1_scene_0006",
+            "n0015_seed1_scene_0007",
+            "n0015_seed1_scene_0009",
+            "n0015_seed1_scene_0010",
+            "n0015_seed1_scene_0011",
+            "n0015_seed1_scene_0013",
+            "n0015_seed1_scene_0014"
+          ],
+          "test_scene_ids": [
+            "n0015_seed1_scene_0002",
+            "n0015_seed1_scene_0008",
+            "n0015_seed1_scene_0012"
+          ],
+          "num_train": 12,
+          "num_test": 3,
+          "metrics": {
+            "learned_W_T": {
+              "r2": -0.17472076416015625,
+              "mean_cosine_similarity": 0.9176204800605774,
+              "mean_relative_l2_error": 0.4020664393901825
+            },
+            "pixel_statistics_baseline": {
+              "r2": 0.40385591983795166,
+              "mean_cosine_similarity": 0.9924625754356384,
+              "mean_relative_l2_error": 0.12814705073833466
+            },
+            "random_encoder_baseline": {
+              "r2": 0.6532859802246094,
+              "mean_cosine_similarity": 0.9869454503059387,
+              "mean_relative_l2_error": 0.1412799060344696
+            },
+            "persistence_baseline": {
+              "r2": 0.3360627293586731,
+              "mean_cosine_similarity": 0.9533899426460266,
+              "mean_relative_l2_error": 0.28148022294044495
+            },
+            "mean_baseline": {
+              "r2": -0.2477816343307495,
+              "mean_cosine_similarity": 0.9084181189537048,
+              "mean_relative_l2_error": 0.4118126928806305
+            },
+            "random_pair_control": {
+              "r2": -0.9254903793334961,
+              "mean_cosine_similarity": 0.8613367080688477,
+              "mean_relative_l2_error": 0.507407009601593
+            }
+          },
+          "primary_encoder_frozen_verified": true,
+          "random_encoder_frozen_verified": true,
+          "wall_clock_seconds": 135.41556906700134,
+          "render_dir": "experiments/scale/n0015_seed1"
+        }
+      ],
+      "aggregate": {
+        "learned_W_T": {
+          "r2": {
+            "mean": -0.05040809512138367,
+            "std": 0.12431266903877258,
+            "values": [
+              0.07390457391738892,
+              -0.17472076416015625
+            ]
+          },
+          "mean_cosine_similarity": {
+            "mean": 0.9345323145389557,
+            "std": 0.016911834478378296,
+            "values": [
+              0.951444149017334,
+              0.9176204800605774
+            ]
+          },
+          "mean_relative_l2_error": {
+            "mean": 0.35653921961784363,
+            "std": 0.04552721977233887,
+            "values": [
+              0.31101199984550476,
+              0.4020664393901825
+            ]
+          }
+        },
+        "persistence_baseline": {
+          "r2": {
+            "mean": 0.4442926198244095,
+            "std": 0.10822989046573639,
+            "values": [
+              0.5525225102901459,
+              0.3360627293586731
+            ]
+          },
+          "mean_cosine_similarity": {
+            "mean": 0.9650460779666901,
+            "std": 0.011656135320663452,
+            "values": [
+              0.9767022132873535,
+              0.9533899426460266
+            ]
+          },
+          "mean_relative_l2_error": {
+            "mean": 0.24824832379817963,
+            "std": 0.03323189914226532,
+            "values": [
+              0.2150164246559143,
+              0.28148022294044495
+            ]
+          }
+        },
+        "mean_baseline": {
+          "r2": {
+            "mean": -0.22053885459899902,
+            "std": 0.02724277973175049,
+            "values": [
+              -0.19329607486724854,
+              -0.2477816343307495
+            ]
+          },
+          "mean_cosine_similarity": {
+            "mean": 0.9223695993423462,
+            "std": 0.013951480388641357,
+            "values": [
+              0.9363210797309875,
+              0.9084181189537048
+            ]
+          },
+          "mean_relative_l2_error": {
+            "mean": 0.3807274103164673,
+            "std": 0.031085282564163208,
+            "values": [
+              0.3496421277523041,
+              0.4118126928806305
+            ]
+          }
+        },
+        "random_pair_control": {
+          "r2": {
+            "mean": -0.7878801822662354,
+            "std": 0.13761019706726074,
+            "values": [
+              -0.6502699851989746,
+              -0.9254903793334961
+            ]
+          },
+          "mean_cosine_similarity": {
+            "mean": 0.8871612846851349,
+            "std": 0.02582457661628723,
+            "values": [
+              0.9129858613014221,
+              0.8613367080688477
+            ]
+          },
+          "mean_relative_l2_error": {
+            "mean": 0.45683489739894867,
+            "std": 0.05057211220264435,
+            "values": [
+              0.4062627851963043,
+              0.507407009601593
+            ]
+          }
+        },
+        "pixel_statistics_baseline": {
+          "r2": {
+            "mean": 0.3929462134838104,
+            "std": 0.010909706354141235,
+            "values": [
+              0.3820365071296692,
+              0.40385591983795166
+            ]
+          },
+          "mean_cosine_similarity": {
+            "mean": 0.9922381043434143,
+            "std": 0.0002244710922241211,
+            "values": [
+              0.9920136332511902,
+              0.9924625754356384
+            ]
+          },
+          "mean_relative_l2_error": {
+            "mean": 0.12738379836082458,
+            "std": 0.0007632523775100708,
+            "values": [
+              0.12662054598331451,
+              0.12814705073833466
+            ]
+          }
+        },
+        "random_encoder_baseline": {
+          "r2": {
+            "mean": 0.7478978782892227,
+            "std": 0.09461189806461334,
+            "values": [
+              0.8425097763538361,
+              0.6532859802246094
+            ]
+          },
+          "mean_cosine_similarity": {
+            "mean": 0.989687591791153,
+            "std": 0.0027421414852142334,
+            "values": [
+              0.9924297332763672,
+              0.9869454503059387
+            ]
+          },
+          "mean_relative_l2_error": {
+            "mean": 0.12643100321292877,
+            "std": 0.014848902821540833,
+            "values": [
+              0.11158210039138794,
+              0.1412799060344696
+            ]
+          }
+        }
+      },
+      "wall_clock_seconds_total": 269.82078313827515
+    },
+    {
+      "num_scenes": 40,
+      "seeds": [
+        0,
+        1
+      ],
+      "num_seeds_requested": 2,
+      "num_seeds_succeeded": 2,
+      "runs": [
+        {
+          "num_scenes": 40,
+          "seed": 0,
+          "base_seed": 40,
+          "status": "ok",
+          "error": null,
+          "train_scene_ids": [
+            "n0040_seed0_scene_0000",
+            "n0040_seed0_scene_0001",
+            "n0040_seed0_scene_0003",
+            "n0040_seed0_scene_0005",
+            "n0040_seed0_scene_0006",
+            "n0040_seed0_scene_0007",
+            "n0040_seed0_scene_0009",
+            "n0040_seed0_scene_0010",
+            "n0040_seed0_scene_0012",
+            "n0040_seed0_scene_0013",
+            "n0040_seed0_scene_0014",
+            "n0040_seed0_scene_0015",
+            "n0040_seed0_scene_0016",
+            "n0040_seed0_scene_0017",
+            "n0040_seed0_scene_0018",
+            "n0040_seed0_scene_0019",
+            "n0040_seed0_scene_0021",
+            "n0040_seed0_scene_0022",
+            "n0040_seed0_scene_0023",
+            "n0040_seed0_scene_0024",
+            "n0040_seed0_scene_0025",
+            "n0040_seed0_scene_0026",
+            "n0040_seed0_scene_0027",
+            "n0040_seed0_scene_0029",
+            "n0040_seed0_scene_0030",
+            "n0040_seed0_scene_0031",
+            "n0040_seed0_scene_0033",
+            "n0040_seed0_scene_0034",
+            "n0040_seed0_scene_0035",
+            "n0040_seed0_scene_0036",
+            "n0040_seed0_scene_0037",
+            "n0040_seed0_scene_0039"
+          ],
+          "test_scene_ids": [
+            "n0040_seed0_scene_0002",
+            "n0040_seed0_scene_0004",
+            "n0040_seed0_scene_0008",
+            "n0040_seed0_scene_0011",
+            "n0040_seed0_scene_0020",
+            "n0040_seed0_scene_0028",
+            "n0040_seed0_scene_0032",
+            "n0040_seed0_scene_0038"
+          ],
+          "num_train": 32,
+          "num_test": 8,
+          "metrics": {
+            "learned_W_T": {
+              "r2": -0.1051795482635498,
+              "mean_cosine_similarity": 0.9439030885696411,
+              "mean_relative_l2_error": 0.32724079489707947
+            },
+            "pixel_statistics_baseline": {
+              "r2": 0.32305192947387695,
+              "mean_cosine_similarity": 0.9888471364974976,
+              "mean_relative_l2_error": 0.1545950323343277
+            },
+            "random_encoder_baseline": {
+              "r2": 0.6978049874305725,
+              "mean_cosine_similarity": 0.9869089722633362,
+              "mean_relative_l2_error": 0.15472733974456787
+            },
+            "persistence_baseline": {
+              "r2": -0.0849686861038208,
+              "mean_cosine_similarity": 0.9455113410949707,
+              "mean_relative_l2_error": 0.32351380586624146
+            },
+            "mean_baseline": {
+              "r2": -0.18473076820373535,
+              "mean_cosine_similarity": 0.9388679265975952,
+              "mean_relative_l2_error": 0.3403647541999817
+            },
+            "random_pair_control": {
+              "r2": -0.8468270301818848,
+              "mean_cosine_similarity": 0.906893253326416,
+              "mean_relative_l2_error": 0.4231753349304199
+            }
+          },
+          "primary_encoder_frozen_verified": true,
+          "random_encoder_frozen_verified": true,
+          "wall_clock_seconds": 341.7445170879364,
+          "render_dir": "experiments/scale/n0040_seed0"
+        },
+        {
+          "num_scenes": 40,
+          "seed": 1,
+          "base_seed": 1000040,
+          "status": "ok",
+          "error": null,
+          "train_scene_ids": [
+            "n0040_seed1_scene_0000",
+            "n0040_seed1_scene_0001",
+            "n0040_seed1_scene_0002",
+            "n0040_seed1_scene_0003",
+            "n0040_seed1_scene_0004",
+            "n0040_seed1_scene_0005",
+            "n0040_seed1_scene_0006",
+            "n0040_seed1_scene_0007",
+            "n0040_seed1_scene_0008",
+            "n0040_seed1_scene_0010",
+            "n0040_seed1_scene_0011",
+            "n0040_seed1_scene_0012",
+            "n0040_seed1_scene_0014",
+            "n0040_seed1_scene_0016",
+            "n0040_seed1_scene_0017",
+            "n0040_seed1_scene_0018",
+            "n0040_seed1_scene_0019",
+            "n0040_seed1_scene_0020",
+            "n0040_seed1_scene_0021",
+            "n0040_seed1_scene_0023",
+            "n0040_seed1_scene_0024",
+            "n0040_seed1_scene_0025",
+            "n0040_seed1_scene_0026",
+            "n0040_seed1_scene_0028",
+            "n0040_seed1_scene_0029",
+            "n0040_seed1_scene_0030",
+            "n0040_seed1_scene_0031",
+            "n0040_seed1_scene_0032",
+            "n0040_seed1_scene_0033",
+            "n0040_seed1_scene_0037",
+            "n0040_seed1_scene_0038",
+            "n0040_seed1_scene_0039"
+          ],
+          "test_scene_ids": [
+            "n0040_seed1_scene_0009",
+            "n0040_seed1_scene_0013",
+            "n0040_seed1_scene_0015",
+            "n0040_seed1_scene_0022",
+            "n0040_seed1_scene_0027",
+            "n0040_seed1_scene_0034",
+            "n0040_seed1_scene_0035",
+            "n0040_seed1_scene_0036"
+          ],
+          "num_train": 32,
+          "num_test": 8,
+          "metrics": {
+            "learned_W_T": {
+              "r2": -0.22009074687957764,
+              "mean_cosine_similarity": 0.9158324003219604,
+              "mean_relative_l2_error": 0.38799774646759033
+            },
+            "pixel_statistics_baseline": {
+              "r2": 0.3540038466453552,
+              "mean_cosine_similarity": 0.9897527694702148,
+              "mean_relative_l2_error": 0.1572943776845932
+            },
+            "random_encoder_baseline": {
+              "r2": 0.6495504677295685,
+              "mean_cosine_similarity": 0.9786978960037231,
+              "mean_relative_l2_error": 0.16932716965675354
+            },
+            "persistence_baseline": {
+              "r2": 0.05479574203491211,
+              "mean_cosine_similarity": 0.9355630874633789,
+              "mean_relative_l2_error": 0.3396146595478058
+            },
+            "mean_baseline": {
+              "r2": -0.15880191326141357,
+              "mean_cosine_similarity": 0.9183753728866577,
+              "mean_relative_l2_error": 0.38948196172714233
+            },
+            "random_pair_control": {
+              "r2": -1.0268666744232178,
+              "mean_cosine_similarity": 0.860288679599762,
+              "mean_relative_l2_error": 0.5116571187973022
+            }
+          },
+          "primary_encoder_frozen_verified": true,
+          "random_encoder_frozen_verified": true,
+          "wall_clock_seconds": 355.41250133514404,
+          "render_dir": "experiments/scale/n0040_seed1"
+        }
+      ],
+      "aggregate": {
+        "learned_W_T": {
+          "r2": {
+            "mean": -0.16263514757156372,
+            "std": 0.057455599308013916,
+            "values": [
+              -0.1051795482635498,
+              -0.22009074687957764
+            ]
+          },
+          "mean_cosine_similarity": {
+            "mean": 0.9298677444458008,
+            "std": 0.014035344123840332,
+            "values": [
+              0.9439030885696411,
+              0.9158324003219604
+            ]
+          },
+          "mean_relative_l2_error": {
+            "mean": 0.3576192706823349,
+            "std": 0.030378475785255432,
+            "values": [
+              0.32724079489707947,
+              0.38799774646759033
+            ]
+          }
+        },
+        "persistence_baseline": {
+          "r2": {
+            "mean": -0.015086472034454346,
+            "std": 0.06988221406936646,
+            "values": [
+              -0.0849686861038208,
+              0.05479574203491211
+            ]
+          },
+          "mean_cosine_similarity": {
+            "mean": 0.9405372142791748,
+            "std": 0.0049741268157958984,
+            "values": [
+              0.9455113410949707,
+              0.9355630874633789
+            ]
+          },
+          "mean_relative_l2_error": {
+            "mean": 0.3315642327070236,
+            "std": 0.008050426840782166,
+            "values": [
+              0.32351380586624146,
+              0.3396146595478058
+            ]
+          }
+        },
+        "mean_baseline": {
+          "r2": {
+            "mean": -0.17176634073257446,
+            "std": 0.012964427471160889,
+            "values": [
+              -0.18473076820373535,
+              -0.15880191326141357
+            ]
+          },
+          "mean_cosine_similarity": {
+            "mean": 0.9286216497421265,
+            "std": 0.01024627685546875,
+            "values": [
+              0.9388679265975952,
+              0.9183753728866577
+            ]
+          },
+          "mean_relative_l2_error": {
+            "mean": 0.364923357963562,
+            "std": 0.024558603763580322,
+            "values": [
+              0.3403647541999817,
+              0.38948196172714233
+            ]
+          }
+        },
+        "random_pair_control": {
+          "r2": {
+            "mean": -0.9368468523025513,
+            "std": 0.0900198221206665,
+            "values": [
+              -0.8468270301818848,
+              -1.0268666744232178
+            ]
+          },
+          "mean_cosine_similarity": {
+            "mean": 0.883590966463089,
+            "std": 0.023302286863327026,
+            "values": [
+              0.906893253326416,
+              0.860288679599762
+            ]
+          },
+          "mean_relative_l2_error": {
+            "mean": 0.4674162268638611,
+            "std": 0.04424089193344116,
+            "values": [
+              0.4231753349304199,
+              0.5116571187973022
+            ]
+          }
+        },
+        "pixel_statistics_baseline": {
+          "r2": {
+            "mean": 0.3385278880596161,
+            "std": 0.015475958585739136,
+            "values": [
+              0.32305192947387695,
+              0.3540038466453552
+            ]
+          },
+          "mean_cosine_similarity": {
+            "mean": 0.9892999529838562,
+            "std": 0.0004528164863586426,
+            "values": [
+              0.9888471364974976,
+              0.9897527694702148
+            ]
+          },
+          "mean_relative_l2_error": {
+            "mean": 0.15594470500946045,
+            "std": 0.0013496726751327515,
+            "values": [
+              0.1545950323343277,
+              0.1572943776845932
+            ]
+          }
+        },
+        "random_encoder_baseline": {
+          "r2": {
+            "mean": 0.6736777275800705,
+            "std": 0.024127259850502014,
+            "values": [
+              0.6978049874305725,
+              0.6495504677295685
+            ]
+          },
+          "mean_cosine_similarity": {
+            "mean": 0.9828034341335297,
+            "std": 0.0041055381298065186,
+            "values": [
+              0.9869089722633362,
+              0.9786978960037231
+            ]
+          },
+          "mean_relative_l2_error": {
+            "mean": 0.1620272547006607,
+            "std": 0.0072999149560928345,
+            "values": [
+              0.15472733974456787,
+              0.16932716965675354
+            ]
+          }
+        }
+      },
+      "wall_clock_seconds_total": 697.1570184230804
+    },
+    {
+      "num_scenes": 100,
+      "seeds": [
+        0,
+        1
+      ],
+      "num_seeds_requested": 2,
+      "num_seeds_succeeded": 2,
+      "runs": [
+        {
+          "num_scenes": 100,
+          "seed": 0,
+          "base_seed": 100,
+          "status": "ok",
+          "error": null,
+          "train_scene_ids": [
+            "n0100_seed0_scene_0001",
+            "n0100_seed0_scene_0003",
+            "n0100_seed0_scene_0005",
+            "n0100_seed0_scene_0006",
+            "n0100_seed0_scene_0008",
+            "n0100_seed0_scene_0009",
+            "n0100_seed0_scene_0010",
+            "n0100_seed0_scene_0011",
+            "n0100_seed0_scene_0012",
+            "n0100_seed0_scene_0013",
+            "n0100_seed0_scene_0014",
+            "n0100_seed0_scene_0015",
+            "n0100_seed0_scene_0016",
+            "n0100_seed0_scene_0017",
+            "n0100_seed0_scene_0018",
+            "n0100_seed0_scene_0019",
+            "n0100_seed0_scene_0021",
+            "n0100_seed0_scene_0022",
+            "n0100_seed0_scene_0023",
+            "n0100_seed0_scene_0025",
+            "n0100_seed0_scene_0026",
+            "n0100_seed0_scene_0027",
+            "n0100_seed0_scene_0028",
+            "n0100_seed0_scene_0030",
+            "n0100_seed0_scene_0031",
+            "n0100_seed0_scene_0032",
+            "n0100_seed0_scene_0033",
+            "n0100_seed0_scene_0034",
+            "n0100_seed0_scene_0035",
+            "n0100_seed0_scene_0036",
+            "n0100_seed0_scene_0037",
+            "n0100_seed0_scene_0038",
+            "n0100_seed0_scene_0039",
+            "n0100_seed0_scene_0040",
+            "n0100_seed0_scene_0041",
+            "n0100_seed0_scene_0042",
+            "n0100_seed0_scene_0044",
+            "n0100_seed0_scene_0045",
+            "n0100_seed0_scene_0046",
+            "n0100_seed0_scene_0047",
+            "n0100_seed0_scene_0048",
+            "n0100_seed0_scene_0049",
+            "n0100_seed0_scene_0050",
+            "n0100_seed0_scene_0051",
+            "n0100_seed0_scene_0052",
+            "n0100_seed0_scene_0053",
+            "n0100_seed0_scene_0054",
+            "n0100_seed0_scene_0055",
+            "n0100_seed0_scene_0056",
+            "n0100_seed0_scene_0057",
+            "n0100_seed0_scene_0058",
+            "n0100_seed0_scene_0059",
+            "n0100_seed0_scene_0060",
+            "n0100_seed0_scene_0061",
+            "n0100_seed0_scene_0062",
+            "n0100_seed0_scene_0063",
+            "n0100_seed0_scene_0064",
+            "n0100_seed0_scene_0065",
+            "n0100_seed0_scene_0066",
+            "n0100_seed0_scene_0067",
+            "n0100_seed0_scene_0069",
+            "n0100_seed0_scene_0070",
+            "n0100_seed0_scene_0075",
+            "n0100_seed0_scene_0076",
+            "n0100_seed0_scene_0077",
+            "n0100_seed0_scene_0080",
+            "n0100_seed0_scene_0083",
+            "n0100_seed0_scene_0084",
+            "n0100_seed0_scene_0085",
+            "n0100_seed0_scene_0086",
+            "n0100_seed0_scene_0087",
+            "n0100_seed0_scene_0088",
+            "n0100_seed0_scene_0090",
+            "n0100_seed0_scene_0091",
+            "n0100_seed0_scene_0093",
+            "n0100_seed0_scene_0094",
+            "n0100_seed0_scene_0095",
+            "n0100_seed0_scene_0096",
+            "n0100_seed0_scene_0097",
+            "n0100_seed0_scene_0098"
+          ],
+          "test_scene_ids": [
+            "n0100_seed0_scene_0000",
+            "n0100_seed0_scene_0002",
+            "n0100_seed0_scene_0004",
+            "n0100_seed0_scene_0007",
+            "n0100_seed0_scene_0020",
+            "n0100_seed0_scene_0024",
+            "n0100_seed0_scene_0029",
+            "n0100_seed0_scene_0043",
+            "n0100_seed0_scene_0068",
+            "n0100_seed0_scene_0071",
+            "n0100_seed0_scene_0072",
+            "n0100_seed0_scene_0073",
+            "n0100_seed0_scene_0074",
+            "n0100_seed0_scene_0078",
+            "n0100_seed0_scene_0079",
+            "n0100_seed0_scene_0081",
+            "n0100_seed0_scene_0082",
+            "n0100_seed0_scene_0089",
+            "n0100_seed0_scene_0092",
+            "n0100_seed0_scene_0099"
+          ],
+          "num_train": 80,
+          "num_test": 20,
+          "metrics": {
+            "learned_W_T": {
+              "r2": -0.06583154201507568,
+              "mean_cosine_similarity": 0.9354047775268555,
+              "mean_relative_l2_error": 0.35213762521743774
+            },
+            "pixel_statistics_baseline": {
+              "r2": 0.4635159373283386,
+              "mean_cosine_similarity": 0.991068959236145,
+              "mean_relative_l2_error": 0.13319648802280426
+            },
+            "random_encoder_baseline": {
+              "r2": 0.714312732219696,
+              "mean_cosine_similarity": 0.9916536211967468,
+              "mean_relative_l2_error": 0.11593445390462875
+            },
+            "persistence_baseline": {
+              "r2": -0.0011224746704101562,
+              "mean_cosine_similarity": 0.9401203989982605,
+              "mean_relative_l2_error": 0.33529359102249146
+            },
+            "mean_baseline": {
+              "r2": -0.052600741386413574,
+              "mean_cosine_similarity": 0.9342188835144043,
+              "mean_relative_l2_error": 0.35461491346359253
+            },
+            "random_pair_control": {
+              "r2": -1.025139570236206,
+              "mean_cosine_similarity": 0.8774116635322571,
+              "mean_relative_l2_error": 0.48526519536972046
+            }
+          },
+          "primary_encoder_frozen_verified": true,
+          "random_encoder_frozen_verified": true,
+          "wall_clock_seconds": 879.1692669391632,
+          "render_dir": "experiments/scale/n0100_seed0"
+        },
+        {
+          "num_scenes": 100,
+          "seed": 1,
+          "base_seed": 1000100,
+          "status": "ok",
+          "error": null,
+          "train_scene_ids": [
+            "n0100_seed1_scene_0001",
+            "n0100_seed1_scene_0002",
+            "n0100_seed1_scene_0004",
+            "n0100_seed1_scene_0005",
+            "n0100_seed1_scene_0006",
+            "n0100_seed1_scene_0008",
+            "n0100_seed1_scene_0009",
+            "n0100_seed1_scene_0010",
+            "n0100_seed1_scene_0011",
+            "n0100_seed1_scene_0012",
+            "n0100_seed1_scene_0014",
+            "n0100_seed1_scene_0015",
+            "n0100_seed1_scene_0016",
+            "n0100_seed1_scene_0017",
+            "n0100_seed1_scene_0018",
+            "n0100_seed1_scene_0019",
+            "n0100_seed1_scene_0021",
+            "n0100_seed1_scene_0022",
+            "n0100_seed1_scene_0023",
+            "n0100_seed1_scene_0024",
+            "n0100_seed1_scene_0025",
+            "n0100_seed1_scene_0026",
+            "n0100_seed1_scene_0027",
+            "n0100_seed1_scene_0029",
+            "n0100_seed1_scene_0030",
+            "n0100_seed1_scene_0031",
+            "n0100_seed1_scene_0032",
+            "n0100_seed1_scene_0033",
+            "n0100_seed1_scene_0034",
+            "n0100_seed1_scene_0036",
+            "n0100_seed1_scene_0037",
+            "n0100_seed1_scene_0038",
+            "n0100_seed1_scene_0040",
+            "n0100_seed1_scene_0041",
+            "n0100_seed1_scene_0042",
+            "n0100_seed1_scene_0043",
+            "n0100_seed1_scene_0044",
+            "n0100_seed1_scene_0045",
+            "n0100_seed1_scene_0046",
+            "n0100_seed1_scene_0047",
+            "n0100_seed1_scene_0048",
+            "n0100_seed1_scene_0049",
+            "n0100_seed1_scene_0050",
+            "n0100_seed1_scene_0051",
+            "n0100_seed1_scene_0054",
+            "n0100_seed1_scene_0055",
+            "n0100_seed1_scene_0056",
+            "n0100_seed1_scene_0057",
+            "n0100_seed1_scene_0058",
+            "n0100_seed1_scene_0059",
+            "n0100_seed1_scene_0060",
+            "n0100_seed1_scene_0061",
+            "n0100_seed1_scene_0062",
+            "n0100_seed1_scene_0063",
+            "n0100_seed1_scene_0064",
+            "n0100_seed1_scene_0065",
+            "n0100_seed1_scene_0066",
+            "n0100_seed1_scene_0067",
+            "n0100_seed1_scene_0068",
+            "n0100_seed1_scene_0070",
+            "n0100_seed1_scene_0071",
+            "n0100_seed1_scene_0073",
+            "n0100_seed1_scene_0074",
+            "n0100_seed1_scene_0075",
+            "n0100_seed1_scene_0076",
+            "n0100_seed1_scene_0077",
+            "n0100_seed1_scene_0078",
+            "n0100_seed1_scene_0080",
+            "n0100_seed1_scene_0082",
+            "n0100_seed1_scene_0083",
+            "n0100_seed1_scene_0084",
+            "n0100_seed1_scene_0085",
+            "n0100_seed1_scene_0087",
+            "n0100_seed1_scene_0088",
+            "n0100_seed1_scene_0089",
+            "n0100_seed1_scene_0095",
+            "n0100_seed1_scene_0096",
+            "n0100_seed1_scene_0097",
+            "n0100_seed1_scene_0098",
+            "n0100_seed1_scene_0099"
+          ],
+          "test_scene_ids": [
+            "n0100_seed1_scene_0000",
+            "n0100_seed1_scene_0003",
+            "n0100_seed1_scene_0007",
+            "n0100_seed1_scene_0013",
+            "n0100_seed1_scene_0020",
+            "n0100_seed1_scene_0028",
+            "n0100_seed1_scene_0035",
+            "n0100_seed1_scene_0039",
+            "n0100_seed1_scene_0052",
+            "n0100_seed1_scene_0053",
+            "n0100_seed1_scene_0069",
+            "n0100_seed1_scene_0072",
+            "n0100_seed1_scene_0079",
+            "n0100_seed1_scene_0081",
+            "n0100_seed1_scene_0086",
+            "n0100_seed1_scene_0090",
+            "n0100_seed1_scene_0091",
+            "n0100_seed1_scene_0092",
+            "n0100_seed1_scene_0093",
+            "n0100_seed1_scene_0094"
+          ],
+          "num_train": 80,
+          "num_test": 20,
+          "metrics": {
+            "learned_W_T": {
+              "r2": 0.025052309036254883,
+              "mean_cosine_similarity": 0.9367333650588989,
+              "mean_relative_l2_error": 0.3508438467979431
+            },
+            "pixel_statistics_baseline": {
+              "r2": 0.45324939489364624,
+              "mean_cosine_similarity": 0.9899776577949524,
+              "mean_relative_l2_error": 0.13501358032226562
+            },
+            "random_encoder_baseline": {
+              "r2": 0.7043614685535431,
+              "mean_cosine_similarity": 0.9868922233581543,
+              "mean_relative_l2_error": 0.14060857892036438
+            },
+            "persistence_baseline": {
+              "r2": 0.16585594415664673,
+              "mean_cosine_similarity": 0.945862889289856,
+              "mean_relative_l2_error": 0.3209671378135681
+            },
+            "mean_baseline": {
+              "r2": -0.05453801155090332,
+              "mean_cosine_similarity": 0.9293825030326843,
+              "mean_relative_l2_error": 0.36622169613838196
+            },
+            "random_pair_control": {
+              "r2": -0.6016521453857422,
+              "mean_cosine_similarity": 0.894900918006897,
+              "mean_relative_l2_error": 0.45036277174949646
+            }
+          },
+          "primary_encoder_frozen_verified": true,
+          "random_encoder_frozen_verified": true,
+          "wall_clock_seconds": 843.2095215320587,
+          "render_dir": "experiments/scale/n0100_seed1"
+        }
+      ],
+      "aggregate": {
+        "learned_W_T": {
+          "r2": {
+            "mean": -0.0203896164894104,
+            "std": 0.04544192552566528,
+            "values": [
+              -0.06583154201507568,
+              0.025052309036254883
+            ]
+          },
+          "mean_cosine_similarity": {
+            "mean": 0.9360690712928772,
+            "std": 0.0006642937660217285,
+            "values": [
+              0.9354047775268555,
+              0.9367333650588989
+            ]
+          },
+          "mean_relative_l2_error": {
+            "mean": 0.35149073600769043,
+            "std": 0.0006468892097473145,
+            "values": [
+              0.35213762521743774,
+              0.3508438467979431
+            ]
+          }
+        },
+        "persistence_baseline": {
+          "r2": {
+            "mean": 0.08236673474311829,
+            "std": 0.08348920941352844,
+            "values": [
+              -0.0011224746704101562,
+              0.16585594415664673
+            ]
+          },
+          "mean_cosine_similarity": {
+            "mean": 0.9429916441440582,
+            "std": 0.0028712451457977295,
+            "values": [
+              0.9401203989982605,
+              0.945862889289856
+            ]
+          },
+          "mean_relative_l2_error": {
+            "mean": 0.3281303644180298,
+            "std": 0.00716322660446167,
+            "values": [
+              0.33529359102249146,
+              0.3209671378135681
+            ]
+          }
+        },
+        "mean_baseline": {
+          "r2": {
+            "mean": -0.05356937646865845,
+            "std": 0.000968635082244873,
+            "values": [
+              -0.052600741386413574,
+              -0.05453801155090332
+            ]
+          },
+          "mean_cosine_similarity": {
+            "mean": 0.9318006932735443,
+            "std": 0.0024181902408599854,
+            "values": [
+              0.9342188835144043,
+              0.9293825030326843
+            ]
+          },
+          "mean_relative_l2_error": {
+            "mean": 0.36041830480098724,
+            "std": 0.005803391337394714,
+            "values": [
+              0.35461491346359253,
+              0.36622169613838196
+            ]
+          }
+        },
+        "random_pair_control": {
+          "r2": {
+            "mean": -0.8133958578109741,
+            "std": 0.21174371242523193,
+            "values": [
+              -1.025139570236206,
+              -0.6016521453857422
+            ]
+          },
+          "mean_cosine_similarity": {
+            "mean": 0.886156290769577,
+            "std": 0.008744627237319946,
+            "values": [
+              0.8774116635322571,
+              0.894900918006897
+            ]
+          },
+          "mean_relative_l2_error": {
+            "mean": 0.46781398355960846,
+            "std": 0.017451211810112,
+            "values": [
+              0.48526519536972046,
+              0.45036277174949646
+            ]
+          }
+        },
+        "pixel_statistics_baseline": {
+          "r2": {
+            "mean": 0.45838266611099243,
+            "std": 0.005133271217346191,
+            "values": [
+              0.4635159373283386,
+              0.45324939489364624
+            ]
+          },
+          "mean_cosine_similarity": {
+            "mean": 0.9905233085155487,
+            "std": 0.0005456507205963135,
+            "values": [
+              0.991068959236145,
+              0.9899776577949524
+            ]
+          },
+          "mean_relative_l2_error": {
+            "mean": 0.13410503417253494,
+            "std": 0.0009085461497306824,
+            "values": [
+              0.13319648802280426,
+              0.13501358032226562
+            ]
+          }
+        },
+        "random_encoder_baseline": {
+          "r2": {
+            "mean": 0.7093371003866196,
+            "std": 0.004975631833076477,
+            "values": [
+              0.714312732219696,
+              0.7043614685535431
+            ]
+          },
+          "mean_cosine_similarity": {
+            "mean": 0.9892729222774506,
+            "std": 0.0023806989192962646,
+            "values": [
+              0.9916536211967468,
+              0.9868922233581543
+            ]
+          },
+          "mean_relative_l2_error": {
+            "mean": 0.12827151641249657,
+            "std": 0.012337062507867813,
+            "values": [
+              0.11593445390462875,
+              0.14060857892036438
+            ]
+          }
+        }
+      },
+      "wall_clock_seconds_total": 1722.378788471222
+    }
+  ],
+  "trend_analysis": {
+    "effect_trend": "strengthens",
+    "margins_by_scale": {
+      "15": -0.7983059734106064,
+      "40": -0.8363128751516342,
+      "100": -0.72972671687603
+    },
+    "plateaued_between_two_largest_scale_points": false,
+    "tolerance_r2": 0.03,
+    "reasoning": "learned_W_T R^2 minus best-baseline R^2 (the 'margin') across the tested scale ladder [15, 40, 100]: [-0.7983, -0.8363, -0.7297]. Classified as 'strengthens' using a fixed +/-0.03 R^2 tolerance for 'materially changed', decided before computing these numbers."
+  },
+  "num_failed_runs": 0,
+  "encoders": {
+    "primary": {
+      "name": "VJEPAEncoder",
+      "checkpoint": "facebook/vjepa2-vitl-fpc64-256",
+      "pretrained": true,
+      "pooling": "mean_pool",
+      "note": "built once, reused unmodified across every scale point/seed"
+    },
+    "pixel_statistics": {
+      "name": "PixelStatisticsBaseline",
+      "grid_size": 8,
+      "output_dim": 192
+    },
+    "random_encoder": {
+      "name": "VJEPAEncoder",
+      "checkpoint": "facebook/vjepa2-vitl-fpc64-256",
+      "pretrained": false,
+      "pooling": "mean_pool",
+      "note": "matched architecture, seeded random weights, built once, reused unmodified across every scale point/seed"
+    }
+  },
+  "fitting": {
+    "method": "ridge",
+    "alpha": 10.0
+  },
+  "render_params": {
+    "resolution": 128,
+    "num_frames": 4,
+    "fps": 4.0,
+    "camera_rotation_azimuth_deg": 30.0
+  },
+  "wall_clock_seconds_total": 2689.3565900325775,
+  "tests": {
+    "passed": 651,
+    "failed": 0,
+    "deselected": 38,
+    "returncode": 0,
+    "command": "pytest -m \"not slow\" -q"
+  },
+  "artifacts": [
+    "experiments/scale/report.md"
+  ],
+  "config": {
+    "scale_ladder": [
+      15,
+      40,
+      100
+    ],
+    "seeds": [
+      0,
+      1
+    ],
+    "train_fraction": 0.8,
+    "output_dir": "experiments/scale",
+    "result_path": "state/task_11_result.json",
+    "resolution": 128,
+    "num_frames": 4,
+    "fps": 4.0,
+    "camera_rotation_azimuth_deg": 30.0,
+    "ridge_alpha": 10.0,
+    "shuffled_pairing_seed": 0,
+    "num_objects_min": 1,
+    "num_objects_max": 3,
+    "pretrained": true,
+    "checkpoint": "facebook/vjepa2-vitl-fpc64-256",
+    "device": null,
+    "fallback_seed": 0
+  },
+  "seed": [
+    0,
+    1
+  ],
+  "software_versions": {
+    "python": "3.11.15",
+    "torch": "2.14.0+cu130",
+    "transformers": "5.17.0"
+  }
+}
