@@ -1,0 +1,213 @@
+{
+  "condition": "static_control",
+  "num_scenes": 40,
+  "base_seed": 1,
+  "train_fraction": 0.8,
+  "window_frames": 4,
+  "motion_config": {
+    "mode": "static",
+    "orbit_deg_per_sec": 0.0
+  },
+  "scenes": [
+    {
+      "scene_id": "scene_0000",
+      "seed": 1000003,
+      "split": "train"
+    },
+    {
+      "scene_id": "scene_0001",
+      "seed": 1000004,
+      "split": "train"
+    },
+    {
+      "scene_id": "scene_0002",
+      "seed": 1000005,
+      "split": "train"
+    },
+    {
+      "scene_id": "scene_0003",
+      "seed": 1000006,
+      "split": "train"
+    },
+    {
+      "scene_id": "scene_0004",
+      "seed": 1000007,
+      "split": "train"
+    },
+    {
+      "scene_id": "scene_0005",
+      "seed": 1000008,
+      "split": "test"
+    },
+    {
+      "scene_id": "scene_0006",
+      "seed": 1000009,
+      "split": "train"
+    },
+    {
+      "scene_id": "scene_0007",
+      "seed": 1000010,
+      "split": "train"
+    },
+    {
+      "scene_id": "scene_0008",
+      "seed": 1000011,
+      "split": "test"
+    },
+    {
+      "scene_id": "scene_0009",
+      "seed": 1000012,
+      "split": "train"
+    },
+    {
+      "scene_id": "scene_0010",
+      "seed": 1000013,
+      "split": "test"
+    },
+    {
+      "scene_id": "scene_0011",
+      "seed": 1000014,
+      "split": "train"
+    },
+    {
+      "scene_id": "scene_0012",
+      "seed": 1000015,
+      "split": "test"
+    },
+    {
+      "scene_id": "scene_0013",
+      "seed": 1000016,
+      "split": "test"
+    },
+    {
+      "scene_id": "scene_0014",
+      "seed": 1000017,
+      "split": "train"
+    },
+    {
+      "scene_id": "scene_0015",
+      "seed": 1000018,
+      "split": "train"
+    },
+    {
+      "scene_id": "scene_0016",
+      "seed": 1000019,
+      "split": "train"
+    },
+    {
+      "scene_id": "scene_0017",
+      "seed": 1000020,
+      "split": "train"
+    },
+    {
+      "scene_id": "scene_0018",
+      "seed": 1000021,
+      "split": "test"
+    },
+    {
+      "scene_id": "scene_0019",
+      "seed": 1000022,
+      "split": "train"
+    },
+    {
+      "scene_id": "scene_0020",
+      "seed": 1000023,
+      "split": "train"
+    },
+    {
+      "scene_id": "scene_0021",
+      "seed": 1000024,
+      "split": "train"
+    },
+    {
+      "scene_id": "scene_0022",
+      "seed": 1000025,
+      "split": "train"
+    },
+    {
+      "scene_id": "scene_0023",
+      "seed": 1000026,
+      "split": "train"
+    },
+    {
+      "scene_id": "scene_0024",
+      "seed": 1000027,
+      "split": "train"
+    },
+    {
+      "scene_id": "scene_0025",
+      "seed": 1000028,
+      "split": "train"
+    },
+    {
+      "scene_id": "scene_0026",
+      "seed": 1000029,
+      "split": "train"
+    },
+    {
+      "scene_id": "scene_0027",
+      "seed": 1000030,
+      "split": "train"
+    },
+    {
+      "scene_id": "scene_0028",
+      "seed": 1000031,
+      "split": "train"
+    },
+    {
+      "scene_id": "scene_0029",
+      "seed": 1000032,
+      "split": "train"
+    },
+    {
+      "scene_id": "scene_0030",
+      "seed": 1000033,
+      "split": "train"
+    },
+    {
+      "scene_id": "scene_0031",
+      "seed": 1000034,
+      "split": "train"
+    },
+    {
+      "scene_id": "scene_0032",
+      "seed": 1000035,
+      "split": "test"
+    },
+    {
+      "scene_id": "scene_0033",
+      "seed": 1000036,
+      "split": "train"
+    },
+    {
+      "scene_id": "scene_0034",
+      "seed": 1000037,
+      "split": "train"
+    },
+    {
+      "scene_id": "scene_0035",
+      "seed": 1000038,
+      "split": "train"
+    },
+    {
+      "scene_id": "scene_0036",
+      "seed": 1000039,
+      "split": "train"
+    },
+    {
+      "scene_id": "scene_0037",
+      "seed": 1000040,
+      "split": "train"
+    },
+    {
+      "scene_id": "scene_0038",
+      "seed": 1000041,
+      "split": "test"
+    },
+    {
+      "scene_id": "scene_0039",
+      "seed": 1000042,
+      "split": "train"
+    }
+  ]
+}

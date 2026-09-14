@@ -1,0 +1,41 @@
+# Task 12 config: temporal geometric consistency.
+#
+# Two independent conditions, each >=40 scenes (Task 6's floor), disjoint
+# scene sets (base_seed_real_motion != base_seed_static_control):
+#   real_motion:    camera orbits at a fixed 30 deg/sec rate
+#   static_control: camera and every object stay motionless
+#
+# Each scene is rendered as ONE continuous 8-frame trajectory
+# (window_frames=4 -> num_frames=8), split into window t1 = frames[0:4]
+# and window t2 = frames[4:8]. At fps=4.0 the two windows' anchor frames
+# are 1.0s apart, so orbit_deg_per_sec=30.0 gives exactly a 30-degree
+# ground-truth rotation between them -- the same fixed magnitude Task
+# 6/7/10/11 use for camera_rotation, for direct comparability. If
+# Hugging Face Hub is unreachable at run time, encoders.vjepa.VJEPAEncoder
+# falls back to a seeded random-weight model of the same architecture and
+# this run's state/task_12_result.json will honestly record
+# encoder.pretrained: false -- see tasks/12_temporal_consistency.md's
+# Inputs section.
+
+num_scenes: 40
+train_fraction: 0.8
+base_seed_real_motion: 0
+base_seed_static_control: 1
+output_dir: experiments/temporal_consistency
+result_path: state/task_12_result.json
+
+resolution: 128
+window_frames: 4
+fps: 4.0
+orbit_deg_per_sec: 30.0
+
+ridge_alpha: 10.0
+shuffled_pairing_seed: 0
+
+num_objects_min: 1
+num_objects_max: 3
+
+pretrained: true
+checkpoint: facebook/vjepa2-vitl-fpc64-256
+device: null
+fallback_seed: 0

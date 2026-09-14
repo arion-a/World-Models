@@ -1,0 +1,339 @@
+{
+  "task": 12,
+  "implementation_status": "COMPLETE",
+  "scientific_result": "On held-out test scenes of the real_motion condition, the linear map W_T fit between temporal window t1 and window t2 achieved R^2=0.306, which did not exceed the best of the three Task-6-style controls (R^2=0.383; margin=-0.077) and did not exceed the static-clip control (R^2=0.609; margin=-0.303). Under this protocol, no measurable linear predictive temporal consistency beyond trivial controls was found for camera-orbit motion with this windowing scheme -- a valid negative result, not a task failure.",
+  "windowing_scheme": {
+    "description": "Each clip is ONE continuous 2*window_frames-frame trajectory; window t1 = frames [0, window_frames), window t2 = frames [window_frames, 2*window_frames) -- non-overlapping, contiguous, adjacent, fixed before any run (never chosen after seeing which split scores best).",
+    "window_frames": 4,
+    "num_frames": 8,
+    "fps": 4.0,
+    "anchor_t1_frame_index": 0,
+    "anchor_t2_frame_index": 4
+  },
+  "motion_config": {
+    "real_motion": {
+      "mode": "orbit",
+      "orbit_deg_per_sec": 30.0,
+      "expected_azimuth_deg_between_window_anchors": 30.0
+    },
+    "static_control": {
+      "mode": "static",
+      "orbit_deg_per_sec": 0.0
+    },
+    "object_motions": null
+  },
+  "dataset": {
+    "real_motion": {
+      "num_scenes": 40,
+      "base_seed": 0,
+      "train_scene_ids": [
+        "scene_0000",
+        "scene_0001",
+        "scene_0002",
+        "scene_0003",
+        "scene_0004",
+        "scene_0006",
+        "scene_0008",
+        "scene_0009",
+        "scene_0010",
+        "scene_0011",
+        "scene_0012",
+        "scene_0013",
+        "scene_0016",
+        "scene_0017",
+        "scene_0018",
+        "scene_0019",
+        "scene_0020",
+        "scene_0021",
+        "scene_0022",
+        "scene_0023",
+        "scene_0024",
+        "scene_0025",
+        "scene_0026",
+        "scene_0027",
+        "scene_0028",
+        "scene_0030",
+        "scene_0032",
+        "scene_0034",
+        "scene_0035",
+        "scene_0036",
+        "scene_0037",
+        "scene_0038"
+      ],
+      "test_scene_ids": [
+        "scene_0005",
+        "scene_0007",
+        "scene_0014",
+        "scene_0015",
+        "scene_0029",
+        "scene_0031",
+        "scene_0033",
+        "scene_0039"
+      ],
+      "train_fraction": 0.8
+    },
+    "static_control": {
+      "num_scenes": 40,
+      "base_seed": 1,
+      "train_scene_ids": [
+        "scene_0000",
+        "scene_0001",
+        "scene_0002",
+        "scene_0003",
+        "scene_0004",
+        "scene_0006",
+        "scene_0007",
+        "scene_0009",
+        "scene_0011",
+        "scene_0014",
+        "scene_0015",
+        "scene_0016",
+        "scene_0017",
+        "scene_0019",
+        "scene_0020",
+        "scene_0021",
+        "scene_0022",
+        "scene_0023",
+        "scene_0024",
+        "scene_0025",
+        "scene_0026",
+        "scene_0027",
+        "scene_0028",
+        "scene_0029",
+        "scene_0030",
+        "scene_0031",
+        "scene_0033",
+        "scene_0034",
+        "scene_0035",
+        "scene_0036",
+        "scene_0037",
+        "scene_0039"
+      ],
+      "test_scene_ids": [
+        "scene_0005",
+        "scene_0008",
+        "scene_0010",
+        "scene_0012",
+        "scene_0013",
+        "scene_0018",
+        "scene_0032",
+        "scene_0038"
+      ],
+      "train_fraction": 0.8
+    },
+    "conditions_scene_disjointness": "real_motion and static_control use two entirely different sampled scene sets (different base_seed -> disjoint scene-seed ranges under gclib.sample_scenes's seed = base_seed*1_000_003 + i convention), verified pairwise disjoint at assembly time -- the static-clip control is NOT a motion-disabled variant of the real_motion scenes, so no scene can appear as train in one condition and test in the other."
+  },
+  "fitting": {
+    "method": "ridge",
+    "alpha": 10.0
+  },
+  "metrics": {
+    "real_motion": {
+      "learned_W_T": {
+        "r2": 0.30600184202194214,
+        "mean_cosine_similarity": 0.9841257333755493,
+        "mean_relative_l2_error": 0.17671537399291992
+      },
+      "persistence_baseline": {
+        "r2": 0.3828967809677124,
+        "mean_cosine_similarity": 0.9859200119972229,
+        "mean_relative_l2_error": 0.16494223475456238
+      },
+      "mean_baseline": {
+        "r2": -0.16819703578948975,
+        "mean_cosine_similarity": 0.9732338786125183,
+        "mean_relative_l2_error": 0.2281665802001953
+      },
+      "random_pair_control": {
+        "r2": -0.41300225257873535,
+        "mean_cosine_similarity": 0.9678754210472107,
+        "mean_relative_l2_error": 0.24867099523544312
+      }
+    },
+    "static_clip_control": {
+      "learned_W_T": {
+        "r2": 0.6089887022972107,
+        "mean_cosine_similarity": 0.98233562707901,
+        "mean_relative_l2_error": 0.18589463829994202
+      },
+      "persistence_baseline": {
+        "r2": 1.0,
+        "mean_cosine_similarity": 1.0,
+        "mean_relative_l2_error": 0.0
+      },
+      "mean_baseline": {
+        "r2": -0.31206631660461426,
+        "mean_cosine_similarity": 0.939618706703186,
+        "mean_relative_l2_error": 0.33943647146224976
+      },
+      "random_pair_control": {
+        "r2": -1.6605322360992432,
+        "mean_cosine_similarity": 0.8821635842323303,
+        "mean_relative_l2_error": 0.4809427559375763
+      }
+    }
+  },
+  "static_clip_control": {
+    "learned_W_T": {
+      "r2": 0.6089887022972107,
+      "mean_cosine_similarity": 0.98233562707901,
+      "mean_relative_l2_error": 0.18589463829994202
+    },
+    "persistence_baseline": {
+      "r2": 1.0,
+      "mean_cosine_similarity": 1.0,
+      "mean_relative_l2_error": 0.0
+    },
+    "mean_baseline": {
+      "r2": -0.31206631660461426,
+      "mean_cosine_similarity": 0.939618706703186,
+      "mean_relative_l2_error": 0.33943647146224976
+    },
+    "random_pair_control": {
+      "r2": -1.6605322360992432,
+      "mean_cosine_similarity": 0.8821635842323303,
+      "mean_relative_l2_error": 0.4809427559375763
+    }
+  },
+  "margins": {
+    "real_motion_learned_W_T_minus_own_best_baseline": -0.07689493894577026,
+    "real_motion_learned_W_T_minus_static_control_learned_W_T": -0.30298686027526855
+  },
+  "pixel_diff_stats": {
+    "real_motion": {
+      "mean_abs_pixel_diff": 8.345188776652018,
+      "std_abs_pixel_diff": 5.490560677379047,
+      "per_scene_mean_abs_pixel_diff": [
+        7.475718180338542,
+        10.031361897786459,
+        5.441457112630208,
+        8.109731038411459,
+        9.006474812825521,
+        14.911310831705729,
+        6.6389211018880205,
+        17.100255330403645,
+        6.913665771484375,
+        4.491282145182292,
+        29.343597412109375,
+        3.84527587890625,
+        4.9540456136067705,
+        11.08428955078125,
+        7.4005279541015625,
+        11.974706013997396,
+        7.044718424479167,
+        4.895751953125,
+        6.7282969156901045,
+        1.88641357421875,
+        4.651092529296875,
+        0.9830322265625,
+        6.5653228759765625,
+        2.666534423828125,
+        4.116628011067708,
+        16.876536051432293,
+        19.516270955403645,
+        4.282806396484375,
+        7.3648122151692705,
+        2.715021769205729,
+        13.542963663736979,
+        6.4098256429036455,
+        13.090250651041666,
+        9.352569580078125,
+        7.25140380859375,
+        4.332570393880208,
+        3.943089803059896,
+        13.399078369140625,
+        4.2856699625651045,
+        9.184270222981771
+      ]
+    },
+    "static_control": {
+      "mean_abs_pixel_diff": 0.0,
+      "std_abs_pixel_diff": 0.0,
+      "per_scene_mean_abs_pixel_diff": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    }
+  },
+  "encoder": {
+    "name": "VJEPAEncoder",
+    "checkpoint": "facebook/vjepa2-vitl-fpc64-256",
+    "pretrained": true,
+    "frozen": true,
+    "pooling": "mean_pool"
+  },
+  "tests": {
+    "passed": 677,
+    "failed": 0,
+    "returncode": 0
+  },
+  "artifacts": [
+    "experiments/temporal_consistency/real_motion/manifest.json",
+    "experiments/temporal_consistency/static_control/manifest.json",
+    "experiments/temporal_consistency/report.md"
+  ],
+  "config": {
+    "num_scenes": 40,
+    "train_fraction": 0.8,
+    "base_seed_real_motion": 0,
+    "base_seed_static_control": 1,
+    "output_dir": "experiments/temporal_consistency",
+    "result_path": "state/task_12_result.json",
+    "resolution": 128,
+    "window_frames": 4,
+    "fps": 4.0,
+    "orbit_deg_per_sec": 30.0,
+    "ridge_alpha": 10.0,
+    "shuffled_pairing_seed": 0,
+    "num_objects_min": 1,
+    "num_objects_max": 3,
+    "pretrained": true,
+    "checkpoint": "facebook/vjepa2-vitl-fpc64-256",
+    "device": null,
+    "fallback_seed": 0
+  },
+  "seed": 0,
+  "software_versions": {
+    "python": "3.11.15",
+    "torch": "2.14.0+cu130",
+    "transformers": "5.17.0"
+  }
+}
