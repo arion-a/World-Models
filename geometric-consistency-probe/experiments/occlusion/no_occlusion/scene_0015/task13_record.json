@@ -1,0 +1,54 @@
+{
+  "scene_id": "scene_0015",
+  "seed": 15,
+  "attempt": 0,
+  "condition": "no_occlusion",
+  "label": {
+    "frame_index": 8,
+    "post_occlusion_position_x": 0.8076296476494502,
+    "post_occlusion_velocity_x": 1.2922074362391203
+  },
+  "verification": {
+    "counts": [
+      194,
+      188,
+      188,
+      182,
+      177,
+      177,
+      174,
+      174,
+      178,
+      180,
+      182,
+      191
+    ],
+    "threshold": 8,
+    "min_count": 174,
+    "passed": true
+  },
+  "tracked_params": {
+    "shape": "monkey",
+    "scale": 0.6131634222672115,
+    "rotation_euler": [
+      2.1639714802574357,
+      0.2817265666987764,
+      3.591451487018492
+    ],
+    "color": [
+      0.21699634137887802,
+      0.675017101500377,
+      0.37628520326067183
+    ],
+    "x_ext_jitter": 0.9871029026826613,
+    "floor_shade": 0.7403751549560701,
+    "light_azimuth_deg": 281.32776999793106,
+    "light_elevation_deg": 63.75160181055904,
+    "light_energy": 3.8877859601871507,
+    "occluder_color": [
+      0.8532970900687146,
+      0.11466065550008785,
+      0.811347124713489
+    ]
+  }
+}

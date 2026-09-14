@@ -14,7 +14,7 @@
     11,
     12
   ],
-  "status": "READY",
+  "status": "PASSED",
   "attempts": {
     "6": 1,
     "7": 2,
@@ -22,7 +22,8 @@
     "9": 1,
     "10": 2,
     "11": 1,
-    "12": 1
+    "12": 1,
+    "13": 2
   },
   "commits": {
     "6": "3bc16304b57b4fe8138490b8d554457380ecce64",
@@ -336,6 +337,51 @@
           "details": []
         }
       ]
+    },
+    "13": {
+      "task": 13,
+      "passed": true,
+      "layers": [
+        {
+          "name": "A. SOFTWARE CORRECTNESS",
+          "passed": true,
+          "details": [
+            "test command ['pytest', '-m', 'not slow', '-q'] exited 0"
+          ]
+        },
+        {
+          "name": "B. TASK ACCEPTANCE",
+          "passed": true,
+          "details": []
+        },
+        {
+          "name": "C. SCIENTIFIC VALIDITY",
+          "passed": true,
+          "details": []
+        },
+        {
+          "name": "D. RESEARCH ALIGNMENT",
+          "passed": true,
+          "details": []
+        },
+        {
+          "name": "E. DATA LEAKAGE",
+          "passed": true,
+          "details": []
+        },
+        {
+          "name": "F. REPRODUCIBILITY",
+          "passed": true,
+          "details": []
+        },
+        {
+          "name": "G. REGRESSION",
+          "passed": true,
+          "details": [
+            "protected file(s) changed WITH recorded justification: ['IMPLEMENTATION_NOTES.md'] -- 'IMPLEMENTATION_NOTES.md (a Task 1-5 protected file) was appended to -- not edited elsewhere -- with a new \\'Task 13: empirical calibration of the occlusion \"rig\"\\' section, per this repo\\'s project-principles rule that every non-trivial empirically-verified assumption (here: the camera/occluder/path geometry needed to reliably produce genuine, segmentation-verified occlusion under bpy\\'s real perspective projection, plus the discovered near-perfect correlation between the two probed post-occlusion variables) is written down in IMPLEMENTATION_NOTES.md rather than left in scrollback. No Task 1-5 code, test, or methodology was changed; only this new dated section was added.'"
+          ]
+        }
+      ]
     }
   },
   "sync": {
@@ -374,6 +420,12 @@
       "path": "/home/user/World-Models/geometric-consistency-probe/tasks/12_temporal_consistency.md",
       "title": "Temporal geometric consistency",
       "timestamp": "2026-09-14T14:26:38+00:00"
+    },
+    "13": {
+      "changed": true,
+      "path": "/home/user/World-Models/geometric-consistency-probe/tasks/13_occlusion.md",
+      "title": "Object persistence under occlusion",
+      "timestamp": "2026-09-14T15:13:59+00:00"
     }
   },
   "blockers": {},
@@ -1111,7 +1163,79 @@
       "to_status": "READY",
       "task": 12,
       "commit": "4dd0b69f28f9817c626ae6fd00fa425dfec55d0b"
+    },
+    {
+      "event": "sync",
+      "timestamp": "2026-09-14T15:13:59+00:00",
+      "task": 13,
+      "changed": true
+    },
+    {
+      "event": "transition",
+      "timestamp": "2026-09-14T15:13:59+00:00",
+      "from_status": "READY",
+      "to_status": "RUNNING",
+      "task": 13
+    },
+    {
+      "event": "attempt",
+      "timestamp": "2026-09-14T15:13:59+00:00",
+      "task": 13,
+      "attempt": 1
+    },
+    {
+      "event": "transition",
+      "timestamp": "2026-09-14T16:01:33+00:00",
+      "from_status": "RUNNING",
+      "to_status": "QA",
+      "task": 13
+    },
+    {
+      "event": "qa",
+      "timestamp": "2026-09-14T16:04:20+00:00",
+      "task": 13,
+      "passed": false
+    },
+    {
+      "event": "transition",
+      "timestamp": "2026-09-14T16:04:20+00:00",
+      "from_status": "QA",
+      "to_status": "FIXING",
+      "task": 13
+    },
+    {
+      "event": "transition",
+      "timestamp": "2026-09-14T16:04:20+00:00",
+      "from_status": "FIXING",
+      "to_status": "RUNNING",
+      "task": 13
+    },
+    {
+      "event": "attempt",
+      "timestamp": "2026-09-14T16:04:20+00:00",
+      "task": 13,
+      "attempt": 2
+    },
+    {
+      "event": "transition",
+      "timestamp": "2026-09-14T16:07:56+00:00",
+      "from_status": "RUNNING",
+      "to_status": "QA",
+      "task": 13
+    },
+    {
+      "event": "qa",
+      "timestamp": "2026-09-14T16:10:43+00:00",
+      "task": 13,
+      "passed": true
+    },
+    {
+      "event": "transition",
+      "timestamp": "2026-09-14T16:10:43+00:00",
+      "from_status": "QA",
+      "to_status": "PASSED",
+      "task": 13
     }
   ],
-  "updated_at": "2026-09-14T14:57:09+00:00"
+  "updated_at": "2026-09-14T16:10:43+00:00"
 }

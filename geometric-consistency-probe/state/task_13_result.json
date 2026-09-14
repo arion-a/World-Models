@@ -1,0 +1,312 @@
+{
+  "task": 13,
+  "protected_files_justification": "IMPLEMENTATION_NOTES.md (a Task 1-5 protected file) was appended to -- not edited elsewhere -- with a new 'Task 13: empirical calibration of the occlusion \"rig\"' section, per this repo's project-principles rule that every non-trivial empirically-verified assumption (here: the camera/occluder/path geometry needed to reliably produce genuine, segmentation-verified occlusion under bpy's real perspective projection, plus the discovered near-perfect correlation between the two probed post-occlusion variables) is written down in IMPLEMENTATION_NOTES.md rather than left in scrollback. No Task 1-5 code, test, or methodology was changed; only this new dated section was added.",
+  "implementation_status": "COMPLETE",
+  "scientific_result": "Across the 2 post-occlusion physical-state variables probed (post_occlusion_position_x, post_occlusion_velocity_x), evaluated with an identical scene set, scene-level train/test split, encoder, pooling, and linear ridge probe: 0/2 variables showed the post-occlusion representation's real probe exceeding the object-identity-scrambled control (none). This does NOT confirm the hypothesis for every variable probed -- a valid negative/mixed result: for at least one variable, the post-occlusion representation was no more informative than a scrambled-identity relabeling, i.e. no measurable persistence advantage was found for that quantity under this protocol. Reported plainly rather than adjusted to force a positive-looking result. IMPORTANT CAVEAT: the no_occlusion upper-bound condition (tracked object visible throughout, identical scene setup and labels) ALSO scored at or below the mean-prediction baseline for every variable. Since even the un-occluded control failed to show recoverability above baseline, this run's negative result should be read as 'no measurable linear recoverability of this state parameterization from mean-pooled Z under this protocol at all' rather than as 'occlusion specifically destroys otherwise-recoverable information' -- the two are not distinguishable from this result alone (candidate reasons include the narrow per-scene label range used here and the small held-out test-set size; see tasks/13_occlusion.md's interpretation limits).\n\nPer-variable detail:\n- post_occlusion_position_x: post-occlusion real probe R^2=-0.493 vs. scrambled-identity control R^2=-0.035 (mean baseline R^2=-0.007); no_occlusion upper bound R^2=-0.637; real probe did NOT exceed the scrambled-identity control.\n- post_occlusion_velocity_x: post-occlusion real probe R^2=-0.493 vs. scrambled-identity control R^2=-0.035 (mean baseline R^2=-0.007); no_occlusion upper bound R^2=-0.637; real probe did NOT exceed the scrambled-identity control.",
+  "occlusion_scenario": {
+    "description": "One fixed camera + a static opaque cube occluder (the 'rig'), shared by every scene. A tracked object (instance_id=1) moves at constant world-frame X velocity across a single continuous 12-frame trajectory, split into three 4-frame windows (pre-occlusion, occluded, post-occlusion). In the occlusion condition the tracked object's path is farther from the camera than the occluder (fully hidden behind it during the occluded window, verified via segmentation); in the no_occlusion condition the IDENTICAL per-scene random draws (shape/scale/rotation/color/path-extent) place the tracked object's path nearer the camera than the occluder, so it is visible throughout -- the required upper-bound control.",
+    "window_frames": 4,
+    "num_frames": 12,
+    "fps": 4.0,
+    "pre_occlusion_window": [
+      0,
+      4
+    ],
+    "occluded_window": [
+      4,
+      8
+    ],
+    "post_occlusion_window": [
+      8,
+      12
+    ],
+    "occlusion_pixel_threshold": 8,
+    "rig": {
+      "camera_radius": 7.0,
+      "camera_azimuth_deg": 270.0,
+      "camera_elevation_deg": 25.0,
+      "occluder_scale": 1.9,
+      "tracked_y_occlusion": 1.6,
+      "tracked_y_no_occlusion": -1.6
+    }
+  },
+  "occlusion_verification": {
+    "measured_occlusion_duration_frames_by_scene": {
+      "scene_0000": 4,
+      "scene_0001": 4,
+      "scene_0002": 4,
+      "scene_0003": 4,
+      "scene_0004": 4,
+      "scene_0005": 4,
+      "scene_0006": 4,
+      "scene_0007": 4,
+      "scene_0008": 4,
+      "scene_0009": 4,
+      "scene_0010": 4,
+      "scene_0011": 4,
+      "scene_0012": 4,
+      "scene_0013": 4,
+      "scene_0014": 4,
+      "scene_0015": 4,
+      "scene_0016": 4,
+      "scene_0017": 4,
+      "scene_0018": 4,
+      "scene_0019": 4,
+      "scene_0020": 4,
+      "scene_0021": 4,
+      "scene_0022": 4,
+      "scene_0023": 4,
+      "scene_0024": 4,
+      "scene_0025": 4,
+      "scene_0026": 4,
+      "scene_0027": 4,
+      "scene_0028": 4,
+      "scene_0029": 4,
+      "scene_0030": 4,
+      "scene_0031": 4,
+      "scene_0032": 4,
+      "scene_0033": 4,
+      "scene_0034": 4,
+      "scene_0035": 4,
+      "scene_0036": 4,
+      "scene_0037": 4,
+      "scene_0038": 4,
+      "scene_0039": 4
+    },
+    "all_scenes_verified": true,
+    "note": "Every occlusion-condition scene's segmentation-based verification (verify_occlusion) PASSED before being included here (load_condition_cache raises otherwise); measured duration was 4 frames (the full occluded window) for every scene in this run, by construction (see IMPLEMENTATION_NOTES.md's empirical occlusion-rig calibration) -- a systematic sweep of MULTIPLE distinct occlusion durations was judged out of scope for this run's compute/time budget and was not pursued further to avoid weakening the rig's reliability margin; this is a documented scope limitation, not a claim that duration has no effect."
+  },
+  "variables_probed": [
+    "post_occlusion_position_x",
+    "post_occlusion_velocity_x"
+  ],
+  "dataset": {
+    "num_scenes": 40,
+    "train_scene_ids": [
+      "scene_0000",
+      "scene_0001",
+      "scene_0002",
+      "scene_0003",
+      "scene_0004",
+      "scene_0006",
+      "scene_0008",
+      "scene_0009",
+      "scene_0010",
+      "scene_0011",
+      "scene_0012",
+      "scene_0013",
+      "scene_0016",
+      "scene_0017",
+      "scene_0018",
+      "scene_0019",
+      "scene_0020",
+      "scene_0021",
+      "scene_0022",
+      "scene_0023",
+      "scene_0024",
+      "scene_0025",
+      "scene_0026",
+      "scene_0027",
+      "scene_0028",
+      "scene_0030",
+      "scene_0032",
+      "scene_0034",
+      "scene_0035",
+      "scene_0036",
+      "scene_0037",
+      "scene_0038"
+    ],
+    "test_scene_ids": [
+      "scene_0005",
+      "scene_0007",
+      "scene_0014",
+      "scene_0015",
+      "scene_0029",
+      "scene_0031",
+      "scene_0033",
+      "scene_0039"
+    ],
+    "train_fraction": 0.8,
+    "base_seed": 0
+  },
+  "encoder": {
+    "name": "VJEPAEncoder",
+    "checkpoint": "facebook/vjepa2-vitl-fpc64-256",
+    "pretrained": true,
+    "pooling": "mean_pool"
+  },
+  "fitting": {
+    "method": "ridge",
+    "alpha": 10.0
+  },
+  "metrics": {
+    "post_occlusion_position_x": {
+      "occlusion_condition": {
+        "variable": "post_occlusion_position_x",
+        "real_probe": {
+          "r2": -0.4929714941830541,
+          "mae": 0.14180608008728443,
+          "rmse": 0.16336863853540892
+        },
+        "scrambled_identity_control": {
+          "r2": -0.035110005142770184,
+          "mae": 0.15129618850481247,
+          "rmse": 0.17899211595296946
+        },
+        "mean_baseline": {
+          "r2": -0.007123414327359745,
+          "mae": 0.13075092141137928,
+          "rmse": 0.14750867171133739
+        }
+      },
+      "no_occlusion_condition": {
+        "variable": "post_occlusion_position_x",
+        "real_probe": {
+          "r2": -0.6374777119395001,
+          "mae": 0.087150149657891,
+          "rmse": 0.10200480870595995
+        },
+        "scrambled_identity_control": {
+          "r2": 0.22426928090902143,
+          "mae": 0.08365979338832771,
+          "rmse": 0.09562747283821797
+        },
+        "mean_baseline": {
+          "r2": -0.007123414327359967,
+          "mae": 0.07845055284682759,
+          "rmse": 0.08850520302680237
+        }
+      },
+      "diagnostic_occluded_window_probe": {
+        "r2": -0.4536007556155053,
+        "mae": 0.14979519950459685,
+        "rmse": 0.17988962424386326
+      },
+      "diagnostic_pre_window_probe": {
+        "r2": 0.3736781282463789,
+        "mae": 0.13799282349046532,
+        "rmse": 0.1575421786264488
+      }
+    },
+    "post_occlusion_velocity_x": {
+      "occlusion_condition": {
+        "variable": "post_occlusion_velocity_x",
+        "real_probe": {
+          "r2": -0.4929712288692285,
+          "mae": 0.22688971472861,
+          "rmse": 0.26138981069544975
+        },
+        "scrambled_identity_control": {
+          "r2": -0.035109967029289146,
+          "mae": 0.24207390011758378,
+          "rmse": 0.2863873790507776
+        },
+        "mean_baseline": {
+          "r2": -0.007123414327359523,
+          "mae": 0.2092014742582068,
+          "rmse": 0.23601387473813976
+        }
+      },
+      "no_occlusion_condition": {
+        "variable": "post_occlusion_velocity_x",
+        "real_probe": {
+          "r2": -0.6374776754835014,
+          "mae": 0.1394402379625095,
+          "rmse": 0.16320769329238624
+        },
+        "scrambled_identity_control": {
+          "r2": 0.22426957896619526,
+          "mae": 0.13385566048062764,
+          "rmse": 0.15300394556058766
+        },
+        "mean_baseline": {
+          "r2": -0.007123414327359745,
+          "mae": 0.12552088455492413,
+          "rmse": 0.14160832484288383
+        }
+      },
+      "diagnostic_occluded_window_probe": {
+        "r2": -0.4535994186614025,
+        "mae": 0.2396722908951487,
+        "rmse": 0.28782334339923693
+      },
+      "diagnostic_pre_window_probe": {
+        "r2": 0.3736788391835897,
+        "mae": 0.22078852205509286,
+        "rmse": 0.2520675014113047
+      }
+    }
+  },
+  "trivial_cue_investigation": {
+    "correlations": {
+      "position_x_vs_color_r": [
+        0.16560693293018047,
+        -0.32024679796001615,
+        -0.2710534815735905
+      ],
+      "position_x_vs_floor_shade_r": 0.04274717212188145,
+      "position_x_vs_light_energy_r": 0.06832507898240898,
+      "position_x_vs_tracked_scale_r": 0.08220118318250105,
+      "velocity_x_vs_color_r": [
+        0.16560693293018042,
+        -0.3202467979600163,
+        -0.2710534815735904
+      ],
+      "velocity_x_vs_floor_shade_r": 0.04274717212188126,
+      "velocity_x_vs_light_energy_r": 0.06832507898240883,
+      "velocity_x_vs_tracked_scale_r": 0.08220118318250133
+    },
+    "max_abs_correlation": 0.3202467979600163,
+    "position_velocity_label_correlation_r": 0.9999999999999998,
+    "note": "Every confound above (tracked-object color/scale, floor shade, light energy) is drawn from an RNG stream independent of the tracked object's motion parameters (x-extent jitter, hence position_x/velocity_x) -- a small |r| here is the EXPECTED result confirming no accidental sampling confound could explain a positive probe result via these trivial cues, not evidence either way about genuine occlusion persistence (that is what the scrambled-identity/no_occlusion comparisons test). SEPARATE CAVEAT (not a confound check): position_x and velocity_x are both deterministic linear functions of the SAME single per-scene random draw (x_ext_jitter, see build_scene_and_trajectory) under this rig's constant-velocity, fixed-duration motion, so `position_velocity_label_correlation_r` is expected to be close to +-1 -- the two 'variables' probed in this run are an affine reparametrization of ONE underlying degree of freedom, not two independent physical quantities. This is disclosed so a '2/2' or '0/2' variable count in `scientific_result` is read as one test viewed two ways, not as two independent confirmations."
+  },
+  "scrambled_identity_control": {
+    "method": "Task 8's shuffled_label_permutation applied to TRAIN labels only, a genuine derangement for n>1",
+    "seed": 0
+  },
+  "tests": {
+    "passed": 703,
+    "failed": 0,
+    "returncode": 0
+  },
+  "artifacts": [
+    "experiments/occlusion/manifest.json",
+    "experiments/occlusion/report.md"
+  ],
+  "config": {
+    "num_scenes": 40,
+    "train_fraction": 0.8,
+    "base_seed": 0,
+    "output_dir": "experiments/occlusion",
+    "result_path": "state/task_13_result.json",
+    "resolution": 128,
+    "window_frames": 4,
+    "fps": 4.0,
+    "ridge_alpha": 10.0,
+    "scramble_seed": 0,
+    "pretrained": true,
+    "checkpoint": "facebook/vjepa2-vitl-fpc64-256",
+    "device": null,
+    "fallback_seed": 0,
+    "max_resample_attempts": 3,
+    "camera_radius": 7.0,
+    "camera_azimuth_deg": 270.0,
+    "camera_elevation_deg": 25.0,
+    "occluder_scale": 1.9,
+    "tracked_z": 1.0,
+    "tracked_y_occlusion": 1.6,
+    "tracked_y_no_occlusion": -1.6,
+    "base_x_ext_occlusion": 3.0,
+    "base_x_ext_no_occlusion": 1.8,
+    "x_ext_jitter_low": 0.85,
+    "x_ext_jitter_high": 1.15,
+    "tracked_scale_low": 0.45,
+    "tracked_scale_high": 0.65
+  },
+  "seed": 0,
+  "software_versions": {
+    "python": "3.11.15",
+    "torch": "2.14.0+cu130",
+    "transformers": "5.17.0"
+  }
+}

@@ -610,6 +610,64 @@ forward pass produced a finite `(64, 1024)` representation, and the full
 fast suite (102 tests, `pytest -m "not slow"`) still passes with the new
 checkpoint's config wired through.
 
+## Task 13: empirical calibration of the occlusion "rig"
+
+`experiments/task13_occlusion.py` needed a scene geometry that reliably
+produces GENUINE occlusion (verified via segmentation, not assumed) for
+a tracked object passing behind a static occluder, robust across the
+full per-scene randomization range (shape, scale, rotation, color,
+path-extent jitter). This was tuned empirically against real
+`generation.bpy_renderer.render_trajectory` output, not derived
+analytically, because Blender's actual perspective projection/
+rasterization (not a simplified pinhole-point model) is what determines
+whether a shape's silhouette is actually fully covered:
+
+- A fixed camera (`camera_radius=7.0`, `azimuth=270deg`, `elevation=25deg`)
+  and a static cube occluder (`scale=1.9`, resting on the floor at
+  `position=(0,0,scale/2)`) were chosen so the occluder's projected
+  angular footprint is wide enough to fully cover the tracked object at
+  its (farther) depth across the WORST empirically-tested case (shape=
+  "monkey", scale=0.65, a non-trivial rotation) -- verified by directly
+  rendering and checking `segmentation` pixel counts, not by hand
+  projection math (an early pinhole-projection-only sanity check
+  under-predicted the needed occluder size because it used point-source
+  projection rather than the object's actual silhouette extent).
+- The tracked object's path (`x` from `-x_ext` to `+x_ext` at constant
+  velocity, `x_ext = base_x_ext * per-scene jitter in [0.85, 1.15]`) uses
+  DIFFERENT `base_x_ext` values for the occlusion condition (3.0, at
+  depth `y=1.6`, farther from the camera than the occluder) vs. the
+  no_occlusion condition (1.8, at depth `y=-1.6`, nearer the camera) --
+  an object nearer the camera exits the camera frustum at a SMALLER
+  world-space `x` than the same object farther away (an early attempt
+  using one shared `x_ext` for both conditions caused the no_occlusion
+  control's tracked object to clip out of frame at the path's
+  endpoints, which would have been indistinguishable from "occluded" by
+  the resulting zero segmentation count -- caught by rendering and
+  inspecting actual per-frame pixel counts before committing to the
+  final rig, not assumed).
+- At `resolution=128`, this rig produces EXACTLY zero tracked-instance
+  pixels for all 4 frames of the occluded window
+  (`[window_frames, 2*window_frames)`) and comfortably nonzero counts in
+  every pre/post-occlusion frame, across every one of the real Task 13
+  run's 40 occlusion-condition scenes and 40 no_occlusion-condition
+  scenes (zero resample-retry failures needed) -- see
+  `state/task_13_result.json`'s `occlusion_verification` block.
+- A consequence of this rig's fixed-duration, constant-velocity
+  construction: the two probed variables (`post_occlusion_position_x`,
+  `post_occlusion_velocity_x`) turned out to be near-perfectly
+  correlated (Pearson r approx 1.0 across the real 40-scene run -- see
+  `state/task_13_result.json`'s
+  `trivial_cue_investigation.position_velocity_label_correlation_r`)
+  because both are deterministic linear functions of the single
+  per-scene `x_ext` jitter draw. This is disclosed in the result JSON
+  and is not a leakage bug -- it means this run's "2 variables" should
+  be read as one underlying degree of freedom probed two ways, not two
+  independent confirmations. A follow-up run wanting genuinely
+  independent state variables would need a second, independently-jittered
+  degree of freedom (e.g. per-scene z-height, subject to re-verifying it
+  does not break vertical occlusion coverage against the occluder's own
+  height).
+
 ## Deferred to later versions
 
 Explicitly out of scope until V0's core loop is validated with real

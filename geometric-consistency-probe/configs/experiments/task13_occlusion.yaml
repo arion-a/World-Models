@@ -1,0 +1,56 @@
+# Task 13 config: object persistence under occlusion.
+#
+# One fixed camera + static occluder "rig" (see IMPLEMENTATION_NOTES.md
+# for the empirical calibration), shared by every scene. A tracked
+# object (instance_id=1) moves at constant world-frame X velocity across
+# a single continuous 12-frame trajectory (window_frames=4 -> 3 windows
+# of 4 frames each): pre-occlusion [0,4), occluded [4,8), post-occlusion
+# [8,12).
+#
+#   occlusion:    tracked object's path is farther from the camera than
+#                 the occluder -> fully hidden during the occluded
+#                 window, verified via segmentation (verify_occlusion).
+#   no_occlusion: IDENTICAL per-scene random draws (shape/scale/
+#                 rotation/color/path-extent), but the tracked object's
+#                 path is nearer the camera than the occluder -> visible
+#                 throughout (verify_visible_throughout) -- the required
+#                 upper-bound control.
+#
+# If Hugging Face Hub is unreachable at run time, encoders.vjepa.
+# VJEPAEncoder falls back to a seeded random-weight model of the same
+# architecture and this run's state/task_13_result.json will honestly
+# record encoder.pretrained: false.
+
+num_scenes: 40
+train_fraction: 0.8
+base_seed: 0
+output_dir: experiments/occlusion
+result_path: state/task_13_result.json
+
+resolution: 128
+window_frames: 4
+fps: 4.0
+
+ridge_alpha: 10.0
+scramble_seed: 0
+
+pretrained: true
+checkpoint: facebook/vjepa2-vitl-fpc64-256
+device: null
+fallback_seed: 0
+
+max_resample_attempts: 3
+
+camera_radius: 7.0
+camera_azimuth_deg: 270.0
+camera_elevation_deg: 25.0
+occluder_scale: 1.9
+tracked_z: 1.0
+tracked_y_occlusion: 1.6
+tracked_y_no_occlusion: -1.6
+base_x_ext_occlusion: 3.0
+base_x_ext_no_occlusion: 1.8
+x_ext_jitter_low: 0.85
+x_ext_jitter_high: 1.15
+tracked_scale_low: 0.45
+tracked_scale_high: 0.65
