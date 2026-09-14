@@ -1,0 +1,48 @@
+# Task 13 FOLLOW-UP: same occlusion rig, larger sample size (100 vs. the
+# original 40), to check whether the ambiguous negative result (real
+# probe and even the no_occlusion upper bound both failing to beat
+# baseline) is a small-test-set artifact -- one of the two candidate
+# reasons the original result explicitly flagged.
+#
+# This is a SEPARATE, additional investigation, not a redo of Task 13:
+# it writes to its own output_dir/result_path and never touches
+# state/task_13_result.json or that task's checkpoint commit. Every
+# other rig parameter is identical to configs/experiments/
+# task13_occlusion.yaml for a valid apples-to-apples comparison; scene
+# generation is deterministic by index, so scenes 0-39 here are
+# bit-identical to the original run's 40 scenes (a nested superset, not
+# an independent resample).
+
+num_scenes: 100
+train_fraction: 0.8
+base_seed: 0
+output_dir: experiments/occlusion_followup_n100
+result_path: experiments/occlusion_followup_n100/result.json
+
+resolution: 128
+window_frames: 4
+fps: 4.0
+
+ridge_alpha: 10.0
+scramble_seed: 0
+
+pretrained: true
+checkpoint: facebook/vjepa2-vitl-fpc64-256
+device: null
+fallback_seed: 0
+
+max_resample_attempts: 3
+
+camera_radius: 7.0
+camera_azimuth_deg: 270.0
+camera_elevation_deg: 25.0
+occluder_scale: 1.9
+tracked_z: 1.0
+tracked_y_occlusion: 1.6
+tracked_y_no_occlusion: -1.6
+base_x_ext_occlusion: 3.0
+base_x_ext_no_occlusion: 1.8
+x_ext_jitter_low: 0.85
+x_ext_jitter_high: 1.15
+tracked_scale_low: 0.45
+tracked_scale_high: 0.65

@@ -1,0 +1,65 @@
+{
+  "scene_id": "scene_0047",
+  "seed": 47,
+  "attempt": 0,
+  "condition": "occlusion",
+  "label": {
+    "frame_index": 8,
+    "post_occlusion_position_x": 1.3690143097849727,
+    "post_occlusion_velocity_x": 2.190422895655957
+  },
+  "verification": {
+    "counts": [
+      179,
+      171,
+      159,
+      71,
+      0,
+      0,
+      0,
+      0,
+      61,
+      137,
+      149,
+      161
+    ],
+    "threshold": 8,
+    "window_start": 4,
+    "window_len": 4,
+    "min_count_in_window": 0,
+    "max_count_in_window": 0,
+    "min_count_outside_window": 61,
+    "occluded_frame_indices": [
+      4,
+      5,
+      6,
+      7
+    ],
+    "measured_occlusion_duration_frames": 4,
+    "passed": true
+  },
+  "tracked_params": {
+    "shape": "cube",
+    "scale": 0.6007337634239216,
+    "rotation_euler": [
+      2.9228155229893824,
+      0.651723582270402,
+      6.074909337044454
+    ],
+    "color": [
+      0.3566002567034249,
+      0.260265240974741,
+      0.7862073513544755
+    ],
+    "x_ext_jitter": 1.003943827175647,
+    "floor_shade": 0.4216960219155313,
+    "light_azimuth_deg": 270.1672475750912,
+    "light_elevation_deg": 61.71912879535432,
+    "light_energy": 3.8845722627276467,
+    "occluder_color": [
+      0.7573906022734005,
+      0.5886950761335582,
+      0.4469516102735852
+    ]
+  }
+}

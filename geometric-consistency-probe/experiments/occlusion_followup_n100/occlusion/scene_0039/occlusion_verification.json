@@ -1,0 +1,30 @@
+{
+  "counts": [
+    71,
+    74,
+    73,
+    66,
+    0,
+    0,
+    0,
+    0,
+    52,
+    67,
+    66,
+    65
+  ],
+  "threshold": 8,
+  "window_start": 4,
+  "window_len": 4,
+  "min_count_in_window": 0,
+  "max_count_in_window": 0,
+  "min_count_outside_window": 52,
+  "occluded_frame_indices": [
+    4,
+    5,
+    6,
+    7
+  ],
+  "measured_occlusion_duration_frames": 4,
+  "passed": true
+}
