@@ -1,0 +1,38 @@
+# Task 12 follow-up #3, scaled up: camera-rotation MAGNITUDE sweep at
+# N=800 (double the N=400 run). Same base_seed=42 as
+# task12_followup_magnitude_sweep_n400.yaml, so scenes 0-399 here are
+# bit-identical to that run's 400 scenes (a nested superset, not an
+# independent resample) -- scene generation is deterministic by index.
+# Everything else (thetas, windowing, ridge alpha grid, bootstrap
+# settings) is identical for a valid apples-to-apples comparison.
+#
+# Separate output_dir/result_path: does not touch
+# experiments/temporal_magnitude_sweep_n400, state/task_12_result.json,
+# that task's checkpoint, or the N=100/N=200 scale follow-ups.
+
+num_scenes: 800
+base_seed: 42
+train_fraction: 0.7
+val_fraction: 0.1
+thetas_deg: [0.0, 5.0, 10.0, 20.0, 30.0]
+elevation_deg: 0.0
+output_dir: experiments/temporal_magnitude_sweep_n800
+result_path: experiments/temporal_magnitude_sweep_n800/result.json
+
+resolution: 128
+window_frames: 4
+fps: 4.0
+
+ridge_alpha_grid: [1.0, 10.0, 100.0]
+shuffled_pairing_seed: 0
+
+num_objects_min: 1
+num_objects_max: 3
+
+pretrained: true
+checkpoint: facebook/vjepa2-vitl-fpc64-256
+device: null
+fallback_seed: 0
+
+n_bootstrap: 2000
+bootstrap_seeds: [0, 1, 2]

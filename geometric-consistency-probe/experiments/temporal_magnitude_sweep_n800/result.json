@@ -1,0 +1,439 @@
+{
+  "task": "task_12_followup_magnitude_sweep",
+  "implementation_status": "COMPLETE",
+  "scientific_result": "The learned map W_theta exceeds BOTH its own persistence baseline and the shuffled-pairing control at theta in {10, 20, 30} degrees -- evidence of genuine equivariant structure beyond trivial copying at those magnitudes. At theta=0 (the identity transform -- t1 and t2 are bit-identical renders, verified by an exactly-zero mean pixel difference), the persistence baseline scores R^2=1.0000, confirming persistence looks perfect there because nothing changed, not because the map generalizes.\n\nPer-magnitude detail:\ntheta=0 deg: R^2_learned=0.993, R^2_persistence=1.000, R^2_shuffled=-1.338, delta_r2=-0.007, beats_shuffled=True, representation_change_ratio=0.0000\ntheta=5 deg: R^2_learned=0.847, R^2_persistence=0.861, R^2_shuffled=-0.169, delta_r2=-0.013, beats_shuffled=True, representation_change_ratio=0.0768\ntheta=10 deg: R^2_learned=0.749, R^2_persistence=0.714, R^2_shuffled=-0.196, delta_r2=+0.035, beats_shuffled=True, representation_change_ratio=0.1495\ntheta=20 deg: R^2_learned=0.631, R^2_persistence=0.431, R^2_shuffled=-0.199, delta_r2=+0.200, beats_shuffled=True, representation_change_ratio=0.2980\ntheta=30 deg: R^2_learned=0.523, R^2_persistence=0.187, R^2_shuffled=-0.194, delta_r2=+0.335, beats_shuffled=True, representation_change_ratio=0.4230",
+  "thetas_deg": [
+    0.0,
+    5.0,
+    10.0,
+    20.0,
+    30.0
+  ],
+  "dataset": {
+    "num_scenes": 800,
+    "base_seed": 42,
+    "train_fraction": 0.7,
+    "val_fraction": 0.1,
+    "test_fraction": 0.20000000000000004,
+    "split_counts": {
+      "train": 560,
+      "val": 80,
+      "test": 160
+    }
+  },
+  "fitting": {
+    "method": "ridge",
+    "alpha_grid": [
+      1.0,
+      10.0,
+      100.0
+    ],
+    "alpha_selection": "best validation R^2, per theta"
+  },
+  "per_theta": [
+    {
+      "theta_deg": 0.0,
+      "chosen_ridge_alpha": 1.0,
+      "val_r2_by_alpha": {
+        "1.0": 0.9929932761006057,
+        "10.0": 0.9871350610628724,
+        "100.0": 0.9660513363778591
+      },
+      "metrics": {
+        "learned_W_T": {
+          "r2": 0.9927184358239174,
+          "mean_cosine_similarity": 0.9995020031929016,
+          "mean_relative_l2_error": 0.03105705976486206,
+          "mse": 3.5178170204162598
+        },
+        "persistence_baseline": {
+          "r2": 1.0,
+          "mean_cosine_similarity": 1.0,
+          "mean_relative_l2_error": 0.0,
+          "mse": 0.0
+        },
+        "shuffled_pairing_control": {
+          "r2": -1.3384521007537842,
+          "mean_cosine_similarity": 0.8489288091659546,
+          "mean_relative_l2_error": 0.5489944219589233,
+          "mse": 1129.736083984375
+        },
+        "mean_baseline": {
+          "r2": -0.006249070167541504,
+          "mean_cosine_similarity": 0.9294773936271667,
+          "mean_relative_l2_error": 0.36437779664993286,
+          "mse": 486.1317443847656
+        }
+      },
+      "delta_r2_learned_minus_persistence": -0.007281564176082611,
+      "learned_beats_shuffled": true,
+      "confidence_intervals": {
+        "learned_W_T_r2": {
+          "mean": 0.9926731071799683,
+          "p2.5": 0.9922487886389717,
+          "p97.5": 0.9930881596636028,
+          "n_bootstrap_total": 6000
+        },
+        "persistence_r2": {
+          "mean": 1.0,
+          "p2.5": 1.0,
+          "p97.5": 1.0,
+          "n_bootstrap_total": 6000
+        },
+        "shuffled_pairing_r2": {
+          "mean": -1.3525583081245423,
+          "p2.5": -1.5213677525520324,
+          "p97.5": -1.1944040775299072,
+          "n_bootstrap_total": 6000
+        }
+      },
+      "representation_change": {
+        "mean_within_pair_sq_change": 0.0,
+        "mean_cross_scene_sq_distance": 969.98388671875,
+        "ratio": 0.0
+      },
+      "pixel_diff_stats": {
+        "mean_abs_pixel_diff": 0.0,
+        "std_abs_pixel_diff": 0.0
+      },
+      "n_train": 560,
+      "n_val": 80,
+      "n_test": 160
+    },
+    {
+      "theta_deg": 5.0,
+      "chosen_ridge_alpha": 100.0,
+      "val_r2_by_alpha": {
+        "1.0": 0.7553164064884186,
+        "10.0": 0.8373019844293594,
+        "100.0": 0.847391203045845
+      },
+      "metrics": {
+        "learned_W_T": {
+          "r2": 0.8474951088428497,
+          "mean_cosine_similarity": 0.9897416830062866,
+          "mean_relative_l2_error": 0.13899101316928864,
+          "mse": 72.69771575927734
+        },
+        "persistence_baseline": {
+          "r2": 0.8609494715929031,
+          "mean_cosine_similarity": 0.990694522857666,
+          "mean_relative_l2_error": 0.13059385120868683,
+          "mse": 66.28413391113281
+        },
+        "shuffled_pairing_control": {
+          "r2": -0.16923773288726807,
+          "mean_cosine_similarity": 0.9187885522842407,
+          "mean_relative_l2_error": 0.38932913541793823,
+          "mse": 557.3651123046875
+        },
+        "mean_baseline": {
+          "r2": -0.007224440574645996,
+          "mean_cosine_similarity": 0.9302385449409485,
+          "mean_relative_l2_error": 0.3626020550727844,
+          "mse": 480.1348571777344
+        }
+      },
+      "delta_r2_learned_minus_persistence": -0.013454362750053406,
+      "learned_beats_shuffled": true,
+      "confidence_intervals": {
+        "learned_W_T_r2": {
+          "mean": 0.8464488783950607,
+          "p2.5": 0.8327569153159857,
+          "p97.5": 0.8592824608087539,
+          "n_bootstrap_total": 6000
+        },
+        "persistence_r2": {
+          "mean": 0.8598918692357839,
+          "p2.5": 0.8426842797547579,
+          "p97.5": 0.8755584459751844,
+          "n_bootstrap_total": 6000
+        },
+        "shuffled_pairing_r2": {
+          "mean": -0.17665481448173523,
+          "p2.5": -0.21657914221286773,
+          "p97.5": -0.13932217955589296,
+          "n_bootstrap_total": 6000
+        }
+      },
+      "representation_change": {
+        "mean_within_pair_sq_change": 74.46701049804688,
+        "mean_cross_scene_sq_distance": 969.98388671875,
+        "ratio": 0.07677138921343632
+      },
+      "pixel_diff_stats": {
+        "mean_abs_pixel_diff": 2.095801137288411,
+        "std_abs_pixel_diff": 1.2464506271515094
+      },
+      "n_train": 560,
+      "n_val": 80,
+      "n_test": 160
+    },
+    {
+      "theta_deg": 10.0,
+      "chosen_ridge_alpha": 100.0,
+      "val_r2_by_alpha": {
+        "1.0": 0.5795533955097198,
+        "10.0": 0.7013658285140991,
+        "100.0": 0.7231231927871704
+      },
+      "metrics": {
+        "learned_W_T": {
+          "r2": 0.7494955658912659,
+          "mean_cosine_similarity": 0.9833146929740906,
+          "mean_relative_l2_error": 0.1764133870601654,
+          "mse": 117.80583190917969
+        },
+        "persistence_baseline": {
+          "r2": 0.7142992317676544,
+          "mean_cosine_similarity": 0.9811714291572571,
+          "mean_relative_l2_error": 0.1853625476360321,
+          "mse": 134.35777282714844
+        },
+        "shuffled_pairing_control": {
+          "r2": -0.19572484493255615,
+          "mean_cosine_similarity": 0.9179664850234985,
+          "mean_relative_l2_error": 0.39081114530563354,
+          "mse": 562.31884765625
+        },
+        "mean_baseline": {
+          "r2": -0.009260773658752441,
+          "mean_cosine_similarity": 0.9308925867080688,
+          "mean_relative_l2_error": 0.36058172583580017,
+          "mse": 474.6294860839844
+        }
+      },
+      "delta_r2_learned_minus_persistence": 0.03519633412361145,
+      "learned_beats_shuffled": true,
+      "confidence_intervals": {
+        "learned_W_T_r2": {
+          "mean": 0.7477503909096122,
+          "p2.5": 0.7242969416081906,
+          "p97.5": 0.7692153658717871,
+          "n_bootstrap_total": 6000
+        },
+        "persistence_r2": {
+          "mean": 0.712204956014951,
+          "p2.5": 0.6726178131997586,
+          "p97.5": 0.7471160821616649,
+          "n_bootstrap_total": 6000
+        },
+        "shuffled_pairing_r2": {
+          "mean": -0.2032645823955536,
+          "p2.5": -0.24519193768501282,
+          "p97.5": -0.16323186457157138,
+          "n_bootstrap_total": 6000
+        }
+      },
+      "representation_change": {
+        "mean_within_pair_sq_change": 144.99713134765625,
+        "mean_cross_scene_sq_distance": 969.98388671875,
+        "ratio": 0.14948406188287397
+      },
+      "pixel_diff_stats": {
+        "mean_abs_pixel_diff": 3.804674758911133,
+        "std_abs_pixel_diff": 2.2967687044299736
+      },
+      "n_train": 560,
+      "n_val": 80,
+      "n_test": 160
+    },
+    {
+      "theta_deg": 20.0,
+      "chosen_ridge_alpha": 100.0,
+      "val_r2_by_alpha": {
+        "1.0": 0.3955036997795105,
+        "10.0": 0.584638923406601,
+        "100.0": 0.6277254819869995
+      },
+      "metrics": {
+        "learned_W_T": {
+          "r2": 0.6305924654006958,
+          "mean_cosine_similarity": 0.9753714799880981,
+          "mean_relative_l2_error": 0.21413567662239075,
+          "mse": 173.58453369140625
+        },
+        "persistence_baseline": {
+          "r2": 0.4308837056159973,
+          "mean_cosine_similarity": 0.9624612927436829,
+          "mean_relative_l2_error": 0.26240578293800354,
+          "mse": 267.42767333984375
+        },
+        "shuffled_pairing_control": {
+          "r2": -0.19915258884429932,
+          "mean_cosine_similarity": 0.9179245233535767,
+          "mean_relative_l2_error": 0.39092904329299927,
+          "mse": 563.4816284179688
+        },
+        "mean_baseline": {
+          "r2": -0.009728670120239258,
+          "mean_cosine_similarity": 0.9310304522514343,
+          "mean_relative_l2_error": 0.36010631918907166,
+          "mse": 474.47137451171875
+        }
+      },
+      "delta_r2_learned_minus_persistence": 0.1997087597846985,
+      "learned_beats_shuffled": true,
+      "confidence_intervals": {
+        "learned_W_T_r2": {
+          "mean": 0.6282833826740583,
+          "p2.5": 0.5999691769480705,
+          "p97.5": 0.6559665203094482,
+          "n_bootstrap_total": 6000
+        },
+        "persistence_r2": {
+          "mean": 0.4268100393364827,
+          "p2.5": 0.365016008913517,
+          "p97.5": 0.4851211577653885,
+          "n_bootstrap_total": 6000
+        },
+        "shuffled_pairing_r2": {
+          "mean": -0.2066833356221517,
+          "p2.5": -0.25231851935386657,
+          "p97.5": -0.1631551265716553,
+          "n_bootstrap_total": 6000
+        }
+      },
+      "representation_change": {
+        "mean_within_pair_sq_change": 289.0840148925781,
+        "mean_cross_scene_sq_distance": 969.98388671875,
+        "ratio": 0.2980297083805053
+      },
+      "pixel_diff_stats": {
+        "mean_abs_pixel_diff": 6.4322301991780595,
+        "std_abs_pixel_diff": 3.975152590871956
+      },
+      "n_train": 560,
+      "n_val": 80,
+      "n_test": 160
+    },
+    {
+      "theta_deg": 30.0,
+      "chosen_ridge_alpha": 100.0,
+      "val_r2_by_alpha": {
+        "1.0": 0.25144022703170776,
+        "10.0": 0.48175472021102905,
+        "100.0": 0.550266444683075
+      },
+      "metrics": {
+        "learned_W_T": {
+          "r2": 0.5228743553161621,
+          "mean_cosine_similarity": 0.9662148356437683,
+          "mean_relative_l2_error": 0.24891822040081024,
+          "mse": 237.918701171875
+        },
+        "persistence_baseline": {
+          "r2": 0.18745148181915283,
+          "mean_cosine_similarity": 0.9432618021965027,
+          "mean_relative_l2_error": 0.3232990503311157,
+          "mse": 405.17730712890625
+        },
+        "shuffled_pairing_control": {
+          "r2": -0.1943451166152954,
+          "mean_cosine_similarity": 0.913504421710968,
+          "mean_relative_l2_error": 0.40126365423202515,
+          "mse": 595.5602416992188
+        },
+        "mean_baseline": {
+          "r2": -0.00878608226776123,
+          "mean_cosine_similarity": 0.9270609617233276,
+          "mean_relative_l2_error": 0.3699042499065399,
+          "mse": 503.03125
+        }
+      },
+      "delta_r2_learned_minus_persistence": 0.3354228734970093,
+      "learned_beats_shuffled": true,
+      "confidence_intervals": {
+        "learned_W_T_r2": {
+          "mean": 0.5197938601424297,
+          "p2.5": 0.4838341251015663,
+          "p97.5": 0.553801292926073,
+          "n_bootstrap_total": 6000
+        },
+        "persistence_r2": {
+          "mean": 0.18185726156830787,
+          "p2.5": 0.11122877299785613,
+          "p97.5": 0.2507887989282608,
+          "n_bootstrap_total": 6000
+        },
+        "shuffled_pairing_r2": {
+          "mean": -0.2020076115926107,
+          "p2.5": -0.2469518095254898,
+          "p97.5": -0.1601865500211716,
+          "n_bootstrap_total": 6000
+        }
+      },
+      "representation_change": {
+        "mean_within_pair_sq_change": 410.3164978027344,
+        "mean_cross_scene_sq_distance": 969.98388671875,
+        "ratio": 0.42301372571326745
+      },
+      "pixel_diff_stats": {
+        "mean_abs_pixel_diff": 8.128769887288412,
+        "std_abs_pixel_diff": 5.026122429175944
+      },
+      "n_train": 560,
+      "n_val": 80,
+      "n_test": 160
+    }
+  ],
+  "encoder": {
+    "name": "VJEPAEncoder",
+    "checkpoint": "facebook/vjepa2-vitl-fpc64-256",
+    "pretrained": true,
+    "frozen": true,
+    "pooling": "mean_pool"
+  },
+  "artifacts": [
+    "experiments/temporal_magnitude_sweep_n800/manifest.json",
+    "experiments/temporal_magnitude_sweep_n800/report.md"
+  ],
+  "config": {
+    "num_scenes": 800,
+    "base_seed": 42,
+    "train_fraction": 0.7,
+    "val_fraction": 0.1,
+    "thetas_deg": [
+      0.0,
+      5.0,
+      10.0,
+      20.0,
+      30.0
+    ],
+    "elevation_deg": 0.0,
+    "output_dir": "experiments/temporal_magnitude_sweep_n800",
+    "result_path": "experiments/temporal_magnitude_sweep_n800/result.json",
+    "resolution": 128,
+    "window_frames": 4,
+    "fps": 4.0,
+    "ridge_alpha_grid": [
+      1.0,
+      10.0,
+      100.0
+    ],
+    "shuffled_pairing_seed": 0,
+    "num_objects_min": 1,
+    "num_objects_max": 3,
+    "pretrained": true,
+    "checkpoint": "facebook/vjepa2-vitl-fpc64-256",
+    "device": null,
+    "fallback_seed": 0,
+    "n_bootstrap": 2000,
+    "bootstrap_seeds": [
+      0,
+      1,
+      2
+    ]
+  },
+  "seed": 42,
+  "software_versions": {
+    "python": "3.11.15",
+    "torch": "2.14.0+cu130",
+    "transformers": "5.17.0"
+  },
+  "tests": {
+    "passed": 0,
+    "failed": 0,
+    "skipped": true
+  }
+}
