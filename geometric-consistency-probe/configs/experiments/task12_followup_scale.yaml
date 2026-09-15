@@ -1,0 +1,37 @@
+# Task 12 FOLLOW-UP: same temporal-consistency protocol, larger sample
+# size (100 vs. the original 40), to check whether the negative result
+# (real_motion's learned W_T failing to beat its own persistence
+# baseline) is a small-test-set artifact -- the same question already
+# checked for Task 13, applied here to Task 12.
+#
+# This is a SEPARATE, additional investigation, not a redo of Task 12:
+# it writes to its own output_dir/result_path/partial_dir and never
+# touches state/task_12_result.json or that task's checkpoint commit.
+# Every other parameter is identical to configs/experiments/
+# task12_temporal_consistency.yaml for a valid apples-to-apples
+# comparison; scene generation is deterministic by index, so scenes
+# 0-39 here are bit-identical to the original run's 40 scenes (a
+# nested superset, not an independent resample).
+
+num_scenes: 100
+train_fraction: 0.8
+base_seed_real_motion: 0
+base_seed_static_control: 1
+output_dir: experiments/temporal_consistency_followup_n100
+result_path: experiments/temporal_consistency_followup_n100/result.json
+
+resolution: 128
+window_frames: 4
+fps: 4.0
+orbit_deg_per_sec: 30.0
+
+ridge_alpha: 10.0
+shuffled_pairing_seed: 0
+
+num_objects_min: 1
+num_objects_max: 3
+
+pretrained: true
+checkpoint: facebook/vjepa2-vitl-fpc64-256
+device: null
+fallback_seed: 0

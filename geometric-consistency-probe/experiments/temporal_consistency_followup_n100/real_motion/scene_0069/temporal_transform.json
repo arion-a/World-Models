@@ -1,0 +1,38 @@
+{
+  "condition": "real_motion",
+  "scene_id": "scene_0069",
+  "window_frames": 4,
+  "num_frames": 8,
+  "anchor_t1_frame_index": 0,
+  "anchor_t2_frame_index": 4,
+  "transform_matrix": [
+    [
+      0.8660254037844387,
+      -0.5,
+      -1.599658502392604e-17,
+      0.0
+    ],
+    [
+      0.5000000000000001,
+      0.8660254037844387,
+      1.0687033011932038e-16,
+      0.0
+    ],
+    [
+      -3.2067591540939284e-17,
+      -8.199507582755754e-17,
+      1.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ]
+  ],
+  "camera_motion": {
+    "mode": "orbit",
+    "orbit_deg_per_sec": 30.0
+  }
+}
