@@ -1,0 +1,26 @@
+# Smoke-test config for experiments/task12_followup_magnitude_sweep.py --
+# tiny scale, no pretrained weights (fast, no network), just to validate
+# the pipeline (rendering, transform verification, splitting, fitting,
+# bootstrap CIs) end to end before running the real N=400 job.
+
+num_scenes: 40
+base_seed: 999
+train_fraction: 0.5
+val_fraction: 0.25
+thetas_deg: [0.0, 30.0]
+elevation_deg: 0.0
+output_dir: experiments/_smoke_magnitude_sweep
+result_path: experiments/_smoke_magnitude_sweep/result.json
+resolution: 64
+window_frames: 2
+fps: 4.0
+ridge_alpha_grid: [1.0, 10.0]
+shuffled_pairing_seed: 0
+num_objects_min: 1
+num_objects_max: 2
+pretrained: false
+checkpoint: null
+device: null
+fallback_seed: 0
+n_bootstrap: 50
+bootstrap_seeds: [0]
