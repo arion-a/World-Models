@@ -1,0 +1,41 @@
+# Task 12 FOLLOW-UP #2: same temporal-consistency protocol, even larger
+# sample size (200 vs. the 100 already checked, vs. the original 40),
+# to further stress-test whether the negative result (real_motion's
+# learned W_T failing to beat its own persistence baseline) is scale-
+# robust. The N=100 follow-up already found the margin essentially
+# unchanged from N=40 (-0.077 -> -0.079); this checks whether that
+# holds at N=200 too.
+#
+# This is a SEPARATE, additional investigation, not a redo of Task 12
+# or of the N=100 follow-up: it writes to its own output_dir/result_path/
+# partial_dir and never touches state/task_12_result.json, that task's
+# checkpoint commit, or experiments/temporal_consistency_followup_n100/.
+# Every other parameter is identical to configs/experiments/
+# task12_temporal_consistency.yaml and task12_followup_scale.yaml for a
+# valid apples-to-apples comparison; scene generation is deterministic
+# by index, so scenes 0-99 here are bit-identical to the N=100 follow-
+# up's 100 scenes, and scenes 0-39 are bit-identical to the original
+# run's 40 scenes (nested supersets, not independent resamples).
+
+num_scenes: 200
+train_fraction: 0.8
+base_seed_real_motion: 0
+base_seed_static_control: 1
+output_dir: experiments/temporal_consistency_followup_n200
+result_path: experiments/temporal_consistency_followup_n200/result.json
+
+resolution: 128
+window_frames: 4
+fps: 4.0
+orbit_deg_per_sec: 30.0
+
+ridge_alpha: 10.0
+shuffled_pairing_seed: 0
+
+num_objects_min: 1
+num_objects_max: 3
+
+pretrained: true
+checkpoint: facebook/vjepa2-vitl-fpc64-256
+device: null
+fallback_seed: 0

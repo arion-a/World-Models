@@ -1,0 +1,38 @@
+{
+  "condition": "static_control",
+  "scene_id": "scene_0068",
+  "window_frames": 4,
+  "num_frames": 8,
+  "anchor_t1_frame_index": 0,
+  "anchor_t2_frame_index": 4,
+  "transform_matrix": [
+    [
+      1.0,
+      3.666717704930623e-17,
+      5.819797360910413e-18,
+      8.881784197001252e-16
+    ],
+    [
+      3.666717704930623e-17,
+      1.0,
+      1.3540942022986161e-17,
+      0.0
+    ],
+    [
+      5.819797360910413e-18,
+      1.3540942022986161e-17,
+      1.0,
+      -8.881784197001252e-16
+    ],
+    [
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ]
+  ],
+  "camera_motion": {
+    "mode": "static",
+    "orbit_deg_per_sec": 0.0
+  }
+}
