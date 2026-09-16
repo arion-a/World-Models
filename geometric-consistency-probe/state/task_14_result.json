@@ -1,0 +1,117 @@
+{
+  "task": 14,
+  "implementation_status": "COMPLETE",
+  "scientific_result": "NEGATIVE result: the real discrimination probe did not exceed both the scrambled-label control and the chance threshold. This is a valid, complete outcome -- no measurable advantage was found for distinguishing object_translation from object_rotation (on the same object, matched to an identical ground-truth SE(3) displacement) from the frozen representation's Z_after-Z_before difference under this protocol. Reported plainly rather than adjusted to force a positive-looking number.\n\nDetail:\n- Discrimination probe (object_translation vs. object_rotation, magnitude-matched to 0.4 scene units per scene): real probe accuracy=0.500 vs. scrambled-label control accuracy=0.500 (chance threshold=1.000, n_test=4).\n- Representation-norm-only control (required 'not trivially separable by magnitude alone' check): accuracy=0.500 vs. chance threshold=1.000 -- PASSED (not trivially separable).\n- Fixed-variable leakage check (probe trained on camera_translation-vs-lighting_change representation differences on TRAIN scenes only, evaluated on the REAL test set): accuracy=0.500 vs. chance threshold=1.000 -- PASSED (no confound found).\n- Measured achieved displacement: object_translation mean=0.4000, object_rotation mean=0.4000 (mean |difference| across scenes=0.000000).",
+  "counterfactual_conditions": [
+    "object_translation",
+    "object_rotation"
+  ],
+  "confound_conditions_for_leakage_check": [
+    "camera_translation",
+    "lighting_change"
+  ],
+  "magnitude_matching_method": "object_translation's magnitude is fixed at target_displacement=0.4 scene units for every scene; object_rotation's angle is solved PER SCENE from that scene's own tracked-object radius (scale/2) so that a reference point on the object's surface (world-frame offset (radius, 0, 0) from the object's pivot) moves by the IDENTICAL Euclidean distance under either edit (target_rotation_angle_deg, closed-form 2*radius*sin(angle/2) = target_displacement). Both conditions' ACHIEVED displacement is then re-measured (not just derived) by applying each transform's own recorded transform_matrix to that reference point (reference_point_displacement) -- see magnitude_matching in metrics for the measured per-scene values, which confirm the intended match was actually achieved.",
+  "dataset": {
+    "num_scenes": 6,
+    "train_scene_ids": [
+      "scene_0002",
+      "scene_0003",
+      "scene_0004",
+      "scene_0005"
+    ],
+    "test_scene_ids": [
+      "scene_0000",
+      "scene_0001"
+    ],
+    "train_fraction": 0.6667,
+    "base_seed": 0
+  },
+  "encoder": {
+    "name": "VJEPAEncoder",
+    "checkpoint": "facebook/vjepa2-vitl-fpc64-256",
+    "pretrained": false,
+    "pooling": "mean_pool"
+  },
+  "fitting": {
+    "method": "ridge",
+    "alpha": 10.0,
+    "target": "binary condition label, thresholded at 0.5"
+  },
+  "metrics": {
+    "discrimination": {
+      "real_probe_accuracy": 0.5,
+      "scrambled_label_control_accuracy": 0.5,
+      "chance_accuracy_threshold": 1.0,
+      "num_train_examples": 8,
+      "num_test_examples": 4
+    },
+    "representation_norm_only_check": {
+      "accuracy": 0.5,
+      "chance_accuracy_threshold": 1.0,
+      "not_trivially_separable": true
+    },
+    "fixed_variable_leakage_check": {
+      "confound_conditions": [
+        "camera_translation",
+        "lighting_change"
+      ],
+      "accuracy_on_real_test_set": 0.5,
+      "chance_accuracy_threshold": 1.0,
+      "passed": true,
+      "num_confound_train_examples": 8
+    },
+    "magnitude_matching": {
+      "target_displacement": 0.4,
+      "object_translation_measured_displacement": {
+        "mean": 0.39999999999999997,
+        "std": 5.067451620406765e-17,
+        "min": 0.3999999999999999,
+        "max": 0.4
+      },
+      "object_rotation_measured_displacement": {
+        "mean": 0.39999999999999997,
+        "std": 5.551115123125783e-17,
+        "min": 0.3999999999999999,
+        "max": 0.4000000000000001
+      },
+      "mean_absolute_difference_between_conditions": 6.47630097698008e-17,
+      "any_rotation_angle_clipped": false
+    }
+  },
+  "scrambled_label_control": {
+    "method": "Task 8's shuffled_label_permutation applied to TRAIN labels only, a genuine derangement for n>1",
+    "seed": 0
+  },
+  "tests": {
+    "passed": 0,
+    "failed": 0
+  },
+  "artifacts": [
+    "/tmp/pytest-of-root/pytest-148/test_full_pipeline_runs_end_to0/counterfactuals/manifest.json",
+    "/tmp/pytest-of-root/pytest-148/test_full_pipeline_runs_end_to0/counterfactuals/report.md"
+  ],
+  "config": {
+    "num_scenes": 6,
+    "train_fraction": 0.6667,
+    "base_seed": 0,
+    "output_dir": "/tmp/pytest-of-root/pytest-148/test_full_pipeline_runs_end_to0/counterfactuals",
+    "result_path": "state/task_14_result.json",
+    "resolution": 48,
+    "num_frames": 2,
+    "fps": 4.0,
+    "target_displacement": 0.4,
+    "ridge_alpha": 10.0,
+    "scramble_seed": 0,
+    "chance_margin_z": 2.0,
+    "pretrained": false,
+    "checkpoint": null,
+    "device": null,
+    "fallback_seed": 0
+  },
+  "seed": 0,
+  "software_versions": {
+    "python": "3.11.15",
+    "torch": "2.14.0+cu130",
+    "transformers": "5.17.0"
+  }
+}

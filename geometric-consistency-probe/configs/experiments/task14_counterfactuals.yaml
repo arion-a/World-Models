@@ -1,0 +1,42 @@
+# Task 14 config: controlled counterfactual representation consistency.
+#
+# Two isolatable counterfactual conditions, object_translation vs.
+# object_rotation, applied to the same (only) object in each of
+# num_scenes single-object scenes -- magnitude-matched PER SCENE to an
+# identical ground-truth SE(3) displacement (target_displacement scene
+# units), computed via transforms.se3 (see
+# experiments/task14_counterfactuals.py's module docstring).
+#
+# A discrimination probe (Task 8's ridge machinery, reused for a binary
+# "which condition" target) is fit on Z_after-Z_before for TRAIN scenes
+# and evaluated on TEST scenes, against: the required label-scrambled
+# control, a representation-norm-only control (required "not trivially
+# separable by magnitude alone" check), and the required fixed-variable
+# leakage check (a probe trained on an unrelated camera_translation-vs-
+# lighting_change control run, TRAIN scenes only, evaluated on the real
+# TEST set).
+#
+# If Hugging Face Hub is unreachable at run time, encoders.vjepa.
+# VJEPAEncoder falls back to a seeded random-weight model of the same
+# architecture and this run's state/task_14_result.json will honestly
+# record encoder.pretrained: false.
+
+num_scenes: 40
+train_fraction: 0.8
+base_seed: 0
+output_dir: experiments/counterfactuals
+result_path: state/task_14_result.json
+
+resolution: 128
+num_frames: 4
+fps: 4.0
+
+target_displacement: 0.4
+ridge_alpha: 10.0
+scramble_seed: 0
+chance_margin_z: 2.0
+
+pretrained: true
+checkpoint: facebook/vjepa2-vitl-fpc64-256
+device: null
+fallback_seed: 0

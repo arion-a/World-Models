@@ -1,0 +1,6 @@
+{
+  "name": "VJEPAEncoder",
+  "checkpoint": "facebook/vjepa2-vitl-fpc64-256",
+  "pretrained": true,
+  "pooling": "mean_pool"
+}

@@ -15,7 +15,7 @@
     12,
     13
   ],
-  "status": "READY",
+  "status": "PASSED",
   "attempts": {
     "6": 1,
     "7": 2,
@@ -24,7 +24,8 @@
     "10": 2,
     "11": 1,
     "12": 1,
-    "13": 2
+    "13": 2,
+    "14": 1
   },
   "commits": {
     "6": "3bc16304b57b4fe8138490b8d554457380ecce64",
@@ -384,6 +385,49 @@
           ]
         }
       ]
+    },
+    "14": {
+      "task": 14,
+      "passed": true,
+      "layers": [
+        {
+          "name": "A. SOFTWARE CORRECTNESS",
+          "passed": true,
+          "details": [
+            "test command ['pytest', '-m', 'not slow', '-q'] exited 0"
+          ]
+        },
+        {
+          "name": "B. TASK ACCEPTANCE",
+          "passed": true,
+          "details": []
+        },
+        {
+          "name": "C. SCIENTIFIC VALIDITY",
+          "passed": true,
+          "details": []
+        },
+        {
+          "name": "D. RESEARCH ALIGNMENT",
+          "passed": true,
+          "details": []
+        },
+        {
+          "name": "E. DATA LEAKAGE",
+          "passed": true,
+          "details": []
+        },
+        {
+          "name": "F. REPRODUCIBILITY",
+          "passed": true,
+          "details": []
+        },
+        {
+          "name": "G. REGRESSION",
+          "passed": true,
+          "details": []
+        }
+      ]
     }
   },
   "sync": {
@@ -428,6 +472,12 @@
       "path": "/home/user/World-Models/geometric-consistency-probe/tasks/13_occlusion.md",
       "title": "Object persistence under occlusion",
       "timestamp": "2026-09-14T15:13:59+00:00"
+    },
+    "14": {
+      "changed": true,
+      "path": "/home/user/World-Models/geometric-consistency-probe/tasks/14_counterfactuals.md",
+      "title": "Controlled counterfactual representation consistency",
+      "timestamp": "2026-09-16T10:50:42+00:00"
     }
   },
   "blockers": {},
@@ -1245,7 +1295,46 @@
       "to_status": "READY",
       "task": 13,
       "commit": "18f7f0e86009db9db955982314782ef852b86fcb"
+    },
+    {
+      "event": "sync",
+      "timestamp": "2026-09-16T10:50:42+00:00",
+      "task": 14,
+      "changed": true
+    },
+    {
+      "event": "transition",
+      "timestamp": "2026-09-16T10:50:42+00:00",
+      "from_status": "READY",
+      "to_status": "RUNNING",
+      "task": 14
+    },
+    {
+      "event": "attempt",
+      "timestamp": "2026-09-16T10:50:42+00:00",
+      "task": 14,
+      "attempt": 1
+    },
+    {
+      "event": "transition",
+      "timestamp": "2026-09-16T11:09:10+00:00",
+      "from_status": "RUNNING",
+      "to_status": "QA",
+      "task": 14
+    },
+    {
+      "event": "qa",
+      "timestamp": "2026-09-16T11:11:03+00:00",
+      "task": 14,
+      "passed": true
+    },
+    {
+      "event": "transition",
+      "timestamp": "2026-09-16T11:11:03+00:00",
+      "from_status": "QA",
+      "to_status": "PASSED",
+      "task": 14
     }
   ],
-  "updated_at": "2026-09-14T16:10:46+00:00"
+  "updated_at": "2026-09-16T11:11:03+00:00"
 }
