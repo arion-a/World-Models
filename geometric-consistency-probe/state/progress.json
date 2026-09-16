@@ -1,5 +1,5 @@
 {
-  "current_task": 15,
+  "current_task": 16,
   "completed_tasks": [
     1,
     2,
@@ -14,9 +14,10 @@
     11,
     12,
     13,
-    14
+    14,
+    15
   ],
-  "status": "PASSED",
+  "status": "READY",
   "attempts": {
     "6": 1,
     "7": 2,
@@ -38,7 +39,8 @@
     "11": "779d3635a1c2ca5b4c02d3eb40e8f82922c9d03e",
     "12": "4dd0b69f28f9817c626ae6fd00fa425dfec55d0b",
     "13": "18f7f0e86009db9db955982314782ef852b86fcb",
-    "14": "4d00f990882d47e3bfadcac369c61e7c46da8e00"
+    "14": "4d00f990882d47e3bfadcac369c61e7c46da8e00",
+    "15": "890416f9dfe3e7de23ea853a9b880466c1162b15"
   },
   "last_qa": {
     "6": {
@@ -1474,7 +1476,15 @@
       "from_status": "QA",
       "to_status": "PASSED",
       "task": 15
+    },
+    {
+      "event": "transition",
+      "timestamp": "2026-09-16T18:19:13+00:00",
+      "from_status": "PASSED",
+      "to_status": "READY",
+      "task": 15,
+      "commit": "890416f9dfe3e7de23ea853a9b880466c1162b15"
     }
   ],
-  "updated_at": "2026-09-16T18:19:12+00:00"
+  "updated_at": "2026-09-16T18:19:13+00:00"
 }
