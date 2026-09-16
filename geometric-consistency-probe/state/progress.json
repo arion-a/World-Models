@@ -16,7 +16,7 @@
     13,
     14
   ],
-  "status": "QA",
+  "status": "PASSED",
   "attempts": {
     "6": 1,
     "7": 2,
@@ -27,7 +27,7 @@
     "12": 1,
     "13": 2,
     "14": 1,
-    "15": 1
+    "15": 2
   },
   "commits": {
     "6": "3bc16304b57b4fe8138490b8d554457380ecce64",
@@ -431,6 +431,51 @@
           "details": []
         }
       ]
+    },
+    "15": {
+      "task": 15,
+      "passed": true,
+      "layers": [
+        {
+          "name": "A. SOFTWARE CORRECTNESS",
+          "passed": true,
+          "details": [
+            "test command ['pytest', '-m', 'not slow', '-q'] exited 0"
+          ]
+        },
+        {
+          "name": "B. TASK ACCEPTANCE",
+          "passed": true,
+          "details": []
+        },
+        {
+          "name": "C. SCIENTIFIC VALIDITY",
+          "passed": true,
+          "details": []
+        },
+        {
+          "name": "D. RESEARCH ALIGNMENT",
+          "passed": true,
+          "details": []
+        },
+        {
+          "name": "E. DATA LEAKAGE",
+          "passed": true,
+          "details": [
+            "not applicable to this task (no train/test split declared by spec)"
+          ]
+        },
+        {
+          "name": "F. REPRODUCIBILITY",
+          "passed": true,
+          "details": []
+        },
+        {
+          "name": "G. REGRESSION",
+          "passed": true,
+          "details": []
+        }
+      ]
     }
   },
   "sync": {
@@ -483,10 +528,10 @@
       "timestamp": "2026-09-16T10:50:42+00:00"
     },
     "15": {
-      "changed": true,
+      "changed": false,
       "path": "/home/user/World-Models/geometric-consistency-probe/tasks/15_unified_framework.md",
       "title": "Unified evaluation framework",
-      "timestamp": "2026-09-16T14:31:54+00:00"
+      "timestamp": "2026-09-16T17:54:41+00:00"
     }
   },
   "blockers": {},
@@ -1377,7 +1422,59 @@
       "from_status": "RUNNING",
       "to_status": "QA",
       "task": 15
+    },
+    {
+      "event": "sync",
+      "timestamp": "2026-09-16T17:54:41+00:00",
+      "task": 15,
+      "changed": false
+    },
+    {
+      "event": "qa",
+      "timestamp": "2026-09-16T18:00:01+00:00",
+      "task": 15,
+      "passed": false
+    },
+    {
+      "event": "transition",
+      "timestamp": "2026-09-16T18:00:01+00:00",
+      "from_status": "QA",
+      "to_status": "FIXING",
+      "task": 15
+    },
+    {
+      "event": "transition",
+      "timestamp": "2026-09-16T18:00:01+00:00",
+      "from_status": "FIXING",
+      "to_status": "RUNNING",
+      "task": 15
+    },
+    {
+      "event": "attempt",
+      "timestamp": "2026-09-16T18:00:01+00:00",
+      "task": 15,
+      "attempt": 2
+    },
+    {
+      "event": "transition",
+      "timestamp": "2026-09-16T18:16:47+00:00",
+      "from_status": "RUNNING",
+      "to_status": "QA",
+      "task": 15
+    },
+    {
+      "event": "qa",
+      "timestamp": "2026-09-16T18:19:12+00:00",
+      "task": 15,
+      "passed": true
+    },
+    {
+      "event": "transition",
+      "timestamp": "2026-09-16T18:19:12+00:00",
+      "from_status": "QA",
+      "to_status": "PASSED",
+      "task": 15
     }
   ],
-  "updated_at": "2026-09-16T14:38:22+00:00"
+  "updated_at": "2026-09-16T18:19:12+00:00"
 }

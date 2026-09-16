@@ -1,0 +1,128 @@
+{
+  "task": 15,
+  "implementation_status": "COMPLETE",
+  "seed": 0,
+  "config": {
+    "result_path": "state/task_15_result.json",
+    "unified_task_ids": [
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14
+    ],
+    "schema_module": "evaluation.schema",
+    "dispatcher_module": "evaluation.run_task",
+    "validator_module": "evaluation.validate_existing_results"
+  },
+  "metrics": {
+    "num_prior_results_validated": 9,
+    "num_validation_errors": 0,
+    "num_files_migrated": 0,
+    "num_tasks_dispatchable_through_unified_cli": 9
+  },
+  "scientific_result": "Task 15 is an infrastructure task; it makes no new scientific claim. It unifies Tasks 6-14's nine independently-evolved result-JSON formats into one shared schema (evaluation.schema.validate_result: 9 fields required in every one of Tasks 6-14's existing result files -- task, implementation_status, seed, config, metrics, scientific_result, software_versions, tests, artifacts -- with every task-specific field Tasks 6-14 actually used kept as a documented optional extension, never dropped), plus one CLI dispatcher (evaluation.run_task, 'python -m evaluation.run_task --task 6..14') that imports and calls each task's existing experiment main() unchanged -- no experiment logic was rewritten to fit this framework. Re-validating all nine existing result files against the new schema found zero validation errors and zero required migrations: every file already used the field names the unified schema requires, so none was modified on disk (sha256 before == sha256 after for all nine, see migration_report and tests/test_evaluation_schema.py's git-diff check) and no previously recorded metric value from any of Tasks 6-14 changed. None of Tasks 6-14's own scientific findings (positive or negative) were re-derived, re-run, or reinterpreted by this task.",
+  "software_versions": {
+    "python": "3.11.15",
+    "torch": "2.14.0+cu130",
+    "transformers": "5.17.0"
+  },
+  "tests": {
+    "passed": 808,
+    "failed": 0,
+    "returncode": 0
+  },
+  "artifacts": [
+    "evaluation/__init__.py",
+    "evaluation/schema.py",
+    "evaluation/run_task.py",
+    "evaluation/validate_existing_results.py",
+    "evaluation/SCHEMA.md",
+    "tests/test_evaluation_schema.py",
+    "tests/test_evaluation_validate_existing_results.py",
+    "tests/test_evaluation_run_task.py"
+  ],
+  "migration_report": {
+    "6": {
+      "path": "/home/user/World-Models/geometric-consistency-probe/state/task_06_result.json",
+      "errors": [],
+      "sha256_before": "a9be16ab91372383197e5ba484d01aff275b29b4060444d160fe7706225e574f",
+      "sha256_after": "a9be16ab91372383197e5ba484d01aff275b29b4060444d160fe7706225e574f",
+      "migrated": false
+    },
+    "7": {
+      "path": "/home/user/World-Models/geometric-consistency-probe/state/task_07_result.json",
+      "errors": [],
+      "sha256_before": "224e73ed36c10f3f224955b9df729afaa9ac6219e0876988c70af3cf50aaa273",
+      "sha256_after": "224e73ed36c10f3f224955b9df729afaa9ac6219e0876988c70af3cf50aaa273",
+      "migrated": false
+    },
+    "8": {
+      "path": "/home/user/World-Models/geometric-consistency-probe/state/task_08_result.json",
+      "errors": [],
+      "sha256_before": "93e5c4c82aed3898a0e93b09124210d8d517e8c23557b05c98b294808ce9ce58",
+      "sha256_after": "93e5c4c82aed3898a0e93b09124210d8d517e8c23557b05c98b294808ce9ce58",
+      "migrated": false
+    },
+    "9": {
+      "path": "/home/user/World-Models/geometric-consistency-probe/state/task_09_result.json",
+      "errors": [],
+      "sha256_before": "a196faad56c7463c955ffcedfa40881cf6c4d355c49b27ed528f891804e652ae",
+      "sha256_after": "a196faad56c7463c955ffcedfa40881cf6c4d355c49b27ed528f891804e652ae",
+      "migrated": false
+    },
+    "10": {
+      "path": "/home/user/World-Models/geometric-consistency-probe/state/task_10_result.json",
+      "errors": [],
+      "sha256_before": "d5b34a650d2413aa1c001836e750c009d9ac649d4f6f3a2326b6e2e5e8c5edeb",
+      "sha256_after": "d5b34a650d2413aa1c001836e750c009d9ac649d4f6f3a2326b6e2e5e8c5edeb",
+      "migrated": false
+    },
+    "11": {
+      "path": "/home/user/World-Models/geometric-consistency-probe/state/task_11_result.json",
+      "errors": [],
+      "sha256_before": "589f43a3c1c05909ed7304c10258b26246bd95bf04fedbcb7335969098f18633",
+      "sha256_after": "589f43a3c1c05909ed7304c10258b26246bd95bf04fedbcb7335969098f18633",
+      "migrated": false
+    },
+    "12": {
+      "path": "/home/user/World-Models/geometric-consistency-probe/state/task_12_result.json",
+      "errors": [],
+      "sha256_before": "ee8b4ceb5fad3d4de4dde2c38c1876ce8ce88327f6d3e4a294452589a426c280",
+      "sha256_after": "ee8b4ceb5fad3d4de4dde2c38c1876ce8ce88327f6d3e4a294452589a426c280",
+      "migrated": false
+    },
+    "13": {
+      "path": "/home/user/World-Models/geometric-consistency-probe/state/task_13_result.json",
+      "errors": [],
+      "sha256_before": "c4ef524ec8e135b0bb36a1a3495c9f5b1793a0beed26596a33aa2e013719c287",
+      "sha256_after": "c4ef524ec8e135b0bb36a1a3495c9f5b1793a0beed26596a33aa2e013719c287",
+      "migrated": false
+    },
+    "14": {
+      "path": "/home/user/World-Models/geometric-consistency-probe/state/task_14_result.json",
+      "errors": [],
+      "sha256_before": "763943db36c7cba4fe54ab71171704e82e826563379faf70c5626b76f4ae3752",
+      "sha256_after": "763943db36c7cba4fe54ab71171704e82e826563379faf70c5626b76f4ae3752",
+      "migrated": false
+    }
+  },
+  "cli_dispatch_check": {
+    "note": "Per this task's own scope ('Does not re-run Tasks 6-14's experiments to produce new numbers'), dispatch capability was verified by unit tests that monkeypatch each task module's main() rather than by actually re-running any of the nine (real) rendering/encoding pipelines. See tests/test_evaluation_run_task.py: test_every_task_module_is_importable_and_has_main (parametrized over all 9 tasks), test_run_task_dispatches_to_the_right_module_without_running_the_real_experiment, and test_main_dispatches_multiple_tasks_in_order.",
+    "task_modules": {
+      "6": "experiments.task6_camera_rotation",
+      "7": "experiments.task7_geometric_consistency",
+      "8": "experiments.task8_physical_state",
+      "9": "experiments.task9_appearance_invariance",
+      "10": "experiments.task10_baselines",
+      "11": "experiments.task11_scale",
+      "12": "experiments.task12_temporal_consistency",
+      "13": "experiments.task13_occlusion",
+      "14": "experiments.task14_counterfactuals"
+    }
+  }
+}
