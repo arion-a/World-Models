@@ -1,0 +1,38 @@
+# Task 12 follow-up #3, third scale point: camera-rotation MAGNITUDE
+# sweep at N=200, to sit alongside the existing N=400 and N=800 runs
+# and give a proper 3-point R^2-vs-N curve (per theta) for this sweep --
+# same base_seed=42, same thetas {0,5,10,20,30}, same everything else,
+# so scenes 0-199 here are bit-identical to the N=400/N=800 runs'
+# scenes 0-199 (deterministic scene generation by index).
+#
+# Separate output_dir/result_path: does not touch
+# experiments/temporal_magnitude_sweep_n400 or _n800,
+# state/task_12_result.json, that task's checkpoint, or the N=100/N=200
+# temporal-consistency (fixed-motion) scale follow-ups.
+
+num_scenes: 200
+base_seed: 42
+train_fraction: 0.7
+val_fraction: 0.1
+thetas_deg: [0.0, 5.0, 10.0, 20.0, 30.0]
+elevation_deg: 0.0
+output_dir: experiments/temporal_magnitude_sweep_n200
+result_path: experiments/temporal_magnitude_sweep_n200/result.json
+
+resolution: 128
+window_frames: 4
+fps: 4.0
+
+ridge_alpha_grid: [1.0, 10.0, 100.0]
+shuffled_pairing_seed: 0
+
+num_objects_min: 1
+num_objects_max: 3
+
+pretrained: true
+checkpoint: facebook/vjepa2-vitl-fpc64-256
+device: null
+fallback_seed: 0
+
+n_bootstrap: 2000
+bootstrap_seeds: [0, 1, 2]
