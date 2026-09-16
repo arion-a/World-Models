@@ -628,9 +628,6 @@ def run_finalize(cfg: Task14Config) -> dict:
         "seed": cfg.base_seed,
         "software_versions": gclib.software_versions(),
     }
-    result_path = Path(cfg.result_path)
-    result_path.parent.mkdir(parents=True, exist_ok=True)
-    result_path.write_text(json.dumps(result, indent=2))
     return result
 
 
@@ -800,10 +797,12 @@ def main():
     if not args.skip_tests:
         repo_root = Path(__file__).resolve().parent.parent
         result["tests"] = gclib.run_existing_test_suite(repo_root)
-        result_path = Path(args.result_path or cfg.result_path)
-        result_path.write_text(json.dumps(result, indent=2))
 
-    print(f"Task 14 result written to {args.result_path or cfg.result_path}")
+    result_path = Path(args.result_path or cfg.result_path)
+    result_path.parent.mkdir(parents=True, exist_ok=True)
+    result_path.write_text(json.dumps(result, indent=2))
+
+    print(f"Task 14 result written to {result_path}")
     print(result["scientific_result"])
 
 

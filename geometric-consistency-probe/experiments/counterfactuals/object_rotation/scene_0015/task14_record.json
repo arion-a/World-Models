@@ -1,0 +1,10 @@
+{
+  "scene_id": "scene_0015",
+  "condition": "object_rotation",
+  "object_index": 0,
+  "radius": 0.2612095439226047,
+  "target_displacement": 0.4,
+  "measured_displacement": 0.40000000000000024,
+  "rotation_angle_deg": 99.93305767629705,
+  "rotation_angle_clipped": false
+}

@@ -16,7 +16,7 @@
     13,
     14
   ],
-  "status": "READY",
+  "status": "QA",
   "attempts": {
     "6": 1,
     "7": 2,
@@ -26,7 +26,8 @@
     "11": 1,
     "12": 1,
     "13": 2,
-    "14": 1
+    "14": 1,
+    "15": 1
   },
   "commits": {
     "6": "3bc16304b57b4fe8138490b8d554457380ecce64",
@@ -480,6 +481,12 @@
       "path": "/home/user/World-Models/geometric-consistency-probe/tasks/14_counterfactuals.md",
       "title": "Controlled counterfactual representation consistency",
       "timestamp": "2026-09-16T10:50:42+00:00"
+    },
+    "15": {
+      "changed": true,
+      "path": "/home/user/World-Models/geometric-consistency-probe/tasks/15_unified_framework.md",
+      "title": "Unified evaluation framework",
+      "timestamp": "2026-09-16T14:31:54+00:00"
     }
   },
   "blockers": {},
@@ -1344,7 +1351,33 @@
       "to_status": "READY",
       "task": 14,
       "commit": "4d00f990882d47e3bfadcac369c61e7c46da8e00"
+    },
+    {
+      "event": "sync",
+      "timestamp": "2026-09-16T14:31:54+00:00",
+      "task": 15,
+      "changed": true
+    },
+    {
+      "event": "transition",
+      "timestamp": "2026-09-16T14:31:54+00:00",
+      "from_status": "READY",
+      "to_status": "RUNNING",
+      "task": 15
+    },
+    {
+      "event": "attempt",
+      "timestamp": "2026-09-16T14:31:54+00:00",
+      "task": 15,
+      "attempt": 1
+    },
+    {
+      "event": "transition",
+      "timestamp": "2026-09-16T14:38:22+00:00",
+      "from_status": "RUNNING",
+      "to_status": "QA",
+      "task": 15
     }
   ],
-  "updated_at": "2026-09-16T11:11:04+00:00"
+  "updated_at": "2026-09-16T14:38:22+00:00"
 }
