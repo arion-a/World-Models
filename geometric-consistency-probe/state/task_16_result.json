@@ -1,0 +1,61 @@
+{
+  "task": 16,
+  "implementation_status": "COMPLETE",
+  "scientific_result": "This is a synthesis task; it derives no new measurement and reports no new hypothesis test. It reads state/task_06_result.json through state/task_15_result.json (all 10 files, every one confirmed to exist and actually read -- see 'source_files_read' below) plus state/task_07b_result.json and experiments/task7b_latent_transformation_discovery/final_report.md as directly relevant supplementary evidence for the camera-rotation reconciliation Task 16's own protocol requires. reports/final_research_report.md is the full synthesis. Headline finding: at this project's primary scene-count regime (N=40, 32 train / 8 test), results are predominantly negative -- Task 6 (camera rotation equivariance, R^2=-0.313, below all 3 controls), Task 7 (0/6 transforms, geometric or appearance, beat their best baseline), Task 10 (primary pretrained encoder's R^2=-0.313 below 4 of 5 baselines, including a non-learned pixel-statistics encoder at R^2=0.221 and an untrained matched-architecture encoder at R^2=0.781), Task 11 (flagship transform stays R^2<0 at every scale point N in {15,40,100}, though the margin vs. best baseline trend is classified 'strengthens'), Task 12 (temporal-window R^2=0.306, below its own required static-clip control at R^2=0.609), Task 13 (0/2 post-occlusion variables beat the scrambled-identity control, and the no-occlusion upper bound also failed to beat the mean baseline, making the negative result only partially interpretable), and Task 14 (discrimination accuracy=0.625 is below the pre-declared chance threshold of 0.750, and is additionally invalidated by its own required representation-norm-only control scoring 0.938, above chance). Task 8 (physical-state linear accessibility) is mixed: 2 of 4 variables (camera_elevation_deg R^2=0.227, camera_distance R^2=0.349) exceeded their baseline; camera_azimuth_deg and primary_object_position_xy did not. Task 9 found no clean invariance separation between geometric transforms and appearance-only controls -- camera_rotation (geometric) was the single least-invariant transform of all six tested, directly undercutting confidence in Tasks 6/7's geometric framing. The one clear positive result in the whole pipeline is the supplementary Task 7B study (sealed test R^2=0.5571, 95% CI [0.528,0.580], vs. best control R^2=0.157, on 220 held-out scenes from a 1463-scene population), which used ~25x more training scenes than Tasks 6/7/11's floor and a narrower (pure-yaw-only) transform definition, and is itself explicitly scale-limited (learning curve NOT_STABILIZED through N_train=1024) -- reported alongside, not merged into, Tasks 6/7/11's negative findings, since scale and parameterization are confounded between the two study designs and cannot be separately attributed from the evidence available. No task, and no combination of tasks, supports or claims that the model 'understands 3D' in any sense beyond the specific operational metrics reported. One internal inconsistency was found during synthesis (not created by this task, and not corrected on disk): state/task_10_result.json's own scientific_qa.pixel_statistics_comparable_to_primary=true, under a declared 'within 0.05 R^2' threshold, is not consistent with the two R^2 values it compares in the same file's metrics block (0.2212 vs -0.3130, an actual gap of ~0.53) -- flagged in the report's 'Failure analysis' section for Task 18's audit, not silently repeated or silently resolved.",
+  "seed": 0,
+  "config": {
+    "result_path": "state/task_16_result.json",
+    "report_path": "reports/final_research_report.md",
+    "test_path": "tests/test_task16_report.py",
+    "source_files_read": [
+      "state/task_06_result.json",
+      "state/task_07_result.json",
+      "state/task_08_result.json",
+      "state/task_09_result.json",
+      "state/task_10_result.json",
+      "state/task_11_result.json",
+      "state/task_12_result.json",
+      "state/task_13_result.json",
+      "state/task_14_result.json",
+      "state/task_15_result.json",
+      "state/task_07b_result.json",
+      "experiments/task7b_latent_transformation_discovery/final_report.md",
+      "research/CANONICAL_RESEARCH_PROTOCOL.md",
+      "research/RESEARCH_INVARIANTS.md",
+      "DESIGN.md"
+    ],
+    "supplementary_task_7b_included": true,
+    "note": "No task 6-15 source result file was modified by this task. No new experiment, rendering, encoding, fitting, or probe run was performed -- this task only reads and synthesizes existing state/task_NN_result.json files, per its own 'Not an experiment; a synthesis protocol' specification."
+  },
+  "metrics": {
+    "num_prior_tasks_synthesized": 10,
+    "num_source_result_files_confirmed_to_exist_and_read": 10,
+    "num_supplementary_result_files_read": 1,
+    "num_claim_evidence_matrix_rows": 11,
+    "num_negative_results_documented": 9,
+    "num_tasks_with_mixed_result": 1,
+    "num_tasks_with_clear_positive_result": 1,
+    "num_infrastructure_only_tasks": 1,
+    "num_internal_inconsistencies_flagged_not_resolved": 1
+  },
+  "protected_files_justification": "None -- no Tasks 1-5 file (generation/, transforms/, encoders/, DESIGN.md, IMPLEMENTATION_NOTES.md, configs/config.py) was modified, and no Task 6-15 result file (state/task_0{6..9}_result.json, state/task_1{0..5}_result.json, state/task_07b_result.json, or any experiments/ artifact) was modified. This task added only reports/final_research_report.md (new), tests/test_task16_report.py (new), and state/task_16_result.json (new).",
+  "software_versions": {
+    "python": "3.11.15",
+    "torch": "2.14.0+cu130",
+    "transformers": "5.17.0"
+  },
+  "tests": {
+    "passed": 870,
+    "failed": 0,
+    "deselected": 41,
+    "returncode": 0,
+    "command": "pytest -m \"not slow\" -q",
+    "task16_specific_tests_passed": 62,
+    "task16_specific_test_command": "pytest tests/test_task16_report.py -q"
+  },
+  "artifacts": [
+    "reports/final_research_report.md",
+    "tests/test_task16_report.py",
+    "state/task_16_result.json"
+  ]
+}
