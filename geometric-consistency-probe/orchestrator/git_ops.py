@@ -27,7 +27,12 @@ class GitStatus:
     branch: str
 
 
-def _run_git(args: list[str], cwd: str | Path, timeout: int = 30) -> subprocess.CompletedProcess:
+def _run_git(args: list[str], cwd: str | Path, timeout: int = 120) -> subprocess.CompletedProcess:
+    # 120s, not 30s: on this project's environment, a working tree with tens
+    # of thousands of tracked files (many follow-up experiments' rendered
+    # data) makes even `git status --porcelain` intermittently take close to
+    # 30s on a cold filesystem cache -- observed directly hitting the old
+    # 30s timeout on `orchestrator.run --dry-run` twice in one session.
     return subprocess.run(
         ["git", *args],
         cwd=str(cwd),
