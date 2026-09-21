@@ -1,0 +1,151 @@
+{
+  "candidate_displacements": [
+    1.0,
+    2.0
+  ],
+  "num_pilot_scenes": 8,
+  "results_by_candidate": {
+    "1p0": {
+      "target_displacement": 1.0,
+      "output_dir": "experiments/task14_followup_bigger_displacement_n100_pilot/disp_1p0",
+      "detectability": {
+        "num_scenes": 8,
+        "within_pair_mean_sq_diff": 203.64153662347246,
+        "cross_scene_mean_sq_diff": 1166.4400393917554,
+        "ratio": 0.17458380177832555,
+        "detectability_threshold": 0.3,
+        "clears_threshold": false
+      },
+      "visibility": {
+        "all_visible": true,
+        "num_scenes": 8,
+        "per_scene": {
+          "scene_0000": {
+            "object_index": 0,
+            "instance_id": 1,
+            "visible_pixel_count": 1460,
+            "visible": true
+          },
+          "scene_0001": {
+            "object_index": 0,
+            "instance_id": 1,
+            "visible_pixel_count": 1000,
+            "visible": true
+          },
+          "scene_0002": {
+            "object_index": 0,
+            "instance_id": 1,
+            "visible_pixel_count": 1184,
+            "visible": true
+          },
+          "scene_0003": {
+            "object_index": 0,
+            "instance_id": 1,
+            "visible_pixel_count": 636,
+            "visible": true
+          },
+          "scene_0004": {
+            "object_index": 0,
+            "instance_id": 1,
+            "visible_pixel_count": 3612,
+            "visible": true
+          },
+          "scene_0005": {
+            "object_index": 0,
+            "instance_id": 1,
+            "visible_pixel_count": 1788,
+            "visible": true
+          },
+          "scene_0006": {
+            "object_index": 0,
+            "instance_id": 1,
+            "visible_pixel_count": 1496,
+            "visible": true
+          },
+          "scene_0007": {
+            "object_index": 0,
+            "instance_id": 1,
+            "visible_pixel_count": 232,
+            "visible": true
+          }
+        }
+      },
+      "passes": false
+    },
+    "2p0": {
+      "target_displacement": 2.0,
+      "output_dir": "experiments/task14_followup_bigger_displacement_n100_pilot/disp_2p0",
+      "detectability": {
+        "num_scenes": 8,
+        "within_pair_mean_sq_diff": 506.64893482885213,
+        "cross_scene_mean_sq_diff": 1166.4400393917554,
+        "ratio": 0.4343548898519003,
+        "detectability_threshold": 0.3,
+        "clears_threshold": true
+      },
+      "visibility": {
+        "all_visible": true,
+        "num_scenes": 8,
+        "per_scene": {
+          "scene_0000": {
+            "object_index": 0,
+            "instance_id": 1,
+            "visible_pixel_count": 1528,
+            "visible": true
+          },
+          "scene_0001": {
+            "object_index": 0,
+            "instance_id": 1,
+            "visible_pixel_count": 800,
+            "visible": true
+          },
+          "scene_0002": {
+            "object_index": 0,
+            "instance_id": 1,
+            "visible_pixel_count": 1080,
+            "visible": true
+          },
+          "scene_0003": {
+            "object_index": 0,
+            "instance_id": 1,
+            "visible_pixel_count": 572,
+            "visible": true
+          },
+          "scene_0004": {
+            "object_index": 0,
+            "instance_id": 1,
+            "visible_pixel_count": 2780,
+            "visible": true
+          },
+          "scene_0005": {
+            "object_index": 0,
+            "instance_id": 1,
+            "visible_pixel_count": 2008,
+            "visible": true
+          },
+          "scene_0006": {
+            "object_index": 0,
+            "instance_id": 1,
+            "visible_pixel_count": 1856,
+            "visible": true
+          },
+          "scene_0007": {
+            "object_index": 0,
+            "instance_id": 1,
+            "visible_pixel_count": 268,
+            "visible": true
+          }
+        }
+      },
+      "passes": true
+    }
+  },
+  "chosen_displacement": 2.0,
+  "chosen_reason": "smallest candidate (2.0) that cleared both the detectability threshold and the visibility check",
+  "detectability_threshold": 0.3,
+  "reference_too_small_ratio": 0.08,
+  "reference_decisive_ratio_range": [
+    0.3,
+    0.43
+  ]
+}

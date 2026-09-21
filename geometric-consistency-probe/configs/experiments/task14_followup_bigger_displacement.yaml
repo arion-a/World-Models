@@ -1,0 +1,48 @@
+# Task 14 follow-up: object_translation detectability-magnitude fix.
+#
+# A detectability/effect-size audit of Task 14's object_translation
+# counterfactual condition (state/task_14_result.json,
+# experiments/counterfactuals/object_translation/, target_displacement=0.4)
+# found it moved the frozen encoder's representation too little relative
+# to natural scene-to-scene variation (detectability ratio ~0.08, below
+# the calibrated 0.3 threshold) for a positive discrimination result built
+# on it to be trustworthy. This config redesigns ONLY target_displacement
+# (pilot-tested against a handful of scenes at 1.0/2.0, then applied
+# uniformly to the full N=100 rerun) -- see
+# experiments/task14_followup_bigger_displacement.py's module docstring
+# for the two-phase design. Independent of, and does not modify, Task 14's
+# own configs/experiments/task14_counterfactuals.yaml,
+# state/task_14_result.json, or committed rendered data.
+#
+# target_displacement below is the PHASE-2 (full N=100 run) value, set
+# after the phase-1 pilot (see
+# experiments/task14_followup_bigger_displacement_n100_pilot/pilot_result.json
+# for the full pilot record) picked it: at N=8 pilot scenes, displacement=1.0
+# gave detectability ratio 0.1746 (below the 0.3 threshold), displacement=2.0
+# gave ratio 0.4343 (clears it, object stays visible in-frame for all 8
+# scenes at both candidates) -- so 2.0 was chosen as the smallest candidate
+# that cleared both checks.
+
+target_displacement: 2.0
+
+num_scenes: 100
+train_fraction: 0.8
+# Disjoint from every base_seed already used elsewhere in this project
+# (Task 6/7/11-14 use base_seed=0; Task 7's own object_translation
+# follow-up uses base_seed=100).
+base_seed: 104
+output_dir: experiments/task14_followup_bigger_displacement_n100
+result_path: state/task14_followup_bigger_displacement_result.json
+
+resolution: 128
+num_frames: 4
+fps: 4.0
+
+ridge_alpha: 10.0
+scramble_seed: 0
+chance_margin_z: 2.0
+
+pretrained: true
+checkpoint: facebook/vjepa2-vitl-fpc64-256
+device: null
+fallback_seed: 0

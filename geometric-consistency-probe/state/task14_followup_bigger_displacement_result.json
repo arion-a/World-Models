@@ -1,0 +1,986 @@
+{
+  "task": "14_followup_bigger_displacement",
+  "implementation_status": "COMPLETE",
+  "scientific_result": "INVALIDATED result -- magnitude-matching precondition failed (rotation angle clipped for at least one scene at this target_displacement): Task 14's magnitude-matching solves object_rotation's per-scene angle from 2*radius*sin(angle/2) = target_displacement (radius = scale/2, and the scene sampler's object_scale_range=(0.5, 1.0) gives radius in [0.25, 0.5], so no rotation about the object's own pivot can ever displace a surface point by more than 2*radius <= 1.0). At this run's target_displacement=2.0, that per-scene angle saturated at the domain-edge 180 degrees (was_clipped=True) for at least one scene -- the achieved rotation displacement (mean=0.7225) did NOT match the achieved translation displacement (mean=2.0000); they differ by 1.2775 scene units on average. Per tasks/14_counterfactuals.md's explicit failure condition ('Comparing two counterfactual edits of wildly different, unmatched magnitude and treating easy discrimination as a meaningful positive result'), this run's discrimination-probe result is NOT a valid Task 14 positive finding, regardless of its raw accuracy -- the probe may simply be exploiting the magnitude mismatch rather than any intervention-specific structure.\n\nOriginal (magnitude-mismatch-blind) scientific_result text, for reference only, NOT to be read as a valid finding:\nPOSITIVE result: the real discrimination probe exceeded both the label-scrambled control and the chance threshold, the two magnitude-matched conditions were NOT trivially separable by representation-norm alone, and the fixed-variable leakage check found no confound. This is evidence that the frozen representation carries information distinguishing these two specific counterfactual edits (object_translation vs. object_rotation on the same object, matched to an identical ground-truth SE(3) displacement magnitude), beyond a chance/scrambled level, for this scene distribution -- an accessibility/structure finding, NOT a causal or compositional world model claim (DESIGN.md Sec 13; tasks/14_counterfactuals.md's interpretation limits).\n\nDetail:\n- Discrimination probe (object_translation vs. object_rotation, magnitude-matched to 2.0 scene units per scene): real probe accuracy=0.725 vs. scrambled-label control accuracy=0.450 (chance threshold=0.658, n_test=40).\n- Representation-norm-only control (required 'not trivially separable by magnitude alone' check): accuracy=0.550 vs. chance threshold=0.658 -- PASSED (not trivially separable).\n- Fixed-variable leakage check (probe trained on camera_translation-vs-lighting_change representation differences on TRAIN scenes only, evaluated on the REAL test set): accuracy=0.575 vs. chance threshold=0.658 -- PASSED (no confound found).\n- Measured achieved displacement: object_translation mean=2.0000, object_rotation mean=0.7225 (mean |difference| across scenes=1.277460).",
+  "counterfactual_conditions": [
+    "object_translation",
+    "object_rotation"
+  ],
+  "confound_conditions_for_leakage_check": [
+    "camera_translation",
+    "lighting_change"
+  ],
+  "magnitude_matching_method": "object_translation's magnitude is fixed at target_displacement=2.0 scene units for every scene; object_rotation's angle is solved PER SCENE from that scene's own tracked-object radius (scale/2) so that a reference point on the object's surface (world-frame offset (radius, 0, 0) from the object's pivot) moves by the IDENTICAL Euclidean distance under either edit (target_rotation_angle_deg, closed-form 2*radius*sin(angle/2) = target_displacement). Both conditions' ACHIEVED displacement is then re-measured (not just derived) by applying each transform's own recorded transform_matrix to that reference point (reference_point_displacement) -- see magnitude_matching in metrics for the measured per-scene values, which confirm the intended match was actually achieved.",
+  "dataset": {
+    "num_scenes": 100,
+    "train_scene_ids": [
+      "scene_0003",
+      "scene_0005",
+      "scene_0006",
+      "scene_0007",
+      "scene_0009",
+      "scene_0010",
+      "scene_0011",
+      "scene_0012",
+      "scene_0013",
+      "scene_0014",
+      "scene_0015",
+      "scene_0016",
+      "scene_0017",
+      "scene_0018",
+      "scene_0019",
+      "scene_0020",
+      "scene_0022",
+      "scene_0023",
+      "scene_0024",
+      "scene_0025",
+      "scene_0026",
+      "scene_0028",
+      "scene_0030",
+      "scene_0031",
+      "scene_0032",
+      "scene_0033",
+      "scene_0034",
+      "scene_0036",
+      "scene_0037",
+      "scene_0038",
+      "scene_0039",
+      "scene_0040",
+      "scene_0042",
+      "scene_0045",
+      "scene_0046",
+      "scene_0049",
+      "scene_0050",
+      "scene_0051",
+      "scene_0052",
+      "scene_0054",
+      "scene_0055",
+      "scene_0058",
+      "scene_0060",
+      "scene_0061",
+      "scene_0062",
+      "scene_0063",
+      "scene_0064",
+      "scene_0065",
+      "scene_0066",
+      "scene_0068",
+      "scene_0069",
+      "scene_0070",
+      "scene_0071",
+      "scene_0072",
+      "scene_0073",
+      "scene_0074",
+      "scene_0075",
+      "scene_0076",
+      "scene_0077",
+      "scene_0078",
+      "scene_0079",
+      "scene_0080",
+      "scene_0081",
+      "scene_0082",
+      "scene_0083",
+      "scene_0084",
+      "scene_0085",
+      "scene_0086",
+      "scene_0088",
+      "scene_0089",
+      "scene_0090",
+      "scene_0091",
+      "scene_0092",
+      "scene_0093",
+      "scene_0094",
+      "scene_0095",
+      "scene_0096",
+      "scene_0097",
+      "scene_0098",
+      "scene_0099"
+    ],
+    "test_scene_ids": [
+      "scene_0000",
+      "scene_0001",
+      "scene_0002",
+      "scene_0004",
+      "scene_0008",
+      "scene_0021",
+      "scene_0027",
+      "scene_0029",
+      "scene_0035",
+      "scene_0041",
+      "scene_0043",
+      "scene_0044",
+      "scene_0047",
+      "scene_0048",
+      "scene_0053",
+      "scene_0056",
+      "scene_0057",
+      "scene_0059",
+      "scene_0067",
+      "scene_0087"
+    ],
+    "train_fraction": 0.8,
+    "base_seed": 104
+  },
+  "encoder": {
+    "name": "VJEPAEncoder",
+    "checkpoint": "facebook/vjepa2-vitl-fpc64-256",
+    "pretrained": true,
+    "pooling": "mean_pool"
+  },
+  "fitting": {
+    "method": "ridge",
+    "alpha": 10.0,
+    "target": "binary condition label, thresholded at 0.5"
+  },
+  "metrics": {
+    "discrimination": {
+      "real_probe_accuracy": 0.725,
+      "scrambled_label_control_accuracy": 0.45,
+      "chance_accuracy_threshold": 0.658113883008419,
+      "num_train_examples": 160,
+      "num_test_examples": 40
+    },
+    "representation_norm_only_check": {
+      "accuracy": 0.55,
+      "chance_accuracy_threshold": 0.658113883008419,
+      "not_trivially_separable": true
+    },
+    "fixed_variable_leakage_check": {
+      "confound_conditions": [
+        "camera_translation",
+        "lighting_change"
+      ],
+      "accuracy_on_real_test_set": 0.575,
+      "chance_accuracy_threshold": 0.658113883008419,
+      "passed": true,
+      "num_confound_train_examples": 160
+    },
+    "magnitude_matching": {
+      "target_displacement": 2.0,
+      "object_translation_measured_displacement": {
+        "mean": 2.0,
+        "std": 1.6467268631127714e-16,
+        "min": 1.9999999999999996,
+        "max": 2.0000000000000004
+      },
+      "object_rotation_measured_displacement": {
+        "mean": 0.7225398880420751,
+        "std": 0.13425953455343506,
+        "min": 0.5004678913422407,
+        "max": 0.9993353644814016
+      },
+      "mean_absolute_difference_between_conditions": 1.2774601119579247,
+      "any_rotation_angle_clipped": true
+    }
+  },
+  "scrambled_label_control": {
+    "method": "Task 8's shuffled_label_permutation applied to TRAIN labels only, a genuine derangement for n>1",
+    "seed": 0
+  },
+  "tests": {
+    "passed": 0,
+    "failed": 0
+  },
+  "artifacts": [
+    "experiments/task14_followup_bigger_displacement_n100/manifest.json",
+    "experiments/task14_followup_bigger_displacement_n100/report.md"
+  ],
+  "config": {
+    "num_scenes": 100,
+    "train_fraction": 0.8,
+    "base_seed": 104,
+    "output_dir": "experiments/task14_followup_bigger_displacement_n100",
+    "result_path": "state/task14_followup_bigger_displacement_result.json",
+    "resolution": 128,
+    "num_frames": 4,
+    "fps": 4.0,
+    "target_displacement": 2.0,
+    "ridge_alpha": 10.0,
+    "scramble_seed": 0,
+    "chance_margin_z": 2.0,
+    "pretrained": true,
+    "checkpoint": "facebook/vjepa2-vitl-fpc64-256",
+    "device": null,
+    "fallback_seed": 0
+  },
+  "seed": 104,
+  "software_versions": {
+    "python": "3.11.15",
+    "torch": "2.14.0+cu130",
+    "transformers": "5.17.0"
+  },
+  "object_translation_detectability_ratio": {
+    "num_scenes": 100,
+    "within_pair_mean_sq_diff": 565.0373197441894,
+    "cross_scene_mean_sq_diff": 1161.9833325735165,
+    "ratio": 0.48626972857929573,
+    "detectability_threshold": 0.3,
+    "clears_threshold": true
+  },
+  "object_translation_visibility_check": {
+    "all_visible": false,
+    "num_scenes": 100,
+    "per_scene": {
+      "scene_0000": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 1528,
+        "visible": true
+      },
+      "scene_0001": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 800,
+        "visible": true
+      },
+      "scene_0002": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 1080,
+        "visible": true
+      },
+      "scene_0003": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 572,
+        "visible": true
+      },
+      "scene_0004": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 2780,
+        "visible": true
+      },
+      "scene_0005": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 2008,
+        "visible": true
+      },
+      "scene_0006": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 1856,
+        "visible": true
+      },
+      "scene_0007": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 268,
+        "visible": true
+      },
+      "scene_0008": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 2740,
+        "visible": true
+      },
+      "scene_0009": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 896,
+        "visible": true
+      },
+      "scene_0010": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 2228,
+        "visible": true
+      },
+      "scene_0011": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 1236,
+        "visible": true
+      },
+      "scene_0012": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 2800,
+        "visible": true
+      },
+      "scene_0013": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 704,
+        "visible": true
+      },
+      "scene_0014": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 856,
+        "visible": true
+      },
+      "scene_0015": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 916,
+        "visible": true
+      },
+      "scene_0016": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 776,
+        "visible": true
+      },
+      "scene_0017": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 2140,
+        "visible": true
+      },
+      "scene_0018": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 1548,
+        "visible": true
+      },
+      "scene_0019": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 6040,
+        "visible": true
+      },
+      "scene_0020": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 704,
+        "visible": true
+      },
+      "scene_0021": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 1360,
+        "visible": true
+      },
+      "scene_0022": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 764,
+        "visible": true
+      },
+      "scene_0023": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 1236,
+        "visible": true
+      },
+      "scene_0024": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 1268,
+        "visible": true
+      },
+      "scene_0025": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 2324,
+        "visible": true
+      },
+      "scene_0026": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 2120,
+        "visible": true
+      },
+      "scene_0027": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 2352,
+        "visible": true
+      },
+      "scene_0028": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 1444,
+        "visible": true
+      },
+      "scene_0029": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 268,
+        "visible": true
+      },
+      "scene_0030": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 3592,
+        "visible": true
+      },
+      "scene_0031": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 996,
+        "visible": true
+      },
+      "scene_0032": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 328,
+        "visible": true
+      },
+      "scene_0033": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 8,
+        "visible": true
+      },
+      "scene_0034": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 1192,
+        "visible": true
+      },
+      "scene_0035": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 1832,
+        "visible": true
+      },
+      "scene_0036": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 0,
+        "visible": false
+      },
+      "scene_0037": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 1476,
+        "visible": true
+      },
+      "scene_0038": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 1300,
+        "visible": true
+      },
+      "scene_0039": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 1212,
+        "visible": true
+      },
+      "scene_0040": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 136,
+        "visible": true
+      },
+      "scene_0041": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 516,
+        "visible": true
+      },
+      "scene_0042": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 1844,
+        "visible": true
+      },
+      "scene_0043": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 920,
+        "visible": true
+      },
+      "scene_0044": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 856,
+        "visible": true
+      },
+      "scene_0045": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 1176,
+        "visible": true
+      },
+      "scene_0046": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 868,
+        "visible": true
+      },
+      "scene_0047": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 372,
+        "visible": true
+      },
+      "scene_0048": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 52,
+        "visible": true
+      },
+      "scene_0049": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 824,
+        "visible": true
+      },
+      "scene_0050": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 1016,
+        "visible": true
+      },
+      "scene_0051": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 3352,
+        "visible": true
+      },
+      "scene_0052": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 1972,
+        "visible": true
+      },
+      "scene_0053": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 1348,
+        "visible": true
+      },
+      "scene_0054": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 1544,
+        "visible": true
+      },
+      "scene_0055": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 2896,
+        "visible": true
+      },
+      "scene_0056": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 704,
+        "visible": true
+      },
+      "scene_0057": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 732,
+        "visible": true
+      },
+      "scene_0058": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 1840,
+        "visible": true
+      },
+      "scene_0059": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 1004,
+        "visible": true
+      },
+      "scene_0060": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 820,
+        "visible": true
+      },
+      "scene_0061": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 1560,
+        "visible": true
+      },
+      "scene_0062": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 1356,
+        "visible": true
+      },
+      "scene_0063": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 1388,
+        "visible": true
+      },
+      "scene_0064": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 5128,
+        "visible": true
+      },
+      "scene_0065": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 3504,
+        "visible": true
+      },
+      "scene_0066": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 900,
+        "visible": true
+      },
+      "scene_0067": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 5300,
+        "visible": true
+      },
+      "scene_0068": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 896,
+        "visible": true
+      },
+      "scene_0069": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 1152,
+        "visible": true
+      },
+      "scene_0070": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 1640,
+        "visible": true
+      },
+      "scene_0071": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 964,
+        "visible": true
+      },
+      "scene_0072": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 472,
+        "visible": true
+      },
+      "scene_0073": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 640,
+        "visible": true
+      },
+      "scene_0074": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 612,
+        "visible": true
+      },
+      "scene_0075": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 408,
+        "visible": true
+      },
+      "scene_0076": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 1368,
+        "visible": true
+      },
+      "scene_0077": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 2952,
+        "visible": true
+      },
+      "scene_0078": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 3972,
+        "visible": true
+      },
+      "scene_0079": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 5012,
+        "visible": true
+      },
+      "scene_0080": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 1584,
+        "visible": true
+      },
+      "scene_0081": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 348,
+        "visible": true
+      },
+      "scene_0082": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 1396,
+        "visible": true
+      },
+      "scene_0083": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 724,
+        "visible": true
+      },
+      "scene_0084": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 2036,
+        "visible": true
+      },
+      "scene_0085": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 4148,
+        "visible": true
+      },
+      "scene_0086": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 764,
+        "visible": true
+      },
+      "scene_0087": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 760,
+        "visible": true
+      },
+      "scene_0088": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 2120,
+        "visible": true
+      },
+      "scene_0089": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 1124,
+        "visible": true
+      },
+      "scene_0090": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 584,
+        "visible": true
+      },
+      "scene_0091": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 520,
+        "visible": true
+      },
+      "scene_0092": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 1284,
+        "visible": true
+      },
+      "scene_0093": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 1636,
+        "visible": true
+      },
+      "scene_0094": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 1864,
+        "visible": true
+      },
+      "scene_0095": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 784,
+        "visible": true
+      },
+      "scene_0096": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 952,
+        "visible": true
+      },
+      "scene_0097": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 668,
+        "visible": true
+      },
+      "scene_0098": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 3240,
+        "visible": true
+      },
+      "scene_0099": {
+        "object_index": 0,
+        "instance_id": 1,
+        "visible_pixel_count": 772,
+        "visible": true
+      }
+    }
+  },
+  "magnitude_matching_validity_check": {
+    "any_rotation_angle_clipped": true,
+    "object_translation_measured_displacement_mean": 2.0,
+    "object_rotation_measured_displacement_mean": 0.7225398880420751,
+    "magnitudes_matched": false,
+    "explanation": "Task 14's magnitude-matching solves object_rotation's per-scene angle from 2*radius*sin(angle/2) = target_displacement (radius = scale/2, and the scene sampler's object_scale_range=(0.5, 1.0) gives radius in [0.25, 0.5], so no rotation about the object's own pivot can ever displace a surface point by more than 2*radius <= 1.0). At this run's target_displacement=2.0, that per-scene angle saturated at the domain-edge 180 degrees (was_clipped=True) for at least one scene -- the achieved rotation displacement (mean=0.7225) did NOT match the achieved translation displacement (mean=2.0000); they differ by 1.2775 scene units on average. Per tasks/14_counterfactuals.md's explicit failure condition ('Comparing two counterfactual edits of wildly different, unmatched magnitude and treating easy discrimination as a meaningful positive result'), this run's discrimination-probe result is NOT a valid Task 14 positive finding, regardless of its raw accuracy -- the probe may simply be exploiting the magnitude mismatch rather than any intervention-specific structure."
+  },
+  "pilot": {
+    "candidate_displacements": [
+      1.0,
+      2.0
+    ],
+    "num_pilot_scenes": 8,
+    "results_by_candidate": {
+      "1p0": {
+        "target_displacement": 1.0,
+        "output_dir": "experiments/task14_followup_bigger_displacement_n100_pilot/disp_1p0",
+        "detectability": {
+          "num_scenes": 8,
+          "within_pair_mean_sq_diff": 203.64153662347246,
+          "cross_scene_mean_sq_diff": 1166.4400393917554,
+          "ratio": 0.17458380177832555,
+          "detectability_threshold": 0.3,
+          "clears_threshold": false
+        },
+        "visibility": {
+          "all_visible": true,
+          "num_scenes": 8,
+          "per_scene": {
+            "scene_0000": {
+              "object_index": 0,
+              "instance_id": 1,
+              "visible_pixel_count": 1460,
+              "visible": true
+            },
+            "scene_0001": {
+              "object_index": 0,
+              "instance_id": 1,
+              "visible_pixel_count": 1000,
+              "visible": true
+            },
+            "scene_0002": {
+              "object_index": 0,
+              "instance_id": 1,
+              "visible_pixel_count": 1184,
+              "visible": true
+            },
+            "scene_0003": {
+              "object_index": 0,
+              "instance_id": 1,
+              "visible_pixel_count": 636,
+              "visible": true
+            },
+            "scene_0004": {
+              "object_index": 0,
+              "instance_id": 1,
+              "visible_pixel_count": 3612,
+              "visible": true
+            },
+            "scene_0005": {
+              "object_index": 0,
+              "instance_id": 1,
+              "visible_pixel_count": 1788,
+              "visible": true
+            },
+            "scene_0006": {
+              "object_index": 0,
+              "instance_id": 1,
+              "visible_pixel_count": 1496,
+              "visible": true
+            },
+            "scene_0007": {
+              "object_index": 0,
+              "instance_id": 1,
+              "visible_pixel_count": 232,
+              "visible": true
+            }
+          }
+        },
+        "passes": false
+      },
+      "2p0": {
+        "target_displacement": 2.0,
+        "output_dir": "experiments/task14_followup_bigger_displacement_n100_pilot/disp_2p0",
+        "detectability": {
+          "num_scenes": 8,
+          "within_pair_mean_sq_diff": 506.64893482885213,
+          "cross_scene_mean_sq_diff": 1166.4400393917554,
+          "ratio": 0.4343548898519003,
+          "detectability_threshold": 0.3,
+          "clears_threshold": true
+        },
+        "visibility": {
+          "all_visible": true,
+          "num_scenes": 8,
+          "per_scene": {
+            "scene_0000": {
+              "object_index": 0,
+              "instance_id": 1,
+              "visible_pixel_count": 1528,
+              "visible": true
+            },
+            "scene_0001": {
+              "object_index": 0,
+              "instance_id": 1,
+              "visible_pixel_count": 800,
+              "visible": true
+            },
+            "scene_0002": {
+              "object_index": 0,
+              "instance_id": 1,
+              "visible_pixel_count": 1080,
+              "visible": true
+            },
+            "scene_0003": {
+              "object_index": 0,
+              "instance_id": 1,
+              "visible_pixel_count": 572,
+              "visible": true
+            },
+            "scene_0004": {
+              "object_index": 0,
+              "instance_id": 1,
+              "visible_pixel_count": 2780,
+              "visible": true
+            },
+            "scene_0005": {
+              "object_index": 0,
+              "instance_id": 1,
+              "visible_pixel_count": 2008,
+              "visible": true
+            },
+            "scene_0006": {
+              "object_index": 0,
+              "instance_id": 1,
+              "visible_pixel_count": 1856,
+              "visible": true
+            },
+            "scene_0007": {
+              "object_index": 0,
+              "instance_id": 1,
+              "visible_pixel_count": 268,
+              "visible": true
+            }
+          }
+        },
+        "passes": true
+      }
+    },
+    "chosen_displacement": 2.0,
+    "chosen_reason": "smallest candidate (2.0) that cleared both the detectability threshold and the visibility check",
+    "detectability_threshold": 0.3,
+    "reference_too_small_ratio": 0.08,
+    "reference_decisive_ratio_range": [
+      0.3,
+      0.43
+    ]
+  },
+  "base_task": 14,
+  "original_task_14_result_path": "state/task_14_result.json",
+  "followup_reason": "Detectability/effect-size audit found Task 14's object_translation counterfactual condition (target_displacement=0.4) moved the frozen encoder's representation too little relative to natural scene-to-scene variation (detectability ratio ~0.08, below the calibrated 0.3 threshold) for a positive discrimination result built on it to be trustworthy. This follow-up redesigns ONLY target_displacement (pilot-tested, then applied uniformly to both object_translation and, per scene, object_rotation's magnitude-matched angle) and reruns Task 14's full protocol at N=100."
+}

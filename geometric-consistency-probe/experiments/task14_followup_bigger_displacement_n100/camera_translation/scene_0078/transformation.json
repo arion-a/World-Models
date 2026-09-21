@@ -1,0 +1,53 @@
+{
+  "delta_position": [
+    -0.22977938573842044,
+    -0.21403353775492676,
+    -1.1442104451865007
+  ],
+  "magnitude": 1.1865186320779397,
+  "transform_matrix": [
+    [
+      1.0,
+      0.0,
+      0.0,
+      -0.22977938573842044
+    ],
+    [
+      0.0,
+      1.0,
+      0.0,
+      -0.21403353775492676
+    ],
+    [
+      0.0,
+      0.0,
+      1.0,
+      -1.1442104451865007
+    ],
+    [
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ]
+  ],
+  "changed_variables": [
+    "camera.position"
+  ],
+  "fixed_variables": [
+    "camera.rotation_euler",
+    "camera.lens_mm",
+    "camera.sensor_width_mm",
+    "objects[0].position",
+    "objects[0].rotation_euler",
+    "objects[0].scale",
+    "objects[0].color",
+    "objects[0].shape",
+    "light.position",
+    "light.energy",
+    "light.color",
+    "floor_color"
+  ],
+  "transform_name": "camera_translation",
+  "type": "camera_translation"
+}

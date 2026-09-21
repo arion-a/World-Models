@@ -1,0 +1,10 @@
+{
+  "scene_id": "scene_0009",
+  "condition": "object_translation",
+  "object_index": 0,
+  "radius": 0.43386705330776165,
+  "target_displacement": 0.5,
+  "measured_displacement": 0.5,
+  "rotation_angle_deg": null,
+  "rotation_angle_clipped": null
+}
