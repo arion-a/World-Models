@@ -1,0 +1,428 @@
+{
+  "task": "07_followup_object_translation_magnitude",
+  "implementation_status": "COMPLETE",
+  "num_scenes": 100,
+  "base_seed": 100,
+  "train_fraction": 0.8,
+  "pretrained": true,
+  "encoder": {
+    "name": "VJEPAEncoder",
+    "checkpoint": "facebook/vjepa2-vitl-fpc64-256",
+    "pretrained": true,
+    "frozen": true,
+    "pooling": "mean_pool"
+  },
+  "fitting": {
+    "method": "ridge",
+    "alpha": 10.0
+  },
+  "magnitude_selection": {
+    "pilot_num_scenes": 8,
+    "candidates_configured": [
+      2.0,
+      3.5,
+      5.0
+    ],
+    "candidates_tested": [
+      2.0
+    ],
+    "early_stopped": true,
+    "fallback_magnitude_used": false,
+    "per_candidate": [
+      {
+        "magnitude": 2.0,
+        "detectability_ratio": {
+          "mean_within_pair_sq_change": 464.4546203613281,
+          "mean_cross_scene_sq_distance": 904.9959106445312,
+          "ratio": 0.5132118442729172
+        },
+        "object_visibility": {
+          "num_scenes": 8,
+          "num_object_visible_after_transform": 8,
+          "fraction_object_visible_after_transform": 1.0
+        },
+        "pixel_diff": {
+          "mean_abs_pixel_diff": 4.067718505859375,
+          "std_abs_pixel_diff": 2.7269972779548386,
+          "per_scene_mean_abs_pixel_diff": [
+            10.172078450520834,
+            4.091206868489583,
+            0.8305867513020834,
+            4.763081868489583,
+            3.71630859375,
+            1.9469401041666667,
+            1.7752278645833333,
+            5.246317545572917
+          ]
+        },
+        "out_dir": "experiments/task7_followup_object_translation_magnitude/pilot/mag_2"
+      }
+    ],
+    "chosen_magnitude": 2.0,
+    "selection_reason": "smallest candidate clearing ratio >= 0.3",
+    "detectability_threshold": 0.3
+  },
+  "chosen_magnitude": 2.0,
+  "full_run_n100": {
+    "transform_name": "object_translation",
+    "chosen_magnitude": 2.0,
+    "train_scene_ids": [
+      "scene_0001",
+      "scene_0003",
+      "scene_0005",
+      "scene_0006",
+      "scene_0008",
+      "scene_0009",
+      "scene_0010",
+      "scene_0011",
+      "scene_0012",
+      "scene_0013",
+      "scene_0014",
+      "scene_0015",
+      "scene_0016",
+      "scene_0017",
+      "scene_0018",
+      "scene_0019",
+      "scene_0021",
+      "scene_0022",
+      "scene_0023",
+      "scene_0025",
+      "scene_0026",
+      "scene_0027",
+      "scene_0028",
+      "scene_0030",
+      "scene_0031",
+      "scene_0032",
+      "scene_0033",
+      "scene_0034",
+      "scene_0035",
+      "scene_0036",
+      "scene_0037",
+      "scene_0038",
+      "scene_0039",
+      "scene_0040",
+      "scene_0041",
+      "scene_0042",
+      "scene_0044",
+      "scene_0045",
+      "scene_0046",
+      "scene_0047",
+      "scene_0048",
+      "scene_0049",
+      "scene_0050",
+      "scene_0051",
+      "scene_0052",
+      "scene_0053",
+      "scene_0054",
+      "scene_0055",
+      "scene_0056",
+      "scene_0057",
+      "scene_0058",
+      "scene_0059",
+      "scene_0060",
+      "scene_0061",
+      "scene_0062",
+      "scene_0063",
+      "scene_0064",
+      "scene_0065",
+      "scene_0066",
+      "scene_0067",
+      "scene_0069",
+      "scene_0070",
+      "scene_0075",
+      "scene_0076",
+      "scene_0077",
+      "scene_0080",
+      "scene_0083",
+      "scene_0084",
+      "scene_0085",
+      "scene_0086",
+      "scene_0087",
+      "scene_0088",
+      "scene_0090",
+      "scene_0091",
+      "scene_0093",
+      "scene_0094",
+      "scene_0095",
+      "scene_0096",
+      "scene_0097",
+      "scene_0098"
+    ],
+    "test_scene_ids": [
+      "scene_0000",
+      "scene_0002",
+      "scene_0004",
+      "scene_0007",
+      "scene_0020",
+      "scene_0024",
+      "scene_0029",
+      "scene_0043",
+      "scene_0068",
+      "scene_0071",
+      "scene_0072",
+      "scene_0073",
+      "scene_0074",
+      "scene_0078",
+      "scene_0079",
+      "scene_0081",
+      "scene_0082",
+      "scene_0089",
+      "scene_0092",
+      "scene_0099"
+    ],
+    "n_train": 80,
+    "n_test": 20,
+    "transform_config": {
+      "camera_translation_range": [
+        0.5,
+        1.5
+      ],
+      "camera_rotation_azimuth_deg_range": [
+        10.0,
+        35.0
+      ],
+      "camera_rotation_elevation_deg_range": [
+        -10.0,
+        10.0
+      ],
+      "fixed_azimuth_deg": null,
+      "fixed_elevation_deg": null,
+      "object_translation_range": [
+        2.0,
+        2.0
+      ],
+      "object_rotation_deg_range": [
+        30.0,
+        150.0
+      ],
+      "light_energy_scale_range": [
+        0.3,
+        2.5
+      ],
+      "light_azimuth_deg_range": [
+        60.0,
+        180.0
+      ],
+      "texture_color_jitter": 0.6
+    },
+    "learned_W_T": {
+      "r2": 0.10267770290374756,
+      "mean_cosine_similarity": 0.9467902183532715,
+      "mean_relative_l2_error": 0.3168865144252777
+    },
+    "persistence_baseline": {
+      "r2": 0.2882916331291199,
+      "mean_cosine_similarity": 0.9585973620414734,
+      "mean_relative_l2_error": 0.269062340259552
+    },
+    "mean_baseline": {
+      "r2": -0.07876503467559814,
+      "mean_cosine_similarity": 0.9351288676261902,
+      "mean_relative_l2_error": 0.3492749333381653
+    },
+    "random_pair_control": {
+      "r2": -0.9865255355834961,
+      "mean_cosine_similarity": 0.8831561803817749,
+      "mean_relative_l2_error": 0.4682082533836365
+    },
+    "visual_confound": {
+      "mean_abs_pixel_diff": 4.090228474934895,
+      "std_abs_pixel_diff": 2.9811763727152107,
+      "per_scene_mean_abs_pixel_diff": [
+        10.172078450520834,
+        4.091206868489583,
+        0.8305867513020834,
+        4.763081868489583,
+        3.71630859375,
+        1.9469401041666667,
+        1.7752278645833333,
+        5.246317545572917,
+        2.1848958333333335,
+        1.30767822265625,
+        5.741536458333333,
+        5.65289306640625,
+        1.63671875,
+        4.80059814453125,
+        2.4254150390625,
+        6.094502766927083,
+        5.940185546875,
+        5.085978190104167,
+        1.7358805338541667,
+        1.71990966796875,
+        6.096659342447917,
+        0.6884969075520834,
+        1.100341796875,
+        9.54986572265625,
+        0.7455240885416666,
+        0.8692830403645834,
+        1.0379638671875,
+        9.180501302083334,
+        2.7274983723958335,
+        3.0709025065104165,
+        0.7110799153645834,
+        1.2003377278645833,
+        5.750874837239583,
+        9.749308268229166,
+        2.8150634765625,
+        5.18603515625,
+        10.6490478515625,
+        4.960917154947917,
+        2.6487223307291665,
+        2.4921061197916665,
+        9.593587239583334,
+        1.7436116536458333,
+        2.6246541341145835,
+        0.8601481119791666,
+        0.840576171875,
+        2.8961181640625,
+        0.5931193033854166,
+        6.343831380208333,
+        1.5693155924479167,
+        2.5584309895833335,
+        2.30078125,
+        5.821614583333333,
+        5.0625,
+        6.73638916015625,
+        0.9667154947916666,
+        5.153564453125,
+        9.023335774739584,
+        2.89404296875,
+        0.56768798828125,
+        1.1371866861979167,
+        1.8188273111979167,
+        5.51495361328125,
+        6.736592610677083,
+        2.4157918294270835,
+        1.3123982747395833,
+        9.030415852864584,
+        1.6378987630208333,
+        2.1116739908854165,
+        0.8254191080729166,
+        6.32952880859375,
+        3.5008341471354165,
+        9.676106770833334,
+        1.7757364908854167,
+        2.24041748046875,
+        8.584574381510416,
+        0.5586140950520834,
+        1.8255615234375,
+        4.619405110677083,
+        3.5863037109375,
+        2.66851806640625,
+        2.2842000325520835,
+        3.8652750651041665,
+        6.089009602864583,
+        2.5642903645833335,
+        1.9768269856770833,
+        1.5402425130208333,
+        3.7235921223958335,
+        4.328043619791667,
+        9.283284505208334,
+        5.90753173828125,
+        6.618754069010417,
+        2.6742350260416665,
+        6.4061279296875,
+        9.015157063802084,
+        2.45648193359375,
+        0.6244913736979166,
+        13.28155517578125,
+        5.148579915364583,
+        11.8056640625,
+        5.274251302083333
+      ]
+    },
+    "object_visibility": {
+      "num_scenes": 100,
+      "num_object_visible_after_transform": 97,
+      "fraction_object_visible_after_transform": 0.97
+    },
+    "detectability_ratio_full_n100": {
+      "mean_within_pair_sq_change": 343.9873352050781,
+      "mean_cross_scene_sq_distance": 973.1238403320312,
+      "ratio": 0.3534877278185983
+    },
+    "manifest_path": "experiments/task7_followup_object_translation_magnitude/object_translation_n100/manifest.json"
+  },
+  "detectability_ratio_final_n100": 0.3534877278185983,
+  "r2_equivariance_held_out_test": 0.10267770290374756,
+  "original_task7_object_translation_comparison": {
+    "found": true,
+    "original_n_scenes": 40,
+    "original_learned_W_T_r2": 0.381194531917572,
+    "original_transform_config": {
+      "camera_translation_range": [
+        0.5,
+        1.5
+      ],
+      "camera_rotation_azimuth_deg_range": [
+        10.0,
+        35.0
+      ],
+      "camera_rotation_elevation_deg_range": [
+        -10.0,
+        10.0
+      ],
+      "object_translation_range": [
+        0.4,
+        1.0
+      ],
+      "object_rotation_deg_range": [
+        30.0,
+        150.0
+      ],
+      "light_energy_scale_range": [
+        0.3,
+        2.5
+      ],
+      "light_azimuth_deg_range": [
+        60.0,
+        180.0
+      ],
+      "texture_color_jitter": 0.6
+    }
+  },
+  "config": {
+    "pilot_num_scenes": 8,
+    "candidate_magnitudes": [
+      2.0,
+      3.5,
+      5.0
+    ],
+    "fallback_magnitude": 7.0,
+    "detectability_threshold": 0.3,
+    "num_scenes": 100,
+    "train_fraction": 0.8,
+    "base_seed": 100,
+    "output_dir": "experiments/task7_followup_object_translation_magnitude",
+    "result_path": "state/task7_followup_object_translation_magnitude_result.json",
+    "resolution": 128,
+    "num_frames": 4,
+    "fps": 4.0,
+    "ridge_alpha": 10.0,
+    "shuffled_pairing_seed": 0,
+    "num_objects_min": 1,
+    "num_objects_max": 3,
+    "pretrained": true,
+    "checkpoint": "facebook/vjepa2-vitl-fpc64-256",
+    "device": null,
+    "fallback_seed": 0,
+    "encode_batch_size": 4
+  },
+  "seed": 100,
+  "software_versions": {
+    "python": "3.11.15",
+    "torch": "2.14.0+cu130",
+    "transformers": "5.17.0"
+  },
+  "artifacts": [
+    "experiments/task7_followup_object_translation_magnitude/report.md",
+    "experiments/task7_followup_object_translation_magnitude/object_translation_n100/manifest.json"
+  ],
+  "tests": {
+    "passed": 870,
+    "failed": 0,
+    "deselected": 41,
+    "returncode": 0,
+    "note": "The in-script self-check (gclib.run_existing_test_suite) invoked bare \"pytest\" via subprocess, which on this machine resolves to /root/.local/bin/pytest (a separate, numpy-less system install), not .venv/bin/pytest -- a pre-existing environment quirk in geometric_consistency_lib.py shared by every task/follow-up that calls it, not something this follow-up introduced or is in scope to fix. The authoritative check, run directly with the correct interpreter (`.venv/bin/python3 -m pytest -m \"not slow\" -q`), passed: 870 passed, 41 deselected, 0 failed."
+  }
+}

@@ -1,0 +1,234 @@
+{
+  "scene_id": "scene_0061",
+  "seed": 100000361,
+  "resolution": 128,
+  "fps": 4.0,
+  "num_frames": 4,
+  "camera": {
+    "lens_mm": 35.0,
+    "sensor_width_mm": 32.0,
+    "intrinsics": {
+      "fx": 140.0,
+      "fy": 140.0,
+      "cx": 64.0,
+      "cy": 64.0,
+      "K": [
+        [
+          140.0,
+          0.0,
+          64.0
+        ],
+        [
+          0.0,
+          140.0,
+          64.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    "per_frame_pose": [
+      {
+        "frame_index": 0,
+        "timestamp": 0.0,
+        "position": [
+          5.3335600197188455,
+          3.0281159986445076,
+          2.5175223091321732
+        ],
+        "rotation_euler": [
+          1.1812938987940802,
+          -0.0,
+          2.0871631689539947
+        ]
+      },
+      {
+        "frame_index": 1,
+        "timestamp": 0.25,
+        "position": [
+          5.3335600197188455,
+          3.0281159986445076,
+          2.5175223091321732
+        ],
+        "rotation_euler": [
+          1.1812938987940802,
+          -0.0,
+          2.0871631689539947
+        ]
+      },
+      {
+        "frame_index": 2,
+        "timestamp": 0.5,
+        "position": [
+          5.3335600197188455,
+          3.0281159986445076,
+          2.5175223091321732
+        ],
+        "rotation_euler": [
+          1.1812938987940802,
+          -0.0,
+          2.0871631689539947
+        ]
+      },
+      {
+        "frame_index": 3,
+        "timestamp": 0.75,
+        "position": [
+          5.3335600197188455,
+          3.0281159986445076,
+          2.5175223091321732
+        ],
+        "rotation_euler": [
+          1.1812938987940802,
+          -0.0,
+          2.0871631689539947
+        ]
+      }
+    ]
+  },
+  "objects": [
+    {
+      "instance_id": 1,
+      "shape": "cylinder",
+      "scale": 0.7475371350289579,
+      "color": [
+        0.7074990116470762,
+        0.8062881470469163,
+        0.48684196641713307
+      ],
+      "per_frame_pose": [
+        {
+          "frame_index": 0,
+          "timestamp": 0.0,
+          "position": [
+            -1.5261783221895524,
+            -0.5598391115476016,
+            0.7475371350289579
+          ],
+          "rotation_euler": [
+            4.709096423927069,
+            0.42334596846716177,
+            4.070758530708889
+          ],
+          "linear_velocity": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "angular_velocity_deg_per_sec": 0.0,
+          "angular_velocity_axis": [
+            0.0,
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "frame_index": 1,
+          "timestamp": 0.25,
+          "position": [
+            -1.5261783221895524,
+            -0.5598391115476016,
+            0.7475371350289579
+          ],
+          "rotation_euler": [
+            4.709096423927069,
+            0.42334596846716177,
+            4.070758530708889
+          ],
+          "linear_velocity": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "angular_velocity_deg_per_sec": 0.0,
+          "angular_velocity_axis": [
+            0.0,
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "frame_index": 2,
+          "timestamp": 0.5,
+          "position": [
+            -1.5261783221895524,
+            -0.5598391115476016,
+            0.7475371350289579
+          ],
+          "rotation_euler": [
+            4.709096423927069,
+            0.42334596846716177,
+            4.070758530708889
+          ],
+          "linear_velocity": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "angular_velocity_deg_per_sec": 0.0,
+          "angular_velocity_axis": [
+            0.0,
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "frame_index": 3,
+          "timestamp": 0.75,
+          "position": [
+            -1.5261783221895524,
+            -0.5598391115476016,
+            0.7475371350289579
+          ],
+          "rotation_euler": [
+            4.709096423927069,
+            0.42334596846716177,
+            4.070758530708889
+          ],
+          "linear_velocity": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "angular_velocity_deg_per_sec": 0.0,
+          "angular_velocity_axis": [
+            0.0,
+            0.0,
+            1.0
+          ]
+        }
+      ]
+    }
+  ],
+  "light": {
+    "position": [
+      -0.3003722208480174,
+      -8.646102710032386,
+      5.015444592108807
+    ],
+    "energy": 3.5699849097510548,
+    "color": [
+      0.9523884165758318,
+      0.9574289222354659,
+      0.9661445930269725
+    ]
+  },
+  "floor_color": [
+    0.39846585390554307,
+    0.39846585390554307,
+    0.39846585390554307
+  ],
+  "depth_encoding": {
+    "near": 0.05,
+    "far": 30.0,
+    "note": "depth.npy already stores decoded scene-unit float32 depth (camera-space Z, i.e. perpendicular distance to the camera's image plane -- NOT Euclidean ray distance; see generation/COORDINATE_SYSTEM.md). Values beyond `far` were clamped to `far` during rendering, so `far` acts as a saturation ceiling, not a guarantee that nothing is farther."
+  },
+  "segmentation_encoding": {
+    "max_instances": 255,
+    "note": "segmentation.npy stores instance_id directly as a uint8 label map; 0 = background/floor, i = the object with that instance_id in `objects`."
+  },
+  "coordinate_system": "See generation/COORDINATE_SYSTEM.md for the full specification. Summary: world frame is right-handed, Z-up (Blender convention); camera looks down its local -Z axis with local +Y up (Blender convention -- NOT the OpenCV/computer-vision convention of looking down +Z with +Y down; a conversion formula is given there). All rotations are XYZ-order Euler angles in radians."
+}

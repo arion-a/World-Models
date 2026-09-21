@@ -1,0 +1,47 @@
+# Task 7 follow-up: object_translation detectability-magnitude fix.
+#
+# A detectability/effect-size audit of Task 7's six-transform result
+# (state/task_07_result.json) found object_translation's default
+# TransformConfig().object_translation_range == (0.4, 1.0) moved the
+# frozen encoder's representation too little relative to natural
+# scene-to-scene variation (detectability ratio < 0.3) for its R^2 to be
+# trustworthy. This config redesigns ONLY object_translation's magnitude
+# (pilot-tested against a handful of scenes, then applied uniformly) and
+# reruns the full protocol at N=100 -- see
+# experiments/task7_followup_object_translation_magnitude.py's module
+# docstring for the full two-phase design. Independent of, and does not
+# modify, Task 7's own configs/experiments/task7_geometric_consistency.yaml,
+# state/task_07_result.json, or rendered data.
+
+pilot_num_scenes: 8
+candidate_magnitudes: [2.0, 3.5, 5.0]
+fallback_magnitude: 7.0
+detectability_threshold: 0.3
+
+num_scenes: 100
+train_fraction: 0.8
+# Disjoint from every base_seed already used elsewhere in this project
+# (Task 6/7 use base_seed=0).
+base_seed: 100
+output_dir: experiments/task7_followup_object_translation_magnitude
+result_path: state/task7_followup_object_translation_magnitude_result.json
+
+resolution: 128
+num_frames: 4
+fps: 4.0
+
+ridge_alpha: 10.0
+shuffled_pairing_seed: 0
+
+num_objects_min: 1
+num_objects_max: 3
+
+pretrained: true
+checkpoint: facebook/vjepa2-vitl-fpc64-256
+device: null
+fallback_seed: 0
+# Videos per encoder forward call (2 sides/scene): measured ~2x
+# wall-clock speedup vs. batch_size=1 (one-video-at-a-time, identical to
+# calling encoder.encode() directly) in this environment's CPU-bound
+# setup. Set to 1 to fall back to the unbatched path exactly.
+encode_batch_size: 4
