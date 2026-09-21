@@ -1,0 +1,67 @@
+# Task 12 follow-up #4: DETECTABILITY fix for the real_motion condition.
+#
+# An effect-size/detectability audit found real_motion's representation-
+# change ratio (E||Z'-Z||^2 / E_cross-scene||Zi-Zj||^2, computed the same
+# way as experiments/task12_followup_magnitude_sweep.py's
+# representation_change_ratio()) below the calibrated 0.3 threshold at
+# the original orbit_deg_per_sec=30.0 (see
+# configs/experiments/task12_temporal_consistency.yaml): the camera
+# motion between the two temporal windows' anchor frames was too small,
+# relative to natural cross-scene representation variance, for the
+# equivariance test to be reliable. This is a MAGNITUDE fix decided
+# BEFORE any evaluation, not post-hoc metric shopping: see
+# experiments/task12_followup_faster_orbit.py's module docstring for the
+# full rationale and the pilot procedure that picks orbit_deg_per_sec
+# below.
+#
+# orbit_deg_per_sec here is a PLACEHOLDER -- experiments/
+# task12_followup_faster_orbit.py's run_pilot() always re-decides the
+# real_motion rate itself (from pilot_candidate_rates_deg_per_sec /
+# pilot_extra_rates_deg_per_sec below) before the N=100 run, so this
+# value is never actually used for the reported result; it is set to
+# the first candidate purely so the config is self-describing/valid on
+# its own if read in isolation.
+#
+# static_control's motion (mode="static", no orbit) is COMPLETELY
+# UNCHANGED from Task 12's original design -- it is a control and is
+# SUPPOSED to show a low ratio; only real_motion's rate is redesigned.
+#
+# New, disjoint scene sets (base_seed_real_motion=102,
+# base_seed_static_control=103 -- disjoint via gclib.sample_scenes's
+# seed = base_seed*1_000_003 + i convention from every base_seed this
+# project's Task 12 work already uses: 0, 1, 42, 999).
+#
+# Writes to its OWN output_dir/result_path only -- never touches
+# state/task_12_result.json, that task's checkpoint, or any existing
+# experiments/temporal_consistency* / temporal_magnitude_sweep*
+# directory.
+
+num_scenes: 100
+train_fraction: 0.8
+base_seed_real_motion: 102
+base_seed_static_control: 103
+output_dir: experiments/task12_followup_faster_orbit_n100
+result_path: state/task12_followup_faster_orbit_result.json
+
+resolution: 128
+window_frames: 4
+fps: 4.0
+orbit_deg_per_sec: 60.0  # placeholder -- see note above; the pilot decides the real value
+
+ridge_alpha: 10.0
+shuffled_pairing_seed: 0
+
+num_objects_min: 1
+num_objects_max: 3
+
+pretrained: true
+checkpoint: facebook/vjepa2-vitl-fpc64-256
+device: null
+fallback_seed: 0
+
+# --- this follow-up's own pilot/detectability-fix parameters ---
+detectability_ratio_threshold: 0.3
+pilot_num_scenes: 10
+pilot_candidate_rates_deg_per_sec: [60.0, 90.0, 120.0]
+pilot_extra_rates_deg_per_sec: [180.0, 240.0]
+pilot_output_subdir: _pilot
