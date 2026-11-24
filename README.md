@@ -85,7 +85,7 @@ Each test has a benchmark: the best of its controls, which the learned map must 
 | **Release (Task 17)** | Task spec `tasks/17_release.md` written | Prepare the repository for external use | - |
 | **Independent audit (Task 18)** | Task spec `tasks/18_audit.md` written | Adversarial pass for leakage, confounds, unsupported claims | - |
 | **Scope beyond the plan** | - | - | Real (non-synthetic) video; any encoder other than V-JEPA 2 ViT-L/16; nonlinear probes (excluded on purpose, invariant 13); more than 1-3 objects per scene; a result that separates a geometric effect from architecture alone |
-| **Repository hygiene** | MIT `LICENSE`; fast test suite (`pytest -m "not slow"`) | - | Default branch is still named `claude/blissful-meitner-2kz1x1`, not `main`. Most commits are authored by the automated runner. |
+| **Repository hygiene** | MIT `LICENSE`; fast test suite (`pytest -m "not slow"`); default branch is `main` | - | Most commits are authored by the automated runner. |
 
 ## Layout
 
