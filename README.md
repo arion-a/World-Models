@@ -1,78 +1,119 @@
-# World-Models
+# World-Models: Geometric Consistency Probe
 
-**Does a frozen, pretrained video model actually understand 3D geometry, or does it just recognize appearance and temporal patterns?**
+**Question:** does a frozen, pretrained video model (V-JEPA 2 ViT-L/16) represent 3D geometry, or only appearance and temporal patterns?
 
-This repository holds one project, the **Geometric Consistency Probe** (`geometric-consistency-probe/`) — a controlled-experiment testbed that answers this question empirically for [V-JEPA 2](https://huggingface.co/docs/transformers/en/model_doc/vjepa2) ViT-L/16, without training or fine-tuning anything.
+**Short answer so far:** partly. With 40 scenes and the standard "assume no change" control, the linear map did not win. It does win when the camera rotation is at least 10°, when it is trained on about 1000 scenes, and for two of four camera-state variables. The diagram shows each result against its benchmark.
 
-## The idea, in one diagram
+![Every result against the benchmark it had to beat](docs/img/overview.svg)
+
+The project is in `geometric-consistency-probe/`. Nothing is trained or fine-tuned: the model is frozen, and every test is a linear ridge regression on held-out scenes.
+
+## Definitions
+
+| Term | Meaning |
+| --- | --- |
+| Scene `S` | A synthetic 3D scene (1-3 objects, camera, light) with known exact state, rendered in Blender Cycles. |
+| Video `V` | 4 frames at 4 fps, 128 px, rendered from `S`. |
+| Representation `Z` | 1024 numbers per video: the mean of the frozen model's output tokens. |
+| Transform `T` | A known change to the scene: camera translation, camera rotation, object translation, object rotation (geometric), or lighting change, texture change (appearance only). |
+| `Z'` | The representation of the video of `T(S)`. |
+| Linear map `W` | Ridge regression (alpha 10) fitted on training scenes so that `Z' ≈ W·Z`. |
+| R² | Score on held-out scenes. 1 is perfect; 0 equals predicting the mean; below 0 is worse than the mean. |
+| Controls | "Persistence" (predict `Z' = Z`), mean (predict the average `Z'`), shuffled pairs (match `Z` to another scene's `Z'`). A result counts only if it beats the best control. |
+
+## Results against the benchmark
+
+Each test has a benchmark: the best of its controls, which the learned map must beat. Gap = result minus benchmark, in R² (positive means the result beat the benchmark). N = 40 scenes (32 train, 8 test) unless stated. Numbers are copied from `state/task_NN_result.json`, `reports/final_research_report.md` and the follow-up result files.
+
+| Task | Test | Result | Benchmark | Gap |
+| --- | --- | --- | --- | --- |
+| 6 | Camera rotation, 30° | R² -0.313 | -0.107 (mean) | -0.21 |
+| 7 | Camera rotation | -0.176 | 0.079 (no change) | -0.26 |
+| 7 | Lighting change | 0.070 | 0.467 (no change) | -0.40 |
+| 7 | Camera translation | 0.198 | 0.638 (no change) | -0.44 |
+| 7 | Object translation | 0.381 | 0.807 (no change) | -0.43 |
+| 7 | Texture change | 0.426 | 0.870 (no change) | -0.44 |
+| 7 | Object rotation | -0.195 | 0.385 (no change) | -0.58 |
+| 7B | Camera yaw only; 1024 train, 219 validation, 220 test scenes; tested once | 0.557 (95% CI 0.528-0.580) | 0.157 (no change) | +0.40 |
+| 8 | Camera elevation decoded from `Z` | 0.227 | -0.378 (mean / shuffled labels) | +0.60 |
+| 8 | Camera distance decoded from `Z` | 0.349 | 0.253 | +0.10 |
+| 8 | Camera azimuth decoded from `Z` | -0.781 | -0.036 | -0.75 |
+| 8 | Object position decoded from `Z` | -1.653 | -0.204 | -1.45 |
+| 10 | Camera rotation vs 5 baselines | -0.313 | 0.781 (untrained encoder); pixel statistics 0.221 | -1.09 |
+| 11 | Camera rotation, N = 15 / 40 / 100 | -0.050 / -0.163 / -0.020 | about 0.75 / 0.67 / 0.71 (untrained encoder) | -0.80 / -0.84 / -0.73 |
+| 12 | Window 2 predicted from window 1, camera orbit | 0.306 | 0.383 (best standard control); 0.609 (static clip) | -0.08 / -0.30 |
+| 13 | Object position after occlusion | -0.493 | -0.035 (scrambled identity); no-occlusion upper bound -0.637 | -0.46 |
+| 9 | Mean cosine similarity of `Z` and `Z'` | Lighting 0.974, texture 0.992, camera translation 0.976, camera rotation 0.948, object translation 0.987, object rotation 0.964 | No benchmark: the test is whether appearance changes stay closer to 1 than geometric ones | Not separated: camera rotation moves `Z` most |
+| 14 | Tell object translation from object rotation (both 0.4 units) | Accuracy 0.625 | 0.750 (declared threshold); a norm-only control scored 0.938 | -0.13; invalidated |
+
+**What the table shows**
+
+- **The map learns something.** In Task 7 it beats the mean and shuffled-pair controls in all six transforms. It does not beat "assume no change", because a small scene change moves `Z` little, so that control is hard to beat.
+- **Task 6 is different.** It misses the mean control by 0.21 and beats only the shuffled-pair control.
+- **Gaps are not equal.** Task 12 misses the best standard control by 0.08 but the static clip by 0.30. Tasks 10 and 11 miss an untrained encoder by 0.7-1.1. Task 8 object position misses by 1.45.
+- **What closes the gap.** A bigger rotation (sweep below), more training scenes (Task 7B) and, for Task 13, more scenes (follow-up below).
+
+### Follow-ups, each in its own `experiments/` directory
+
+| Follow-up | Result |
+| --- | --- |
+| Task 12 rotation-size sweep, 800 scenes | Learned `W` vs persistence R²: 0° 0.993 vs 1.000; 5° 0.848 vs 0.861; 10° 0.750 vs 0.714; 20° 0.631 vs 0.431; 30° 0.523 vs 0.188. Shuffled pairs below 0 throughout. |
+| Task 12 faster orbit (90°/s), 100 scenes | `W` R² 0.504 beat the standard controls (0.356) but not the static-clip control (0.878). |
+| Task 13 at 100 scenes | Real R² -0.007; scrambled -0.359; mean -0.022; no-occlusion bound 0.057. Small margin; Task 13's original negative was partly a small-sample effect. |
+| Task 7 camera translation, magnitude 3, 100 scenes | `W` R² -0.524; best control -0.108. Still negative. |
+| Task 7 object translation, magnitude 2.0, 100 scenes | `W` R² 0.103 (0.381 at N = 40 in Task 7). Control comparison is in the result file. |
+| Task 14 larger displacement (2.0 units), 100 scenes | Invalidated: object rotation cannot move a point more than 1.0 unit, so the two edits were not magnitude-matched (rotation mean 0.72, translation 2.0). |
+
+## Reading the results
+
+- **Rotation size matters.** At 0°-5° "assume no change" wins because almost nothing changed. From 10° the learned map wins and the gap grows. The sweep uses persistence as its control; the static-clip control of the faster-orbit follow-up was not beaten.
+- **Scale and transform are confounded.** Task 7B used about 25 times more train scenes and a yaw-only transform at the same time. The evidence cannot say which one produced R² 0.557.
+- **Output-level only.** In Task 7B the fitted matrices did not satisfy exact composition and inverse identities (normalised discrepancy 0.65-1.003), though predictions stayed above controls.
+- **Not specific to pretraining.** An untrained encoder and a pixel-statistics baseline score higher than the pretrained model on camera rotation at N = 40.
+- **Linear only.** A negative result here means "not linearly predictable", not "absent".
+- **Nothing here supports "the model understands 3D".**
+
+## Status by category
+
+| Category | Done | Pending (planned) | Not planned (gaps) |
+| --- | --- | --- | --- |
+| **Specification** | `DESIGN.md` (binding), `IMPLEMENTATION_NOTES.md`, `research/RESEARCH_PLAN.md`, 18 invariants in `research/RESEARCH_INVARIANTS.md` | - | - |
+| **Pipeline (Tasks 1-5)** | Scene generation, six transforms, frozen encoder wrapper, extraction checks | - | Only the mean of the tokens is used: no token-level analysis |
+| **Experiments (Tasks 6-14)** | All nine, plus 7B and six follow-ups (table above) | - | Six-transform matrix at 7B scale; other motion types and windowing for Task 12; wider label range for Task 13; magnitude ladder for Task 14; alpha sweep (alpha fixed at 10, or 100 in 7B) |
+| **Infrastructure (Task 15)** | One result schema, validated on 9 result files with 0 errors, plus a single command-line entry per task | - | - |
+| **Report (Task 16)** | `reports/final_research_report.md`: claim-evidence matrix, negative results, limits | - | The Task 10 field `pixel_statistics_comparable_to_primary` is `true` although the R² values differ by about 0.53 (its declared limit is 0.05). Flagged in the report, not fixed. |
+| **Release (Task 17)** | Task spec `tasks/17_release.md` written | Prepare the repository for external use | - |
+| **Independent audit (Task 18)** | Task spec `tasks/18_audit.md` written | Adversarial pass for leakage, confounds, unsupported claims | - |
+| **Scope beyond the plan** | - | - | Real (non-synthetic) video; any encoder other than V-JEPA 2 ViT-L/16; nonlinear probes (excluded on purpose, invariant 13); more than 1-3 objects per scene; a result that separates a geometric effect from architecture alone |
+| **Repository hygiene** | MIT `LICENSE`; fast test suite (`pytest -m "not slow"`) | - | Default branch is still named `claude/blissful-meitner-2kz1x1`, not `main`. Most commits are authored by the automated runner. |
+
+## Layout
 
 ```
-Physical state S --render--> video V --frozen encoder E--> representation Z
-
-S' = T(S) --render--> video V' --E--> Z'
-
-Question: is Z' predictable from Z, i.e. Z' ≈ rho(T)·Z for a simple rho(T)?
+geometric-consistency-probe/
+  DESIGN.md                  Research specification: definitions, controls, what a result can and cannot support
+  IMPLEMENTATION_NOTES.md    Engineering decisions and corrections
+  README.md                  Usage commands for each stage
+  research/                  Plan (Tasks 6-18), 18 invariants, canonical protocol
+  orchestrator/              Automated task runner with independent checks of each result
+  tasks/                     One spec per task
+  generation/ transforms/ encoders/ representations/ probes/ metrics/ baselines/ evaluation/
+  experiments/               One runner per task; each follow-up in its own directory
+  state/                     task_NN_result.json: the source of truth for every number
+  reports/                   final_research_report.md
 ```
 
-Because every scene is a synthetic 3D render (Blender/Cycles), we know the *exact* ground-truth physical state behind every frame — camera pose, object positions, lighting — something no probe of real video can assume. That lets us ask precise questions a pixel-similarity check can't: is the encoder's representation *equivariant* to a known transform (camera rotation, object translation, …), *invariant* to transforms that shouldn't matter (a lighting change), and is physical state *linearly decodable* from the representation at all?
-
-Every answer here comes from **linear ridge regression** on a **frozen** encoder, evaluated on **scene-level held-out** splits, against a standard set of trivial baselines (predict no change, predict the mean, predict from a deliberately mismatched pairing). No neural probe is ever trained, and the encoder's weights never move — see `geometric-consistency-probe/DESIGN.md` for the full specification and `IMPLEMENTATION_NOTES.md` for the engineering history.
-
-## Start here
+## Run
 
 ```bash
 cd geometric-consistency-probe
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-pytest -m "not slow"      # fast checks, no bpy render calls, no network
+pytest -m "not slow"      # no Blender renders, no model forward passes, no network
 ```
 
-`geometric-consistency-probe/README.md` has the full per-feature command reference (scene generation, transform pairs, encoder extraction, running experiments). `geometric-consistency-probe/CLAUDE.md`'s parent, this repo's own `CLAUDE.md`, documents the **autonomous orchestrator** that drives Tasks 6–18 (below) — it invokes Claude Code per task and independently re-verifies every result from disk before advancing, rather than trusting a task's own self-report.
+Rendering needs `bpy` 5.0.1 (about 1 GB, Linux). Per-stage commands are in `geometric-consistency-probe/README.md`.
 
-## Key findings so far
+## License
 
-The honest headline: **most of the individual, single-condition tests came back negative** — the frozen encoder's representation usually did *not* show the hypothesized linear structure, under the exact conditions each task tested. That is treated as a valid result throughout this project, not a failure (`research/RESEARCH_INVARIANTS.md`, invariant: negative results are never discarded or reframed as success). But two cross-cutting patterns emerged once several of these negative results were pushed further:
-
-| # | Question tested | Result |
-|---|---|---|
-| Task 6/7 | Does a linear map predict the representation change under camera/object rotation or translation? | **No**, for any of the 4 geometric transforms or 2 appearance controls tested, at the original scale and motion magnitude. |
-| Task 8 | Is physical state (azimuth, elevation, distance, object position) linearly decodable from the representation? | **Partially** — 2 of 4 variables (elevation, distance) were; azimuth and object position were not. |
-| Task 9 | Does the representation stay invariant under appearance-only changes (lighting, texture) the way it should? | **No clean separation** — appearance controls disturbed the representation about as much as genuine geometric transforms did. |
-| Task 11 | Does the Task 6 negative result hold as sample size scales (15→100 scenes)? | **Yes** — the equivariance gap *strengthens*, not an artifact of too little data. |
-| Task 12 | Is the representation temporally consistent across a moving camera's video window? | **No**, at the original fixed ~30°/window motion magnitude. |
-| Task 13 | Does post-occlusion object state stay linearly decodable? | **No**, for either variable tested (position, velocity) — though a same-rig follow-up at N=100 flipped this from ambiguous-negative to a small positive margin, i.e. this one *was* partly a small-sample artifact. |
-
-**The most interesting result came from pushing Task 12's negative finding along a different axis than sample size.** Instead of asking "is there more data?", a follow-up asked "was the camera rotation just too small to move the representation in the first place?" — and swept the rotation magnitude itself (θ = 0° → 30°) at N=800 scenes:
-
-| θ (rotation) | learned map R² | "assume nothing changed" R² |
-|---|---|---|
-| 0° (no rotation — literally the same frame twice) | 0.99 | **1.00** (exact, by construction) |
-| 5° | 0.85 | 0.86 |
-| 10° | 0.75 | 0.71 — **learned map overtakes** |
-| 20° | 0.63 | 0.43 |
-| 30° | 0.52 | **0.19** |
-
-At small rotations, "assume nothing changed" wins trivially, because almost nothing *did* change — a near-perfect trivial score there is not evidence the representation is well-behaved, just evidence the test was too gentle to tell. Once the rotation is large enough to meaningfully move the representation, the learned map overtakes the trivial baseline and the gap widens sharply, while beating a shuffled-pairing control throughout. **The frozen encoder does encode real, learnable camera-rotation structure — Task 12's original negative result was measuring at a magnitude too small to see it, not measuring the wrong thing entirely.**
-
-Two lessons this project keeps re-learning: a negative result can hide behind too little data (Task 13) *or* too small an effect size (Task 12) — and the fix in each case is a different, explicit follow-up experiment, never a re-interpretation of the original one. Every follow-up here lives in its own `experiments/*_followup_*/` directory with its own config and result file; the original task's sealed checkpoint and `state/task_NN_result.json` are never modified.
-
-## Repository layout
-
-```
-CLAUDE.md                      Guidance for Claude Code sessions working in this repo
-geometric-consistency-probe/   The project itself
-  DESIGN.md                    Research specification: transform/metric definitions, what this can't support
-  IMPLEMENTATION_NOTES.md      Engineering decisions and history, including corrected assumptions
-  README.md                    Full per-feature usage commands
-  research/                    RESEARCH_PLAN.md (Task 6-18 roadmap), RESEARCH_INVARIANTS.md (18 durable rules)
-  orchestrator/                The autonomous Task 6-18 driver + its independent QA layers
-  tasks/                       One spec file per orchestrator task
-  generation/ transforms/ encoders/ representations/ probes/ metrics/ baselines/
-                                The pipeline stages themselves (see DESIGN.md's architecture diagram)
-  experiments/                 Task runners, plus every follow-up analysis in its own subdirectory
-  state/                       task_NN_result.json per completed task — the source of truth for results
-```
-
-## Status
-
-Tasks 1–13 are complete and checkpointed (`state/progress.json`); Task 14 (counterfactual representation consistency) is next. See `research/RESEARCH_PLAN.md` for the full Task 6–18 roadmap and `CLAUDE.md` for how to run the orchestrator yourself.
+MIT. See `LICENSE`.
