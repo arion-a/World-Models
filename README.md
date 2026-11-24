@@ -2,9 +2,9 @@
 
 **Question:** does a frozen, pretrained video model (V-JEPA 2 ViT-L/16) represent 3D geometry, or only appearance and temporal patterns?
 
-**Short answer so far:** mostly no under linear tests on small scene sets. The one clear positive result needs about 25 times more training scenes and a narrower transform, and it has not levelled off.
+**Short answer so far:** partly. With 40 scenes and the standard "assume no change" control, the linear map did not win. It does win when the camera rotation is at least 10°, when it is trained on about 1000 scenes, and for two of four camera-state variables. The diagram shows each result against its benchmark.
 
-![Overview: setup, rotation-sweep result, verdict per task](docs/img/overview.svg)
+![Every result against the benchmark it had to beat](docs/img/overview.svg)
 
 The project is in `geometric-consistency-probe/`. Nothing is trained or fine-tuned: the model is frozen, and every test is a linear ridge regression on held-out scenes.
 
@@ -21,22 +21,37 @@ The project is in `geometric-consistency-probe/`. Nothing is trained or fine-tun
 | R² | Score on held-out scenes. 1 is perfect; 0 equals predicting the mean; below 0 is worse than the mean. |
 | Controls | "Persistence" (predict `Z' = Z`), mean (predict the average `Z'`), shuffled pairs (match `Z` to another scene's `Z'`). A result counts only if it beats the best control. |
 
-## Results
+## Results against the benchmark
 
-Scene counts: N = 40 (32 train, 8 test) unless stated. All numbers are copied from `state/task_NN_result.json` and `reports/final_research_report.md`.
+Each test has a benchmark: the best of its controls, which the learned map must beat. Gap = result minus benchmark, in R² (positive means the result beat the benchmark). N = 40 scenes (32 train, 8 test) unless stated. Numbers are copied from `state/task_NN_result.json`, `reports/final_research_report.md` and the follow-up result files.
 
-| Task | Test | Result | Verdict |
-| --- | --- | --- | --- |
-| 6 | Camera rotation, 30°, N = 40 | `W` R² -0.313; best control -0.107 | Negative |
-| 7 | Six transforms, same split | `W` beat its best control in 0 of 6 | Negative |
-| 7B | Camera yaw only, 1024 train / 219 validation / 220 test scenes, tested once | `W` R² 0.557 (95% CI 0.528-0.580); persistence 0.157; learning curve 0.329 → 0.562 for 64 → 1024 train scenes, not levelled off | Positive, scale-limited |
-| 8 | Decode state from `Z` | Elevation R² 0.227 (best control -0.378) and distance 0.349 (0.253) beat controls; azimuth -0.781 and object position -1.653 did not | Mixed, 2 of 4 |
-| 9 | Change in `Z` under appearance vs geometric transforms (mean cosine similarity of `Z` and `Z'`) | Lighting 0.974, texture 0.992, camera translation 0.976, camera rotation 0.948, object translation 0.987, object rotation 0.964 | No separation: camera rotation changes `Z` most |
-| 10 | Five baselines, camera rotation | `W` R² -0.313; pixel statistics 0.221; untrained encoder 0.781 | Negative: below 4 of 5 |
-| 11 | Camera rotation at N = 15 / 40 / 100 | `W` R² -0.050 / -0.163 / -0.020; untrained encoder about 0.75 / 0.67 / 0.71 | Negative at every N |
-| 12 | `Z` of video window 2 from window 1, camera orbit | Real motion R² 0.306; static-clip control 0.609 | Negative |
-| 13 | Object position after occlusion | Real R² -0.493; scrambled control -0.035; no-occlusion upper bound -0.637 | Negative, and the upper bound failed too |
-| 14 | Tell object translation from object rotation (both 0.4 units) | Accuracy 0.625; threshold 0.750; norm-only control 0.938 | Negative and invalidated |
+| Task | Test | Result | Benchmark | Gap |
+| --- | --- | --- | --- | --- |
+| 6 | Camera rotation, 30° | R² -0.313 | -0.107 (mean) | -0.21 |
+| 7 | Camera rotation | -0.176 | 0.079 (no change) | -0.26 |
+| 7 | Lighting change | 0.070 | 0.467 (no change) | -0.40 |
+| 7 | Camera translation | 0.198 | 0.638 (no change) | -0.44 |
+| 7 | Object translation | 0.381 | 0.807 (no change) | -0.43 |
+| 7 | Texture change | 0.426 | 0.870 (no change) | -0.44 |
+| 7 | Object rotation | -0.195 | 0.385 (no change) | -0.58 |
+| 7B | Camera yaw only; 1024 train, 219 validation, 220 test scenes; tested once | 0.557 (95% CI 0.528-0.580) | 0.157 (no change) | +0.40 |
+| 8 | Camera elevation decoded from `Z` | 0.227 | -0.378 (mean / shuffled labels) | +0.60 |
+| 8 | Camera distance decoded from `Z` | 0.349 | 0.253 | +0.10 |
+| 8 | Camera azimuth decoded from `Z` | -0.781 | -0.036 | -0.75 |
+| 8 | Object position decoded from `Z` | -1.653 | -0.204 | -1.45 |
+| 10 | Camera rotation vs 5 baselines | -0.313 | 0.781 (untrained encoder); pixel statistics 0.221 | -1.09 |
+| 11 | Camera rotation, N = 15 / 40 / 100 | -0.050 / -0.163 / -0.020 | about 0.75 / 0.67 / 0.71 (untrained encoder) | -0.80 / -0.84 / -0.73 |
+| 12 | Window 2 predicted from window 1, camera orbit | 0.306 | 0.383 (best standard control); 0.609 (static clip) | -0.08 / -0.30 |
+| 13 | Object position after occlusion | -0.493 | -0.035 (scrambled identity); no-occlusion upper bound -0.637 | -0.46 |
+| 9 | Mean cosine similarity of `Z` and `Z'` | Lighting 0.974, texture 0.992, camera translation 0.976, camera rotation 0.948, object translation 0.987, object rotation 0.964 | No benchmark: the test is whether appearance changes stay closer to 1 than geometric ones | Not separated: camera rotation moves `Z` most |
+| 14 | Tell object translation from object rotation (both 0.4 units) | Accuracy 0.625 | 0.750 (declared threshold); a norm-only control scored 0.938 | -0.13; invalidated |
+
+**What the table shows**
+
+- **The map learns something.** In Task 7 it beats the mean and shuffled-pair controls in all six transforms. It does not beat "assume no change", because a small scene change moves `Z` little, so that control is hard to beat.
+- **Task 6 is different.** It misses the mean control by 0.21 and beats only the shuffled-pair control.
+- **Gaps are not equal.** Task 12 misses the best standard control by 0.08 but the static clip by 0.30. Tasks 10 and 11 miss an untrained encoder by 0.7-1.1. Task 8 object position misses by 1.45.
+- **What closes the gap.** A bigger rotation (sweep below), more training scenes (Task 7B) and, for Task 13, more scenes (follow-up below).
 
 ### Follow-ups, each in its own `experiments/` directory
 
