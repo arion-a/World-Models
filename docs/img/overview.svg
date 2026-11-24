@@ -48,9 +48,10 @@
 <circle cx="850.0" cy="205.4" r="3.5" fill="#34d399"/>
 <text x="856.0" y="209.42" fill="#34d399" font-size="11.5" font-weight="700">0.52</text>
 <text x="856.0" y="276.5" fill="#fbbf24" font-size="11.5" font-weight="700">0.19</text>
-<text x="760.6666666666666" y="173.88" fill="#34d399" font-size="12" font-weight="700" text-anchor="end">learned map W</text>
+<text x="783.3333333333334" y="167.88" fill="#34d399" font-size="12" font-weight="700" text-anchor="middle">learned map W</text>
 <text x="772.6666666666666" y="245.82" fill="#fbbf24" font-size="12" font-weight="700">"assume no change"</text>
-<text x="725.0" y="362" fill="#94a3b8" font-size="10.5" text-anchor="middle">Shuffled-pair control is below 0 at every θ (not drawn). W overtakes "no change" from 10°.</text>
+<text x="725.0" y="362" fill="#94a3b8" font-size="10.5" text-anchor="middle">Shuffled-pair control is below 0 at every θ (not drawn).</text>
+<text x="725.0" y="376" fill="#94a3b8" font-size="10.5" text-anchor="middle">W overtakes "no change" from 10°.</text>
 <text x="450" y="398" fill="#e2e8f0" font-size="13" font-weight="700" text-anchor="middle">Every task against its own controls (N = 40 scenes unless stated)</text>
 <rect x="20" y="410" width="164" height="48" rx="8" fill="#7f1d1d" stroke="#f87171"/>
 <text x="28" y="427" fill="#f1f5f9" font-size="12" font-weight="700">Task 6: <tspan font-weight="400" fill="#e2e8f0">camera rotation</tspan></text>
@@ -59,13 +60,13 @@
 <text x="200" y="427" fill="#f1f5f9" font-size="12" font-weight="700">Task 7: <tspan font-weight="400" fill="#e2e8f0">six transforms</tspan></text>
 <text x="200" y="447" fill="#f87171" font-size="12" font-weight="700">beats control: 0 of 6</text>
 <rect x="364" y="410" width="164" height="48" rx="8" fill="#064e3b" stroke="#34d399"/>
-<text x="372" y="427" fill="#f1f5f9" font-size="12" font-weight="700">Task 7B: <tspan font-weight="400" fill="#e2e8f0">yaw only, 1024 train scenes</tspan></text>
+<text x="372" y="427" fill="#f1f5f9" font-size="12" font-weight="700">Task 7B: <tspan font-weight="400" fill="#e2e8f0">yaw only</tspan></text>
 <text x="372" y="447" fill="#34d399" font-size="12" font-weight="700">R² 0.56 vs 0.16*</text>
 <rect x="536" y="410" width="164" height="48" rx="8" fill="#422006" stroke="#fbbf24"/>
-<text x="544" y="427" fill="#f1f5f9" font-size="12" font-weight="700">Task 8: <tspan font-weight="400" fill="#e2e8f0">decode camera/object state</tspan></text>
+<text x="544" y="427" fill="#f1f5f9" font-size="12" font-weight="700">Task 8: <tspan font-weight="400" fill="#e2e8f0">state decoding</tspan></text>
 <text x="544" y="447" fill="#fbbf24" font-size="12" font-weight="700">2 of 4 variables</text>
 <rect x="708" y="410" width="164" height="48" rx="8" fill="#7f1d1d" stroke="#f87171"/>
-<text x="716" y="427" fill="#f1f5f9" font-size="12" font-weight="700">Task 9: <tspan font-weight="400" fill="#e2e8f0">appearance vs geometry</tspan></text>
+<text x="716" y="427" fill="#f1f5f9" font-size="12" font-weight="700">Task 9: <tspan font-weight="400" fill="#e2e8f0">appearance</tspan></text>
 <text x="716" y="447" fill="#f87171" font-size="12" font-weight="700">no clean separation</text>
 <rect x="20" y="466" width="164" height="48" rx="8" fill="#7f1d1d" stroke="#f87171"/>
 <text x="28" y="483" fill="#f1f5f9" font-size="12" font-weight="700">Task 10: <tspan font-weight="400" fill="#e2e8f0">five baselines</tspan></text>
@@ -74,13 +75,13 @@
 <text x="200" y="483" fill="#f1f5f9" font-size="12" font-weight="700">Task 11: <tspan font-weight="400" fill="#e2e8f0">scale to 100 scenes</tspan></text>
 <text x="200" y="503" fill="#f87171" font-size="12" font-weight="700">R² stays below 0</text>
 <rect x="364" y="466" width="164" height="48" rx="8" fill="#7f1d1d" stroke="#f87171"/>
-<text x="372" y="483" fill="#f1f5f9" font-size="12" font-weight="700">Task 12: <tspan font-weight="400" fill="#e2e8f0">motion between windows</tspan></text>
+<text x="372" y="483" fill="#f1f5f9" font-size="12" font-weight="700">Task 12: <tspan font-weight="400" fill="#e2e8f0">motion windows</tspan></text>
 <text x="372" y="503" fill="#f87171" font-size="12" font-weight="700">below static clip</text>
 <rect x="536" y="466" width="164" height="48" rx="8" fill="#7f1d1d" stroke="#f87171"/>
-<text x="544" y="483" fill="#f1f5f9" font-size="12" font-weight="700">Task 13: <tspan font-weight="400" fill="#e2e8f0">object through occlusion</tspan></text>
+<text x="544" y="483" fill="#f1f5f9" font-size="12" font-weight="700">Task 13: <tspan font-weight="400" fill="#e2e8f0">occlusion</tspan></text>
 <text x="544" y="503" fill="#f87171" font-size="12" font-weight="700">below control</text>
 <rect x="708" y="466" width="164" height="48" rx="8" fill="#334155" stroke="#94a3b8"/>
-<text x="716" y="483" fill="#f1f5f9" font-size="12" font-weight="700">Task 14: <tspan font-weight="400" fill="#e2e8f0">counterfactual edits</tspan></text>
+<text x="716" y="483" fill="#f1f5f9" font-size="12" font-weight="700">Task 14: <tspan font-weight="400" fill="#e2e8f0">counterfactual</tspan></text>
 <text x="716" y="503" fill="#94a3b8" font-size="12" font-weight="700">invalidated by norm check</text>
 <text x="450" y="534" fill="#94a3b8" font-size="11" text-anchor="middle">Red: negative. Green: positive. Amber: mixed. Grey: invalid. * Task 7B: learning curve had not levelled off at 1024 scenes.</text>
 <text x="450" y="550" fill="#94a3b8" font-size="11" text-anchor="middle">Linear maps and linear probes only: a negative result means not linearly predictable, not absent.</text>
